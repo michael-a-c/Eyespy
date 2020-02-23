@@ -15,7 +15,7 @@ The goal of this application is to provide a small security system to watch over
 
 ### A Description of Additional Features that Will be complete by the Final Version
 
-- Automatic Pairing of devices and linking devices to accounts via queries to the server to get corresponding PeerId.
+- Automatic Pairing of devices and linking devices to accounts via queries to the server to get corresponding PeerId
 - Streamlining of App and desktop interface
 - Better account management system
 - Connecting all parts from beta together
@@ -27,11 +27,11 @@ The goal of this application is to provide a small security system to watch over
 
 ### A Description of the Technology that you Will Use
 
-1. React Redux for the desktop web-application.
-1. React Native for the mobile-application development.
-1. PeerJs For WebRTC streaming of video to devices and instant notifications from device.
-1. Most likely Node.js + Express + MongoDB for backend. We will most likely implement a standard HTTP REST API, however if we have time we will look into using GraphQL where needed. 
-1. AWS EC2 Instances for deployment.
+1. React Redux for the desktop web-application
+1. React Native for the mobile-application development
+1. PeerJs For WebRTC streaming of video to devices and instant notifications from device
+1. Most likely Node.js + Express + MongoDB for backend. We will most likely implement a standard HTTP REST API, however if we have time we will look into using GraphQL where needed
+1. AWS EC2 Instances for deployment
 
 ### A Description of the top 5 Technical Challenges
 
@@ -41,6 +41,6 @@ The goal of this application is to provide a small security system to watch over
 1. Pairing devices (Basically how do we know that a user has registered a device to an account, how do we keep track of that, probably with a MAC Address)
 1. WebRTC, streaming a custom video source with PeerJS and whether we need our own Peer Server.
 
-Architecture Diagram: 
+### Architecture Diagram: 
 ![alt text](https://i.imgur.com/epWlGDL.png "Architecture Diagram")
 
