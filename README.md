@@ -7,15 +7,25 @@
 The goal of this application is to provide a small security system to watch over an area while a user is away. The application will have two main components: A "Monitor" application and a "Notifier" application. The "Monitor" application will run in a web browser and allow the user to configure a webcam which the app will use to detect movement / faces in a room. Upon detecting a potential "security risk" it will call the "Notifier" app. This will be a mobile app that will notify the user with a warning via a push  notification. (May also be a status bar that the user always sees) There will be an account management system and a device pairing system to allow the user to sync their monitoring and receiving devices.  
 
 ### A Description of the Key Features that Will be Completed by the Beta Version
-
-Lorem Ipsum.
+- Rudimentary Face / Movment Detection
+- Streaming of video to app
+- Basic version of the app, primarly having implemented push notifications
+- Peering of devices will be done by asking the user to enter the corresponding device's code (PeerID). Not automatically yet
+- Account Management - Very basic username and password system
 
 ### A Description of Additional Features that Will be complete by the Final Version
 
-Lorem Ipsum.
+- Automatic Pairing of devices and linking devices to accounts via queries to the server to get corresponding PeerId.
+- Streamlining of App and desktop interface
+- Better account management system
+- Connecting all parts from beta together
+
+### Ideal scenario / Quality of Life
+- Smart face detection and movement detection algorithm. (Avoid missfires and false alarms, false positives, etc, maybe remember faces to not trigger alarm over) 
+- Notification streamlining (When and at what intervals to notify the users, don't always spam them when someone is in camera vision) 
+- Security enhancement (Encrypting video traffic going to PeerJS and potentially securing peerIds)
 
 ### A Description of the Technology that you Will Use
-
 
 1. React Redux for the desktop web-application.
 1. React Native for the mobile-application development.
