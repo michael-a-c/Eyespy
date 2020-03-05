@@ -1,0 +1,16 @@
+## https://medium.com/faun/managing-mongodb-on-docker-with-docker-compose-26bf8a0bbae3
+version: '3'
+
+services:
+  database:
+    image: 'mongo'
+    container_name: "eyespy-db-container"
+    environment:
+      - MONGO_INITDB_DATABASE=eyespy-db
+      - MONGO_INITDB_ROOT_USERNAME=eyespy
+      - MONGO_INITDB_ROOT_PASSWORD=snowden
+    volumes:
+      - ./init-mongo.js:/docker-entry-point-initdb.d/init-mongo.js:ro
+      - ./mongo-volume:/data/db
+    ports: 
+      - '27017-27019:27017-27019'
