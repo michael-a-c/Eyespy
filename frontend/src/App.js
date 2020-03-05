@@ -17,7 +17,7 @@ function App() {
         <title>EyeSpy</title>
       </Helmet>
       <Navbar variant="dark" bg="dark" expand="lg">
-        <Link to="/">
+        <Link style={{ textDecoration: 'none' }} to="/">
           <Navbar.Brand className="navbar-brand">
             <img
               src={logo}
