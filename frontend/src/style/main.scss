@@ -1,0 +1,50 @@
+$base-color: #1f1f1f;
+$shade-color: #303030;
+$text-color: white;
+$primary-color: #007bff;
+
+$lg: 992px;
+$md: 768px;
+$sm:576px;
+$xs:576px;
+$xl: 1200px;
+
+/* MIXIN BREAKPOINTS*/
+
+@mixin for-xs {
+  @media (max-width: $xs) { @content; }
+}
+@mixin for-sm {
+  @media (min-width: $sm) { @content; }
+}
+
+@mixin for-lg {
+  @media (min-width: $lg) { @content; }
+}
+
+@mixin for-xl {
+  @media (min-width: $xl) { @content; }
+}
+
+body{
+  background-color: $base-color;
+}
+
+.jumbotron-dark{
+  color: $text-color;
+  background-color: $shade-color;
+}
+
+.navbar-brand{
+  color:$text-color;
+  display: flex;
+}
+
+.navbar-text{
+  margin-left:10px;
+}
+
+.subheading-1{
+  font-style: italic;
+}
+
