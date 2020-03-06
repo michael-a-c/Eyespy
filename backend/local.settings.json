@@ -1,0 +1,5 @@
+{
+  "mongoDbName":"eyespy-db",
+  "mongoDbUsername":"snowden",
+  "mongoDbUserPassword":"eyespy-user"
+}
