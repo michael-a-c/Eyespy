@@ -1,12 +1,8 @@
 const config = require("./local.settings.json")
+var MongoClient = require('mongodb').MongoClient
 
-const MongoClient = require('mongodb').MongoClient
-const client = new MongoClient(`mongodb://${config.mongoDbUsername}:${config.mongoDbUserPassword}@127.0.0.1:27017`, { useUnifiedTopology: true });
-
-client.connect((err, database) => {
+MongoClient.connect(`mongodb://${config.mongoDbUsername}:${config.mongoDbUserPassword}@${config.mongoDbIp}:27017`, function (err, client) {
   if(err) {console.error(`\nFAILED TO CONNECT TO DATABASE: ${err.message}`); process.exit(1)};
-  
-  const db = client.db(config.mongoDbName);
-  console.log("Connected to db");
-  client.close();
-});
+
+  const db = client.db(config.mongoDbName)
+})

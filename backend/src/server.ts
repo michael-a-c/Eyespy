@@ -53,4 +53,4 @@ class EyeSpyServer extends Server {
 
 
 const exampleServer = new EyeSpyServer();
-exampleServer.start(3000);
+exampleServer.start(3001);
