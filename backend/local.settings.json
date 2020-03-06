@@ -1,5 +1,6 @@
 {
   "mongoDbName":"eyespy-db",
   "mongoDbUsername":"snowden",
-  "mongoDbUserPassword":"eyespy-user"
+  "mongoDbUserPassword":"eyespy-user",
+  "sessionSecret":"bing bong bang"
 }

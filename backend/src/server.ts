@@ -5,14 +5,28 @@ import * as bodyParser from 'body-parser';
 import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
+import * as Express from 'express';
+import * as ExpressSession from 'express-session';
 
-class ExampleServer extends Server {
+const config = require ("../local.settings.json")
+
+class EyeSpyServer extends Server {
     private readonly SERVER_STARTED = 'Example server started on port: ';
 
     constructor() {
         super(true);
+
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({extended: true}));
+        this.app.use(Express.static('static'));
+        
+        this.app.use(ExpressSession({
+            secret: config.sessionSecret,
+            resave: true,
+            saveUninitialized: true,
+        }));
+
+
         this.setupControllers();
     }
 
@@ -38,5 +52,5 @@ class ExampleServer extends Server {
 }
 
 
-const exampleServer = new ExampleServer();
+const exampleServer = new EyeSpyServer();
 exampleServer.start(3000);
