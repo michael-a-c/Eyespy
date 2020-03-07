@@ -1,7 +1,9 @@
 {
-  "mongoDbName":"eyespy-db",
-  "mongoDbUsername":"snowden",
-  "mongoDbUserPassword":"eyespy-user",
+  "mongoDb":"eyespy-db",
+  "mongoUsername":"snowden",
+  "mongoPassword":"eyespy-user",
   "sessionSecret":"bing bong bang",
-  "mongoDbIp": "192.168.0.22"
+  "mongoIp": "192.168.0.22",
+  "mongoPort":"27017",
+  "mongoCollection":"eyespy"
 }
