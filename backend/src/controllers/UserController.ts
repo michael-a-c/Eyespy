@@ -2,7 +2,7 @@ import { Response, Request } from 'express';
 import { Controller, Middleware, Get, Put, Post, Delete } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { OK, BAD_REQUEST, INTERNAL_SERVER_ERROR, CONFLICT, NOT_FOUND, UNAUTHORIZED } from 'http-status-codes';
-import { SignupRequestMaker, SignupRequest, SigninRequest, SigninRequestMaker } from '../model/Requests'
+import { SignupRequestMaker, SignupRequest, SigninRequest, SigninRequestMaker } from '../Requests'
 import { User, UserSchema, IUser } from "../repository";
 import { NativeError } from 'mongoose';
 const bcrypt = require('bcryptjs');
@@ -12,7 +12,7 @@ export class UserController {
 
     @Post('signup')
     private signUp(req: Request, res: Response) {
-        Logger.Info(req.body);
+        Logger.Info(req.url);
         let signupRequest: SignupRequest;
         try {
             signupRequest = SignupRequestMaker.create(req.body);
@@ -41,7 +41,7 @@ export class UserController {
 
     @Post('signin')
     private signin(req: Request, res: Response) {
-        Logger.Info(req.body);
+        Logger.Info(req.url);
         let signinRequest : any;
         try {
             signinRequest = SigninRequestMaker.create(req.body);
@@ -69,7 +69,7 @@ export class UserController {
 
     @Put('update-user')
     private update(req: Request, res: Response) {
-        Logger.Info(req.body);
+        Logger.Info(req.url);
         //TODO
         return res.status(OK).json({
             message: 'update_called',
@@ -78,7 +78,10 @@ export class UserController {
 
     @Get("signout")
     private signout(req: Request, res: Response) {
-        Logger.Info(req.body);
+        Logger.Info(req.url);
+        if(!req.session!.user){
+            return res.status(BAD_REQUEST).json({"message":"you're not signed in ya muppet"});
+        }
         req.session?.destroy(() => {
             return res.json({ "message": "signed out" });
         });
