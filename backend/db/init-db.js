@@ -1,10 +1,10 @@
 const config = require("../local.settings.json");
 const { spawn, exec } = require("child_process");
-const mongo = spawn("docker-compose", ["up"], {
+const mongo = spawn("docker-compose", ["up", "--build"], {
   env: {
-    PROJ_MONGO_INITDB_DATABASE: config.mongoDbName,
-    PROJ_MONGO_INITDB_ROOT_USERNAME: config.mongoDbUsername,
-    PROJ_MONGO_INITDB_ROOT_PASSWORD: config.mongoDbUserPassword
+    PROJ_MONGO_INITDB_DATABASE: config.mongoDb,
+    PROJ_MONGO_INITDB_ROOT_USERNAME: config.mongoUsername,
+    PROJ_MONGO_INITDB_ROOT_PASSWORD: config.mongoPassword
   }
 });
 
