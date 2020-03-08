@@ -5,6 +5,7 @@ import { OK, BAD_REQUEST, INTERNAL_SERVER_ERROR, CONFLICT, NOT_FOUND, UNAUTHORIZ
 import { SignupRequestMaker, SignupRequest, SigninRequest, SigninRequestMaker } from '../Requests'
 import { User, UserSchema, IUser } from "../repository";
 import { NativeError } from 'mongoose';
+import {isAuthenticated} from '../middleware'
 const bcrypt = require('bcryptjs');
 
 @Controller('api/user')
@@ -86,5 +87,12 @@ export class UserController {
             return res.json({ "message": "signed out" });
         });
 
+    }
+
+    @Get("whoami")
+    @Middleware(isAuthenticated)
+    private whoami(req:Request, res:Response){
+        Logger.Info(req.url);
+        return res.status(OK).json({"username":req.session?.user});
     }
 }
