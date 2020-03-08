@@ -4,6 +4,8 @@ import Button from "react-bootstrap/Button";
 import ItemContainer from "../ItemContainer";
 import Spinner from 'react-bootstrap/Spinner'
 import Requests from '../../requests.js'
+import {setUser} from "../../redux/actions";
+import { connect } from 'react-redux';
 
 const { Formik } = require("formik");
 const yup = require("yup");
@@ -41,12 +43,12 @@ class Login extends Component {
         this.setState({ loading: false, serverError: true })
       } else {
         this.setState({ loading: false });
+        this.props.setUser(result.username);
       }
     })
   }
   render() {
     return (
-
       <ItemContainer>
         <h1>Login</h1>
         <Formik
@@ -99,7 +101,7 @@ class Login extends Component {
                 </Form.Group>
                 {this.state.serverError ? <div className="error-text"> A server error has occured</div> : ""}
                 {this.state.badRequestError ? <div className="error-text"> Bad Request!</div> : ""}
-                {this.state.unAuthorizedError ? <div className="error-text"> Invalid  Password</div> : ""}
+                {this.state.unAuthorizedError ? <div className="error-text"> Wrong Password</div> : ""}
                 {this.state.notFoundError ? <div className="error-text"> User not found</div> : ""}
 
                 <Button variant="primary" type="submit" disabled={this.state.loading}>
@@ -120,5 +122,9 @@ class Login extends Component {
     );
   }
 }
-
-export default Login;
+export default connect(
+  null,
+  {
+    setUser: setUser
+  }
+)(Login);
