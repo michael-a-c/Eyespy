@@ -25,7 +25,7 @@ $xl: 1200px;
 @mixin for-xl {
   @media (min-width: $xl) { @content; }
 }
-
+/* Global Styles*/
 body{
   background-color: $base-color;
 }
@@ -48,3 +48,11 @@ body{
   font-style: italic;
 }
 
+.button-spinner{
+  margin-left:5px;
+}
+
+.error-text{
+  padding:5px;
+  color:red;
+}
