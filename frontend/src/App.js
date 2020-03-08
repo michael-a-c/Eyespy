@@ -3,31 +3,76 @@ import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
 import MainNavbar from "./components/MainNavBar";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import AccountInfo from "./components/AccountInfo";
+import { connect } from 'react-redux';
+import ReactNotification from 'react-notifications-component'
 
-function App() {
+// A wrapper for <Route> that redirects to the login
+// screen if you're not yet authenticated.
+function PrivateRoute({ loggedIn, path, children, ...rest }) {
+  console.log(loggedIn)
   return (
-    <BrowserRouter>
-      <Helmet>
-        <meta name="theme-color" content="#343a40" />
-        <title>EyeSpy</title>
-      </Helmet>
-      <MainNavbar />
-
-      <Switch>
-        <Route exact path="/login">
-          <Login />
-        </Route>
-        <Route exact path="/signup">
-          <Signup />
-        </Route>
-        <Route exact path="/">
-          <Welcome />
-        </Route>
-      </Switch>
-    </BrowserRouter>
+    <Route
+      {...rest}
+      render={({ location }) =>
+        loggedIn ? (
+          children
+        ) : (
+            <Redirect
+              to={{
+                pathname: "/login",
+                state: { from: location.pathname }
+              }}
+            />
+          )
+      }
+    />
   );
 }
 
-export default App;
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loggedIn: props.loggedIn,
+      username: props.username
+    }
+  }
+  render() {
+    return (
+      <BrowserRouter>
+        <ReactNotification />
+        <Helmet>
+          <meta name="theme-color" content="#343a40" />
+          <title>EyeSpy</title>
+        </Helmet>
+        <MainNavbar />
+
+        <Switch>
+          <Route exact path="/login">
+            <Login />
+          </Route>
+          <Route exact path="/signup">
+            <Signup />
+          </Route>
+          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/account">
+            <AccountInfo />
+          </PrivateRoute>
+          <Route exact path="/">
+            <Welcome loggedIn={this.props.loggedIn} />
+          </Route>
+        </Switch>
+      </BrowserRouter>
+    );
+  }
+}
+const mapStateToProps = newState => {
+  return {
+    username: newState.username,
+    loggedIn: newState.loggedIn
+  };
+};
+
+export default connect(mapStateToProps)(App);

@@ -1,0 +1,18 @@
+@import "../../style/main.scss";
+
+.navbar-dropdown button{
+  min-width:5rem;
+  text-align: left;
+}
+
+.navbar-dropdown ::after{
+  margin-left: 4rem !important;
+}
+.navbar-custom-link{
+  color: black;
+  text-decoration: none;
+}
+.navbar-custom-link:hover{
+  color: black;
+  text-decoration: none;
+}

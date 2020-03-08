@@ -3,9 +3,10 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import ItemContainer from "../ItemContainer";
 import Spinner from 'react-bootstrap/Spinner'
-import Requests from '../../requests.js'
-import {setUser} from "../../redux/actions";
+import Requests from '../../utils/requests.js'
+import { setUser } from "../../utils/redux/actions";
 import { connect } from 'react-redux';
+import { withRouter, Redirect } from 'react-router-dom';
 
 const { Formik } = require("formik");
 const yup = require("yup");
@@ -25,13 +26,15 @@ class Login extends Component {
       badRequestError: false,
       unAuthorizedError: false,
       serverError: false,
-      notFoundError: false
+      notFoundError: false,
+      done: false, 
+      from: (props.location.state) ? props.location.state.from : ""
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-
   }
+
   handleSubmit(signinRequest) {
-    this.setState({ loading: true, badRequestError: false, unAuthorizedError: false, notFoundError: false, serverError: false });
+    this.setState({ loading: true, badRequestError: false, unAuthorizedError: false, notFoundError: false, serverError: false, done: false });
     Requests.signin(signinRequest).then((result) => {
       if (result.status === 400) {
         this.setState({ loading: false, badRequestError: true });
@@ -42,14 +45,21 @@ class Login extends Component {
       } else if (result.status && result.status !== 200) {
         this.setState({ loading: false, serverError: true })
       } else {
-        this.setState({ loading: false });
         this.props.setUser(result.username);
+        this.setState({ loading: false, done: true });
       }
     })
   }
+
   render() {
     return (
       <ItemContainer>
+        {this.state.done ? ((this.props.location.state) ? <Redirect
+          to={{
+            pathname: this.state.from
+          }}
+        /> : this.props.history.goBack()) : ""}
+
         <h1>Login</h1>
         <Formik
           validationSchema={schema}
@@ -122,9 +132,9 @@ class Login extends Component {
     );
   }
 }
-export default connect(
+export default withRouter(connect(
   null,
   {
     setUser: setUser
   }
-)(Login);
+)(Login));

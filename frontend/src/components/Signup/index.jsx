@@ -3,7 +3,14 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import ItemContainer from "../ItemContainer";
 import Spinner from 'react-bootstrap/Spinner'
-import Requests from '../../requests.js'
+import { store } from 'react-notifications-component';
+import 'react-notifications-component/dist/theme.css'
+import { withRouter } from 'react-router-dom';
+import Requests from '../../utils/requests.js'
+import { connect } from 'react-redux';
+import { setUser } from "../../utils/redux/actions";
+
+
 const { Formik } = require("formik");
 const yup = require("yup");
 
@@ -18,7 +25,6 @@ const schema = yup.object({
 
 class Signup extends Component {
   constructor(props) {
-
     super(props);
     this.state = {
       submitted: false,
@@ -30,9 +36,6 @@ class Signup extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentDidMount() {
-    //Requests.signup({"username":"111", "password":"asdfasd", "email":"asdf"})
-  }
   handleSubmit(submitRequest) {
     this.setState({ loading: true,  userNameExistsError: false, badRequestError: false, serverError: false });
     Requests.signup(submitRequest).then((result) => {
@@ -45,7 +48,25 @@ class Signup extends Component {
       else if(result.status === 500){
         this.setState({ loading: false, serverError: true });
       } else{
-        this.setState({ loading: false});
+        Requests.signin({username: submitRequest.username, password: submitRequest.password}).then((res) =>{
+          this.setState({ loading: false});
+          this.props.setUser(result.username);
+
+          store.addNotification({
+            title: "You've successfully created an account!",
+            message: `Welcome to the club, ${result.username}`,
+            type: "success",
+            insert: "bottom",
+            container: "bottom-center",
+            animationIn: ["animated", "fadeIn"],
+            animationOut: ["animated", "fadeOut"],
+            dismiss: {
+              duration: 3500,
+              onScreen: true
+            }
+          });
+          this.props.history.goBack();
+        })
       }
     });
   }
@@ -162,4 +183,9 @@ class Signup extends Component {
   }
 }
 
-export default Signup;
+export default withRouter(connect(
+  null,
+  {
+    setUser: setUser
+  }
+)(Signup));

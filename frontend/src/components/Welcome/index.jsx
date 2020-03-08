@@ -26,10 +26,10 @@ export class Welcome extends Component {
             EyeSpy let's you turn any device into a home surveilance system and notifies you right on your phone.
         </p>
           <Container fluid className="container-welcome" >
-            <Row noGutters>
+            {!this.props.loggedIn ? <FadeIn> <Row noGutters>
               <Col xs={6} sm={3} md={2} xl={1} className="welcome-button"><Link to="/signup"><Button variant="primary">Sign up</Button></Link></Col>
               <Col xs={6} sm={3} md={2} xl={1} className="welcome-button"><Link to="/login"><Button variant="primary"> Login </Button></Link></Col>
-            </Row>
+            </Row></FadeIn>  : ""}
           </Container>
         </Jumbotron>
       </FadeIn>
