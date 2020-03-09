@@ -3,6 +3,6 @@
   "mongoUsername":"eyespy-user",
   "mongoPassword":"snowden",
   "sessionSecret":"bing bong bang",
-  "mongoIp": "192.168.0.22",
+  "mongoIp": "127.0.0.1",
   "mongoPort":"27017"
 }

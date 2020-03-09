@@ -1,16 +1,16 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import { connect } from 'react-redux';
 import logo from "../../logo192.png";
 import { Link } from "react-router-dom";
-import DropdownButton from 'react-bootstrap/DropdownButton'
-import Dropdown from 'react-bootstrap/Dropdown'
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Dropdown from 'react-bootstrap/Dropdown';
 import { removeUser } from "../../utils/redux/actions";
 
-import Requests from '../../utils/requests.js'
+import Requests from '../../utils/requests.js';
 
-import './styles.scss'
+import './styles.scss';
 
 class MainNavBar extends Component {
   constructor(props) {
@@ -53,7 +53,7 @@ class MainNavBar extends Component {
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
-            <Nav.Link href="#home">About</Nav.Link>
+            <Nav.Link href="/about">About</Nav.Link>
             <Nav.Link href="#link">Devices</Nav.Link>
           </Nav>
         </Navbar.Collapse>
