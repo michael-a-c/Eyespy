@@ -1,4 +1,5 @@
 import React from "react";
+import About from "./components/About";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
@@ -53,6 +54,9 @@ class App extends React.Component {
         <MainNavbar />
 
         <Switch>
+          <Route exact path="/about">
+            <About />
+          </Route>
           <Route exact path="/login">
             <Login />
           </Route>
