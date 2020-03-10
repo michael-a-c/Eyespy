@@ -6,18 +6,20 @@ import MainNavbar from "./components/MainNavBar";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import AccountInfo from "./components/AccountInfo";
+import SetupWebcam from "./components/SetupWebcam";
 import { connect } from 'react-redux';
 import ReactNotification from 'react-notifications-component'
+import Watch from "./components/Watch";
 
 // A wrapper for <Route> that redirects to the login
 // screen if you're not yet authenticated.
-function PrivateRoute({ loggedIn, path, children, ...rest }) {
-  console.log(loggedIn)
+function PrivateRoute({ loggedIn, path, targetComponent, children, ...rest }) {
   return (
     <Route
       {...rest}
       render={({ location }) =>
         loggedIn ? (
+          targetComponent,
           children
         ) : (
             <Redirect
@@ -60,6 +62,10 @@ class App extends React.Component {
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/account">
             <AccountInfo />
           </PrivateRoute>
+          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/record">
+            <SetupWebcam />
+          </PrivateRoute>
+          <PrivateRoute loggedIn={this.props.loggedIn} path="/watch/:id" component={Watch} />
           <Route exact path="/">
             <Welcome loggedIn={this.props.loggedIn} />
           </Route>

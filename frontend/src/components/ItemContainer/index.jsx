@@ -18,7 +18,7 @@ class ItemContainer extends Component {
         <Container>
           <Row>
             <Col></Col>
-            <Col xs={12} md={9}>
+            <Col xs={12}>
               <div className="item-container-wrapper">
                 {this.props.xd}
                 {this.props.children}

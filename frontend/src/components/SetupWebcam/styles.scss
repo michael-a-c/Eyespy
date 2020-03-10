@@ -1,0 +1,49 @@
+@import "../../style/main.scss";
+
+
+.webcam-spinner {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.webcam-spinner-text {
+  align-self: center;
+}
+.jumbotron-setup {
+
+  margin: 30px;
+  margin-left:100px;
+  margin-right:100px;
+
+   @include for-xs {
+    margin: 5px;
+    margin-top: 10px;
+}
+}
+
+.webcam{
+    display:flex;
+    justify-content: center;
+    margin-bottom:10px;
+    margin-top:10px;
+
+}
+
+.webcam-actual{
+    border-radius: 5px;
+}
+
+.webcam-error-button{
+    @include for-xs {
+        display:flex;
+        justify-content: center;
+   }
+}
+.setup-button{
+    display:flex;
+    justify-content: center;
+}
+.record-button{
+  padding:10px !important;
+}

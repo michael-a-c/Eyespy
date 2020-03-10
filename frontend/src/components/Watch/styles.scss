@@ -1,0 +1,20 @@
+.loading-info{
+    display: flex;
+    flex-direction: column;
+}
+
+
+.loading-spinner{
+    align-self: center;
+    margin-top: 5px;
+}
+
+.loading-text{
+    align-self: center;
+}
+
+.video-wrapper{
+    width:100%;
+    display: flex;
+    justify-content: center;
+}
