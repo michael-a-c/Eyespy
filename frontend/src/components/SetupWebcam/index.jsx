@@ -8,10 +8,13 @@ import Webcam from "react-webcam";
 import FadeIn from "react-fade-in";
 import Spinner from "react-bootstrap/Spinner";
 import Peer from "peerjs";
+import { Link } from "react-router-dom";
+import * as faceapi from "face-api.js";
 
 import "./styles.scss";
 
 const ref = React.createRef();
+const canvasRef = React.createRef();
 
 class SetupWebcam extends Component {
   constructor(props) {
@@ -20,6 +23,8 @@ class SetupWebcam extends Component {
     this.handleStartCam = this.handleStartCam.bind(this);
     this.handleUserDenied = this.handleUserDenied.bind(this);
     this.handleBeginRecord = this.handleBeginRecord.bind(this);
+    this.loadFacialDetection = this.loadFacialDetection.bind(this);
+    this.loadFacialDetection = this.loadFacialDetection.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -30,18 +35,65 @@ class SetupWebcam extends Component {
       waitingForUserAccept: true,
       isRecording: false,
       isLoading: false,
-      userDenied: false
+      userDenied: false,
+      peerId: false,
+      loadingFaceDetection: true
     };
   }
   componentDidMount() {
     console.log(ref);
+    this.loadFacialDetection()
+      .then(() => {
+        this.setState({ loadingFaceDetection: false});
+        let timer = setInterval(this.doFacialDetection, 500);
+        this.setState({ timer: timer});
+
+      })
+      .catch(e => {
+        console.log(e);
+      });
   }
+
+  componentWillUnmount() {
+    // use intervalId from the state to clear the interval
+    clearInterval(this.state.timer);
+  }
+
+  async loadFacialDetection() {
+    await faceapi.nets.ssdMobilenetv1.load("/models");
+  }
+
+  async doFacialDetection() {
+    let minConfidence = 0.5;
+    //console.log(ref);
+    const result = await faceapi.detectSingleFace(
+      ref.current.video,
+      new faceapi.SsdMobilenetv1Options({ minConfidence })
+    );
+    if (result) {
+      const dims = faceapi.matchDimensions(
+        canvasRef.current,
+        ref.current.video,
+        true
+      );
+
+      faceapi.draw.drawDetections(
+        canvasRef.current,
+        faceapi.resizeResults(result, dims)
+      );
+    }
+
+    //console.log(result);
+  }
+
   reload() {
     window.location.reload();
   }
+
   handleStartCam() {
     this.setState({ waitingForUserAccept: false, userDenied: false });
   }
+
   handleUserDenied() {
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
@@ -49,12 +101,12 @@ class SetupWebcam extends Component {
   handleBeginRecord() {
     let peer = new Peer();
     let parent = this;
-    this.setState({isLoading: true});
+    this.setState({ isLoading: true });
 
     peer.on("open", function(id) {
       console.log("My peer ID is: " + id);
-      parent.setState({isRecording: true, isLoading:false});
 
+      parent.setState({ isRecording: true, peerId: id, isLoading: false });
     });
 
     peer.on("connection", function(conn) {
@@ -64,7 +116,7 @@ class SetupWebcam extends Component {
 
       conn.on("data", function(data) {
         // Will print 'hi!'
-        console.log(data);
+        //console.log(data);
       });
     });
   }
@@ -76,7 +128,9 @@ class SetupWebcam extends Component {
             <Row>
               <Col xs={0} sm={1}></Col>
               <Col xs={12} sm={10}>
-                <h2>{!this.state.isRecording ? "Setup Your Security Cam" : "LIVE"} </h2>
+                <h2>
+                  {!this.state.isRecording ? "Setup Your Security Cam" : "LIVE"}
+                </h2>
                 {this.state.waitingForUserAccept ? (
                   <div className="webcam-spinner">
                     <Spinner
@@ -89,6 +143,24 @@ class SetupWebcam extends Component {
                     </Spinner>
                     <div className="webcam-spinner-text">
                       Please allow access your Webcam
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+                {!this.state.waitingForUserAccept &&
+                this.state.loadingFaceDetection ? (
+                  <div className="webcam-spinner">
+                    <Spinner
+                      animation="border"
+                      className="webcam-spinner-text"
+                      variant="primary"
+                      role="status"
+                    >
+                      <span className="sr-only"></span>
+                    </Spinner>
+                    <div className="webcam-spinner-text">
+                      Loading facial detection data...
                     </div>
                   </div>
                 ) : (
@@ -121,16 +193,51 @@ class SetupWebcam extends Component {
                     onUserMedia={this.handleStartCam}
                     onUserMediaError={this.handleUserDenied}
                   />
+                  <canvas className="webcam-canvas" ref={canvasRef}></canvas>
                 </div>
-                {!this.state.userDenied && !this.state.waitingForUserAccept ? (
-                  <div className="setup-button">
-                    <Button className={"record-button"} onClick={this.handleBeginRecord} variant={!this.state.isRecording ? "primary" : "danger"} disabled={this.state.isRecording}>
-                      {!this.state.isRecording ? "Start Recording" : "LIVE"}
-                      
-                      {this.state.isLoading ? <Spinner className={"button-spinner "} animation="border" variant="primary" /> : ""}
+                {this.state.isRecording ? (
+                  <FadeIn>
+                    <div className="webcam-link">
+                      <div className="webcam-link-item">
+                        view your webcam live from any device at
+                      </div>
+                      <Link
+                        className="webcam-link-item"
+                        to={`/watch/${this.state.peerId}`}
+                        target="_blank"
+                      >
+                        {`${window.location}/watch/${this.state.peerId}`}
+                      </Link>
+                    </div>
+                  </FadeIn>
+                ) : (
+                  ""
+                )}
+                {!this.state.userDenied &&
+                !this.state.waitingForUserAccept &
+                  !this.state.loadingFaceDetection ? (
+                  <FadeIn>
+                    <div className="setup-button">
+                      <Button
+                        className={"record-button"}
+                        onClick={this.handleBeginRecord}
+                        variant={!this.state.isRecording ? "primary" : "danger"}
+                        disabled={this.state.isRecording}
+                      >
+                        {!this.state.isRecording ? "Start Recording" : "LIVE"}
 
-                    </Button>
-                  </div>
+                        {this.state.isLoading ? (
+                          <Spinner
+                            className={"button-spinner "}
+                            animation="border"
+                            variant="primary"
+                          />
+                        ) : (
+                          ""
+                        )}
+                      </Button>
+                    </div>
+                  </FadeIn>
                 ) : (
                   ""
                 )}
