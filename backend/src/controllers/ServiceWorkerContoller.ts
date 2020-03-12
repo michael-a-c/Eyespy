@@ -30,8 +30,9 @@ export default class ServiceWorkerController {
         const payload = 
         JSON.stringify({
             title: title,
-            body: body,
+            body: body
         });
+
 
         webpush.sendNotification(subscription, payload)
             .then((result: any) => console.log(result))

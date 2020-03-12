@@ -61,12 +61,12 @@ export class PushNotifications extends Component {
         return;
     }
 
-    sendSubscription(subscription, params) {
+    sendSubscription(subscription, options) {
         console.log("sendSubscription")
         let newBody = {
             subscription: subscription,
-            title: params.title,
-            body: params.body
+            title: options.title,
+            body: options.body
         }
         return fetch(`api/serviceworker/subscribe`, {
           method: 'POST',
@@ -152,7 +152,7 @@ export class PushNotifications extends Component {
 
     async handleTriggerAllDevices() {
         //console.log(this.state.mySub);
-        this.subscribeUser("Hello world", "Thanks Nick")
+        this.subscribeUser("FACE DETECTED", "Unknown face detected on stream, dismiss?")
 
     }
 
