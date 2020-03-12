@@ -23,7 +23,7 @@ export class Welcome extends Component {
         <Jumbotron className="jumbotron-dark jumbotron-welcome">
           <h1>EyeSpy</h1>
           <p>
-            EyeSpy let's you turn any device into a home surveilance system and notifies you right on your phone.
+            EyeSpy lets you turn any device into a home surveillance system and notifies you right on your phone.
         </p>
           <Container fluid className="container-welcome" >
             {!this.props.loggedIn ? <FadeIn> <Row noGutters>
