@@ -21,7 +21,7 @@ class EyeSpyServer extends Server {
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({extended: true}));
         this.app.use(Express.static('static'));
-        this.app.use(Express.static(path.join(__dirname, '../frontend/build')));
+        this.app.use(Express.static(path.join(__dirname, './frontend/build')));
         let sessionSecret : any = process.env.sessionSecret;
 
         this.app.use(ExpressSession({
