@@ -10,7 +10,7 @@ import * as ExpressSession from 'express-session';
 require('dotenv').config()
 
 const path = require('path');
-const root = path.join(__dirname, './frontend', 'build')
+const root = path.join(__dirname, '../frontend', 'build')
 
 class EyeSpyServer extends Server {
     private readonly SERVER_STARTED = 'Example server started on port: ';
@@ -21,7 +21,7 @@ class EyeSpyServer extends Server {
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({extended: true}));
         this.app.use(Express.static('static'));
-        this.app.use(Express.static(path.join(__dirname, './frontend/build')));
+        this.app.use(Express.static(path.join(__dirname, '../frontend/build')));
         let sessionSecret : any = process.env.sessionSecret;
 
         this.app.use(ExpressSession({
