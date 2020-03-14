@@ -7,8 +7,10 @@ import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import * as Express from 'express';
 import * as ExpressSession from 'express-session';
+require('dotenv').config()
 
-const config = require ("../local.settings.json")
+const path = require('path');
+const root = path.join(__dirname, './frontend', 'build')
 
 class EyeSpyServer extends Server {
     private readonly SERVER_STARTED = 'Example server started on port: ';
@@ -19,13 +21,14 @@ class EyeSpyServer extends Server {
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({extended: true}));
         this.app.use(Express.static('static'));
+        this.app.use(Express.static(path.join(__dirname, '../frontend/build')));
+        let sessionSecret : any = process.env.sessionSecret;
         
         this.app.use(ExpressSession({
-            secret: config.sessionSecret,
+            secret: sessionSecret,
             resave: true,
             saveUninitialized: true,
         }));
-
 
         this.setupControllers();
     }
@@ -43,7 +46,7 @@ class EyeSpyServer extends Server {
 
     public start(port: number): void {
         this.app.get('*', (req, res) => {
-            res.send(this.SERVER_STARTED + port);
+            res.sendFile('index.html', {root});
         });
         this.app.listen(port, () => {
             Logger.Imp(this.SERVER_STARTED + port);
@@ -53,4 +56,4 @@ class EyeSpyServer extends Server {
 
 
 const exampleServer = new EyeSpyServer();
-exampleServer.start(3001);
+exampleServer.start(3000);
