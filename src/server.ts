@@ -23,7 +23,7 @@ class EyeSpyServer extends Server {
         this.app.use(Express.static('static'));
         this.app.use(Express.static(path.join(__dirname, '../frontend/build')));
         let sessionSecret : any = process.env.sessionSecret;
-        
+
         this.app.use(ExpressSession({
             secret: sessionSecret,
             resave: true,
@@ -56,4 +56,6 @@ class EyeSpyServer extends Server {
 
 
 const exampleServer = new EyeSpyServer();
-exampleServer.start(3000);
+let envPort = process.env.PORT;
+let port = parseInt((envPort) || "3000");
+exampleServer.start(port);
