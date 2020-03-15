@@ -22,9 +22,9 @@ class SetupWebcam extends Component {
     this.reload = this.reload.bind(this);
     this.handleStartCam = this.handleStartCam.bind(this);
     this.handleUserDenied = this.handleUserDenied.bind(this);
-    this.handleBeginRecord = this.handleBeginRecord.bind(this);
+    this.handleToggleRecord = this.handleToggleRecord.bind(this);
     this.loadFacialDetection = this.loadFacialDetection.bind(this);
-    this.loadFacialDetection = this.loadFacialDetection.bind(this);
+    this.doFacialDetection = this.doFacialDetection.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -37,17 +37,18 @@ class SetupWebcam extends Component {
       isLoading: false,
       userDenied: false,
       peerId: false,
-      loadingFaceDetection: true
+      loadingFaceDetection: true,
+      peerCons: [],
+      peerMediaCalls: [],
+      movementDetected: false
     };
   }
   componentDidMount() {
-    console.log(ref);
     this.loadFacialDetection()
       .then(() => {
-        this.setState({ loadingFaceDetection: false});
+        this.setState({ loadingFaceDetection: false });
         let timer = setInterval(this.doFacialDetection, 500);
-        this.setState({ timer: timer});
-
+        this.setState({ timer: timer });
       })
       .catch(e => {
         console.log(e);
@@ -76,14 +77,26 @@ class SetupWebcam extends Component {
         ref.current.video,
         true
       );
+      this.setState({movementDetected:true});
 
       faceapi.draw.drawDetections(
         canvasRef.current,
         faceapi.resizeResults(result, dims)
       );
+      this.state.peerCons.forEach((conn) => {
+        conn.send({
+          "event":"movementDetected",
+          "dims": JSON.stringify(dims),
+          "faceData":JSON.stringify(result)
+        });
+      })
+    } else {
+      // no detection
+      canvasRef.current
+        .getContext("2d")
+        .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        this.setState({movementDetected:false});
     }
-
-    //console.log(result);
   }
 
   reload() {
@@ -98,27 +111,49 @@ class SetupWebcam extends Component {
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
-  handleBeginRecord() {
-    let peer = new Peer();
-    let parent = this;
-    this.setState({ isLoading: true });
+  handleToggleRecord() {
+    if (!this.state.isRecording) {
+      let peer = new Peer();
+      let parent = this;
+      this.setState({ isLoading: true });
 
-    peer.on("open", function(id) {
-      console.log("My peer ID is: " + id);
+      peer.on("open", function(id) {
+        console.log("My peer ID is: " + id);
 
-      parent.setState({ isRecording: true, peerId: id, isLoading: false });
-    });
-
-    peer.on("connection", function(conn) {
-      let connPeerId = conn.peer;
-      console.log(connPeerId);
-      var call = peer.call(connPeerId, ref.current.stream);
-
-      conn.on("data", function(data) {
-        // Will print 'hi!'
-        //console.log(data);
+        parent.setState({
+          isRecording: true,
+          peerId: id,
+          isLoading: false
+        });
       });
-    });
+
+      peer.on("connection", function(conn) {
+        let connPeerId = conn.peer;
+        console.log(connPeerId);
+        var call = peer.call(connPeerId, ref.current.stream);
+        let currentPeerCons = parent.state.peerCons;
+        let currentPeerMediaCalls = parent.state.peerMediaCalls;
+
+        parent.setState({
+          peerCons: currentPeerCons.concat(conn),
+          peerMediaCalls: currentPeerMediaCalls.concat(call)
+        });
+
+        conn.on("data", function(data) {
+          // Will print 'hi!'
+          console.log(data);
+        });
+      });
+    } else {
+      this.state.peerCons.forEach(conn => {
+        conn.close();
+      });
+      this.state.peerMediaCalls.forEach(call => {
+        call.close();
+      });
+
+      this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
+    }
   }
   render() {
     return (
@@ -126,8 +161,8 @@ class SetupWebcam extends Component {
         <Jumbotron className="jumbotron-dark jumbotron-setup">
           <Container>
             <Row>
-              <Col xs={0} sm={1}></Col>
-              <Col xs={12} sm={10}>
+              <Col xs={0}></Col>
+              <Col sm={12} lg={9}>
                 <h2>
                   {!this.state.isRecording ? "Setup Your Security Cam" : "LIVE"}
                 </h2>
@@ -148,17 +183,8 @@ class SetupWebcam extends Component {
                 ) : (
                   ""
                 )}
-                {!this.state.waitingForUserAccept &&
-                this.state.loadingFaceDetection ? (
+                {this.state.loadingFaceDetection ? (
                   <div className="webcam-spinner">
-                    <Spinner
-                      animation="border"
-                      className="webcam-spinner-text"
-                      variant="primary"
-                      role="status"
-                    >
-                      <span className="sr-only"></span>
-                    </Spinner>
                     <div className="webcam-spinner-text">
                       Loading facial detection data...
                     </div>
@@ -220,11 +246,12 @@ class SetupWebcam extends Component {
                     <div className="setup-button">
                       <Button
                         className={"record-button"}
-                        onClick={this.handleBeginRecord}
+                        onClick={this.handleToggleRecord}
                         variant={!this.state.isRecording ? "primary" : "danger"}
-                        disabled={this.state.isRecording}
                       >
-                        {!this.state.isRecording ? "Start Recording" : "LIVE"}
+                        {!this.state.isRecording
+                          ? "Arm System"
+                          : "Disarm System "}
 
                         {this.state.isLoading ? (
                           <Spinner
@@ -242,7 +269,34 @@ class SetupWebcam extends Component {
                   ""
                 )}
               </Col>
-              <Col xs={0} sm={1}></Col>
+              <Col lg={3} sm={12}>
+                {!this.state.userDenied &&
+                !this.state.waitingForUserAccept &
+                  !this.state.loadingFaceDetection ? (
+                  <div className="status-readout">
+                    <div className="status-readout-heading">SYSTEM STATUS</div>
+
+                    <div>
+                      {this.state.isRecording ? (
+                        <div>
+                          <div className="status-readout-text">
+                            Currently {this.state.peerMediaCalls.length} active
+                          viewers watching this stream
+                          </div>
+                          <div className="status-readout-text">
+                            {!this.state.movementDetected ? "No movement detected" : " Movement in the system has been spotted"}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="status-readout-text">Not armed</div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+              </Col>
+              <Col xs={0}></Col>
             </Row>
           </Container>
         </Jumbotron>

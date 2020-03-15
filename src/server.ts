@@ -57,5 +57,5 @@ class EyeSpyServer extends Server {
 
 const exampleServer = new EyeSpyServer();
 let envPort = process.env.PORT;
-let port = parseInt((envPort) || "3000");
+let port = parseInt((envPort) || "3001");
 exampleServer.start(port);
