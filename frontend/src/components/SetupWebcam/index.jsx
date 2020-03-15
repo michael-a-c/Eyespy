@@ -206,7 +206,7 @@ class SetupWebcam extends Component {
                         to={`/watch/${this.state.peerId}`}
                         target="_blank"
                       >
-                        {`${window.location}/watch/${this.state.peerId}`}
+                        {`${window.location.hostname}/watch/${this.state.peerId}`}
                       </Link>
                     </div>
                   </FadeIn>
