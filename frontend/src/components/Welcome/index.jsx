@@ -11,13 +11,23 @@ import { connect } from "react-redux";
 
 import "./styles.scss";
 function StartStream(props) {
-  return <div className="stream-start">
-    <h2>Start A Stream</h2>
-    <div>
-      To setup a security camera, start here.
-      <div ><Button className="stream-start-button"> Start</Button></div>
+  return (
+    <div className="stream-start">
+      <h2>Start A Stream</h2>
+      <div>
+        To setup a security camera, start here.
+        <div>
+          <Link
+            className="webcam-link-item"
+            to={`/record`}
+            target="_blank"
+          >
+            <Button className="stream-start-button"> Start</Button>
+          </Link>
+        </div>
+      </div>
     </div>
-    </div>;
+  );
 }
 export class Welcome extends Component {
   constructor(props) {

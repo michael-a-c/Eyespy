@@ -38,6 +38,26 @@ let Requests = {
       return err;
 
     }
+  },
+  startStream: async function(request){
+    return await this.requestBody("POST", "/api/stream/start", request)
+
+  },
+
+  stopStream: async function(request){
+      return await this.requestBody("POST", "/api/stream/stop", request)
+  },
+
+  getUserStreams: async function(){
+    try{
+      const response = await fetch("/api/stream/list")
+      if (!response.ok) { throw response; }
+      let data = response.json();
+      return data;
+
+    } catch(err){
+      return err;
+    }
   }
 
 }

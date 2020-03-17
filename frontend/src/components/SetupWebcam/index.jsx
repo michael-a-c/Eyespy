@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import * as faceapi from "face-api.js";
 import PasswordModal from "../PasswordModal";
 import "./styles.scss";
+import Requests from "../../utils/requests.js";
 
 const { Formik } = require("formik");
 const yup = require("yup");
@@ -25,7 +26,32 @@ const schema = yup.object({
   push: yup.bool("Type Error"),
   public: yup.bool("Type Error")
 });
+function ModalController(props) {
+  const [show, setShow] = useState(true);
+  const [passwordError, setPasswordError] = useState(null);
 
+  const handleClose = (password) => {
+    let req = {
+      username:props.username,
+      password:password,
+      peerId: props.peerId
+    }
+    Requests.stopStream(req).then((res) => {
+      if(res && res.status == "401"){
+        setPasswordError("Invalid Password");
+        setShow(true);
+      } else if(res && res.status) {
+        setPasswordError("Server Error");
+        setShow(true);
+      } else if (res && !res.status) {
+        setPasswordError(null);
+        setShow(false);
+        props.callback();
+      }
+    })
+  };
+  return ( <PasswordModal show={show} handleClose={handleClose} error={passwordError}/> );
+}
 class SetupWebcam extends Component {
   constructor(props) {
     super(props);
@@ -52,7 +78,8 @@ class SetupWebcam extends Component {
       loadingFaceDetection: true,
       peerCons: [],
       peerMediaCalls: [],
-      movementDetected: false
+      movementDetected: false,
+      serverError:false
     };
   }
   componentDidMount() {
@@ -127,9 +154,8 @@ class SetupWebcam extends Component {
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
-  handleToggleRecord() {
+  handleToggleRecord(subReq) {
     if (!this.state.isRecording) {
-      // validate form
       // start peer stuff
       let peer = new Peer();
       let parent = this;
@@ -137,11 +163,38 @@ class SetupWebcam extends Component {
 
       peer.on("open", function(id) {
         console.log("My peer ID is: " + id);
-
-        parent.setState({
-          isRecording: true,
+        let req = {
+          title: subReq.title,
+          device: "placeHolder",
           peerId: id,
-          isLoading: false
+          username: parent.props.username,
+          streamingOptions: {
+            sms: subReq.sms,
+            push: subReq.push,
+            publicView: subReq.public
+          }
+        };
+        console.log(req);
+        Requests.startStream(req).then(res => {
+          if (res && res.status && res.status != "200") {
+            console.log(res);
+            parent.setState({
+              isRecording: false,
+              peerId: null,
+              serverError:true,
+              isLoading: false
+            });
+          } else if (res && !res.status) {
+            console.log("success");
+
+            parent.setState({
+              isRecording: true,
+              peerId: id,
+              isLoading: false,
+              serverError:false,
+
+            });
+          }
         });
       });
 
@@ -159,6 +212,9 @@ class SetupWebcam extends Component {
 
         conn.on("data", function(data) {
           // Will print 'hi!'
+          if(data.action == "STOP"){
+            parent.stopStreaming();
+          }
           console.log(data);
         });
       });
@@ -357,11 +413,7 @@ class SetupWebcam extends Component {
                 ) : (
                   ""
                 )}
-                <PasswordModal
-                  show={this.state.shouldRenderPasswordModal}
-                  handleClose={this.stopStreaming}
-                />
-
+                {(this.state.shouldRenderPasswordModal) ? <ModalController username={this.props.username} peerId={this.state.peerId}  callback={this.stopStreaming}/> : ""}
                 {this.state.isRecording ? (
                   <FadeIn>
                     <div className="webcam-link">

@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 
 @Controller('api/stream')
 export class StreamingController {
-    @Post('list')
+    @Get('list')
     @Middleware(isAuthenticated)
     private list(req: Request, res:Response){
         Logger.Info(req.url);
@@ -48,18 +48,20 @@ export class StreamingController {
                 return res.status(NOT_FOUND).json({ "message": "user not found" }).end();
             } else {
                 bcrypt.compare(stopStreamingRequest.password, result[0].password , function (err:any, valid:boolean) {
-                    if (err) return res.status(INTERNAL_SERVER_ERROR).json(err);
-                    if (!valid) return res.status(UNAUTHORIZED).json({ "message": "access denied" });
+                    if (err) return res.status(INTERNAL_SERVER_ERROR).json(err).end();
+                    if (!valid) return res.status(UNAUTHORIZED).end();
+                    // 3. delete active stream
+                    Stream.findOneAndDelete({username: stopStreamingRequest.username, peerId: stopStreamingRequest.peerId}, (err:any, dbRes:any) => {
+                        if (err) return res.status(BAD_REQUEST).json(err).end();
+
+                        if(!dbRes) {
+                            return res.status(NOT_FOUND).end("No such stream");
+                        }
+                        return res.json(dbRes).end();
+                    });
                 });
             }
-            // 3. delete active stream
-            Stream.findOneAndDelete({username: stopStreamingRequest.username, peerId: stopStreamingRequest.peerId}, (err:any, dbRes:any) => {
-                if(!dbRes) {
-                    return res.status(NOT_FOUND).end("No such stream"); 
-                }
-                if (err) return res.status(BAD_REQUEST).json(err);
-                return res.json(dbRes);
-            });
+
         });
     }
 

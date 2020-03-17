@@ -71,7 +71,7 @@ class App extends React.Component {
             <AccountInfo />
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/record">
-            <SetupWebcam />
+            <SetupWebcam username={this.props.username}/>
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} path="/watch/:id" component={Watch} />
           <Route exact path="/">
