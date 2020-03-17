@@ -6,12 +6,12 @@ import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Webcam from "react-webcam";
-import { useState } from "react";
 import FadeIn from "react-fade-in";
 import Spinner from "react-bootstrap/Spinner";
 import Peer from "peerjs";
 import { Link } from "react-router-dom";
 import * as faceapi from "face-api.js";
+import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 
 const { Formik } = require("formik");
@@ -20,71 +20,11 @@ const ref = React.createRef();
 const canvasRef = React.createRef();
 
 const schema = yup.object({
-  device: yup.string().required("Device is required!"),
   title: yup.string().required("Title is required"),
-  sms: yup.bool(),
-  push: yup.bool()
+  sms: yup.bool("Type Error"),
+  push: yup.bool("Type Error"),
+  public: yup.bool("Type Error")
 });
-
-function SetupForm(props) {
-  const [validated, setValidated] = useState(false);
-
-  const handleSubmit = event => {
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    setValidated(true);
-  };
-  return (
-    <div className="stream-form">
-      <h3>Stream Info</h3>
-      <Formik
-        validationSchema={schema}
-        onSubmit={handleSubmit}
-        initialValues={{
-          title: "",
-          public:true,
-          sms:true,
-          push:true
-        }}
-      >
-        {({ handleSubmit, handleChange, values, touched, errors }) => (
-          <Form noValidate onSubmit={handleSubmit}>
-            <Form.Group required controlId="formTitle">
-              <Form.Label>Title</Form.Label>
-              <Form.Control
-                required
-                type="text"
-                name="title"
-                placeholder="Living Room 1"
-                value={values.title}
-                onChange={handleChange}
-                isInvalid={touched.title && !!errors.title}
-              />
-              <Form.Control.Feedback type="invalid">
-                Please specify a title.
-              </Form.Control.Feedback>
-            </Form.Group>
-            <div className="form-checkmarks">
-              <Form.Group>
-                <Form.Check onChange={handleChange}  type="switch" label="Public" isInvalid={false}/>
-              </Form.Group>
-              <Form.Group>
-                <Form.Check  onChange={handleChange} type="switch" label="Notify with SMS" value={values.sms}  />
-              </Form.Group>
-              <Form.Group>
-                <Form.Check  onChange={handleChange} type="switch" label="Notify with Push Notification" value={values.push} />
-              </Form.Group>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    </div>
-  );
-}
 
 class SetupWebcam extends Component {
   constructor(props) {
@@ -95,6 +35,7 @@ class SetupWebcam extends Component {
     this.handleToggleRecord = this.handleToggleRecord.bind(this);
     this.loadFacialDetection = this.loadFacialDetection.bind(this);
     this.doFacialDetection = this.doFacialDetection.bind(this);
+    this.stopStreaming = this.stopStreaming.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -107,6 +48,7 @@ class SetupWebcam extends Component {
       isLoading: false,
       userDenied: false,
       peerId: false,
+      shouldRenderPasswordModal: false,
       loadingFaceDetection: true,
       peerCons: [],
       peerMediaCalls: [],
@@ -117,7 +59,7 @@ class SetupWebcam extends Component {
     this.loadFacialDetection()
       .then(() => {
         this.setState({ loadingFaceDetection: false });
-        let timer = setInterval(this.doFacialDetection, 500);
+        let timer = setInterval(this.doFacialDetection, 1000);
         this.setState({ timer: timer });
       })
       .catch(e => {
@@ -147,7 +89,9 @@ class SetupWebcam extends Component {
         ref.current.video,
         true
       );
-      this.setState({ movementDetected: true });
+      if (!this.state.movementDetected) {
+        this.setState({ movementDetected: true });
+      }
 
       faceapi.draw.drawDetections(
         canvasRef.current,
@@ -165,7 +109,9 @@ class SetupWebcam extends Component {
       canvasRef.current
         .getContext("2d")
         .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      this.setState({ movementDetected: false });
+      if (this.state.movementDetected) {
+        this.setState({ movementDetected: false });
+      }
     }
   }
 
@@ -183,6 +129,8 @@ class SetupWebcam extends Component {
 
   handleToggleRecord() {
     if (!this.state.isRecording) {
+      // validate form
+      // start peer stuff
       let peer = new Peer();
       let parent = this;
       this.setState({ isLoading: true });
@@ -215,15 +163,21 @@ class SetupWebcam extends Component {
         });
       });
     } else {
-      this.state.peerCons.forEach(conn => {
-        conn.close();
-      });
-      this.state.peerMediaCalls.forEach(call => {
-        call.close();
-      });
-
-      this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
+      // render modal
+      this.setState({ shouldRenderPasswordModal: true });
     }
+  }
+  stopStreaming() {
+    this.setState({ shouldRenderPasswordModal: false });
+
+    this.state.peerCons.forEach(conn => {
+      conn.close();
+    });
+    this.state.peerMediaCalls.forEach(call => {
+      call.close();
+    });
+
+    this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
   }
   render() {
     return (
@@ -291,7 +245,123 @@ class SetupWebcam extends Component {
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
                 </div>
-                <SetupForm />
+                {!this.state.userDenied &&
+                !this.state.waitingForUserAccept &
+                  !this.state.loadingFaceDetection ? (
+                  <FadeIn>
+                    <div className="stream-form">
+                      <h3>Stream Info</h3>
+                      <Formik
+                        validationSchema={schema}
+                        onSubmit={this.handleToggleRecord}
+                        initialValues={{
+                          title: "",
+                          public: true,
+                          sms: true,
+                          push: true
+                        }}
+                      >
+                        {({
+                          handleSubmit,
+                          handleChange,
+                          values,
+                          touched,
+                          errors
+                        }) => (
+                          <Form noValidate onSubmit={handleSubmit}>
+                            <Form.Group required controlId="formTitle">
+                              <Form.Label>Title</Form.Label>
+                              <Form.Control
+                                required
+                                type="text"
+                                name="title"
+                                placeholder="Living Room 1"
+                                value={values.title}
+                                onChange={handleChange}
+                                disabled={this.state.isRecording}
+                                isInvalid={touched.title && !!errors.title}
+                              />
+                              <Form.Control.Feedback type="invalid">
+                                Please specify a title.
+                              </Form.Control.Feedback>
+                            </Form.Group>
+                            <div className="form-checkmarks">
+                              <Form.Group>
+                                <Form.Check
+                                  onChange={handleChange}
+                                  type="switch"
+                                  name="public"
+                                  disabled={this.state.isRecording}
+                                  label="Public"
+                                  id="public"
+                                  checked={values.public}
+                                  isInvalid={touched.public && !!errors.public}
+                                />
+                              </Form.Group>
+                              <Form.Group>
+                                <Form.Check
+                                  onChange={handleChange}
+                                  type="switch"
+                                  id="sms"
+                                  name="sms"
+                                  label="Notify with SMS"
+                                  checked={values.sms}
+                                  disabled={this.state.isRecording}
+                                  isInvalid={touched.sms && !!errors.sms}
+                                />
+                              </Form.Group>
+                              <Form.Group>
+                                <Form.Check
+                                  onChange={handleChange}
+                                  id="push"
+                                  type="switch"
+                                  name="push"
+                                  label="Notify with Push Notification"
+                                  disabled={this.state.isRecording}
+                                  checked={values.push}
+                                  isInvalid={touched.push && !!errors.push}
+                                />
+                              </Form.Group>
+                            </div>
+                            <FadeIn>
+                              <div className="setup-button">
+                                <Button
+                                  className="record-button"
+                                  type="submit"
+                                  variant={
+                                    !this.state.isRecording
+                                      ? "primary"
+                                      : "danger"
+                                  }
+                                >
+                                  {!this.state.isRecording
+                                    ? "Arm System"
+                                    : "Disarm System "}
+                                  {this.state.isLoading ? (
+                                    <Spinner
+                                      className={"button-spinner "}
+                                      animation="border"
+                                      variant="primary"
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
+                                </Button>
+                              </div>
+                            </FadeIn>
+                          </Form>
+                        )}
+                      </Formik>
+                    </div>
+                  </FadeIn>
+                ) : (
+                  ""
+                )}
+                <PasswordModal
+                  show={this.state.shouldRenderPasswordModal}
+                  handleClose={this.stopStreaming}
+                />
+
                 {this.state.isRecording ? (
                   <FadeIn>
                     <div className="webcam-link">
@@ -305,35 +375,6 @@ class SetupWebcam extends Component {
                       >
                         {`${window.location.hostname}/watch/${this.state.peerId}`}
                       </Link>
-                    </div>
-                  </FadeIn>
-                ) : (
-                  ""
-                )}
-                {!this.state.userDenied &&
-                !this.state.waitingForUserAccept &
-                  !this.state.loadingFaceDetection ? (
-                  <FadeIn>
-                    <div className="setup-button">
-                      <Button
-                        className={"record-button"}
-                        onClick={this.handleToggleRecord}
-                        variant={!this.state.isRecording ? "primary" : "danger"}
-                      >
-                        {!this.state.isRecording
-                          ? "Arm System"
-                          : "Disarm System "}
-
-                        {this.state.isLoading ? (
-                          <Spinner
-                            className={"button-spinner "}
-                            animation="border"
-                            variant="primary"
-                          />
-                        ) : (
-                          ""
-                        )}
-                      </Button>
                     </div>
                   </FadeIn>
                 ) : (
