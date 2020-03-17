@@ -1,0 +1,56 @@
+@import "../../style/main.scss";
+
+.streams-wrapper{
+    background-color: $shade-color;
+    color:white;
+    padding:25px;
+    width:100%;
+    margin:25px;
+    @include for-xl {
+        margin-top: 100px;
+
+      }
+    border-radius: 5px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+.stream{
+    width:100%;
+    border-radius: 10px;
+    margin:5px;
+    padding:15px;
+    box-shadow: black;
+    align-self: center;
+    background-color: #272727;
+}
+.stream-info{
+    width:100%;
+    display: flex;
+    padding:5px;
+    justify-content: space-between;
+    border-bottom: solid rgb(196, 196, 196);
+ ;
+}
+.stream-title{
+    font-size: large;
+
+}
+.stream-started{
+    font-size: x-small;
+}
+
+.stream-info-2{
+    display:flex;
+    margin-top: 10px;
+    width: 100%;
+    padding:10px;
+    justify-content: space-between;
+}
+.stream-buttons{
+    width:100%;
+    display: flex;
+    justify-content: space-between;
+    padding:15px;
+}

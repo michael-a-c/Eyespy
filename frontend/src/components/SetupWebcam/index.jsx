@@ -3,18 +3,88 @@ import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
+import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Webcam from "react-webcam";
+import { useState } from "react";
 import FadeIn from "react-fade-in";
 import Spinner from "react-bootstrap/Spinner";
 import Peer from "peerjs";
 import { Link } from "react-router-dom";
 import * as faceapi from "face-api.js";
-
 import "./styles.scss";
 
+const { Formik } = require("formik");
+const yup = require("yup");
 const ref = React.createRef();
 const canvasRef = React.createRef();
+
+const schema = yup.object({
+  device: yup.string().required("Device is required!"),
+  title: yup.string().required("Title is required"),
+  sms: yup.bool(),
+  push: yup.bool()
+});
+
+function SetupForm(props) {
+  const [validated, setValidated] = useState(false);
+
+  const handleSubmit = event => {
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    setValidated(true);
+  };
+  return (
+    <div className="stream-form">
+      <h3>Stream Info</h3>
+      <Formik
+        validationSchema={schema}
+        onSubmit={handleSubmit}
+        initialValues={{
+          title: "",
+          public:true,
+          sms:true,
+          push:true
+        }}
+      >
+        {({ handleSubmit, handleChange, values, touched, errors }) => (
+          <Form noValidate onSubmit={handleSubmit}>
+            <Form.Group required controlId="formTitle">
+              <Form.Label>Title</Form.Label>
+              <Form.Control
+                required
+                type="text"
+                name="title"
+                placeholder="Living Room 1"
+                value={values.title}
+                onChange={handleChange}
+                isInvalid={touched.title && !!errors.title}
+              />
+              <Form.Control.Feedback type="invalid">
+                Please specify a title.
+              </Form.Control.Feedback>
+            </Form.Group>
+            <div className="form-checkmarks">
+              <Form.Group>
+                <Form.Check onChange={handleChange}  type="switch" label="Public" isInvalid={false}/>
+              </Form.Group>
+              <Form.Group>
+                <Form.Check  onChange={handleChange} type="switch" label="Notify with SMS" value={values.sms}  />
+              </Form.Group>
+              <Form.Group>
+                <Form.Check  onChange={handleChange} type="switch" label="Notify with Push Notification" value={values.push} />
+              </Form.Group>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+}
 
 class SetupWebcam extends Component {
   constructor(props) {
@@ -77,25 +147,25 @@ class SetupWebcam extends Component {
         ref.current.video,
         true
       );
-      this.setState({movementDetected:true});
+      this.setState({ movementDetected: true });
 
       faceapi.draw.drawDetections(
         canvasRef.current,
         faceapi.resizeResults(result, dims)
       );
-      this.state.peerCons.forEach((conn) => {
+      this.state.peerCons.forEach(conn => {
         conn.send({
-          "event":"movementDetected",
-          "dims": JSON.stringify(dims),
-          "faceData":JSON.stringify(result)
+          event: "movementDetected",
+          dims: JSON.stringify(dims),
+          faceData: JSON.stringify(result)
         });
-      })
+      });
     } else {
       // no detection
       canvasRef.current
         .getContext("2d")
         .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        this.setState({movementDetected:false});
+      this.setState({ movementDetected: false });
     }
   }
 
@@ -221,6 +291,7 @@ class SetupWebcam extends Component {
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
                 </div>
+                <SetupForm />
                 {this.state.isRecording ? (
                   <FadeIn>
                     <div className="webcam-link">
@@ -276,15 +347,17 @@ class SetupWebcam extends Component {
                   <div className="status-readout">
                     <div className="status-readout-heading">SYSTEM STATUS</div>
 
-                    <div>
+                    <div className="status-readout-content">
                       {this.state.isRecording ? (
                         <div>
                           <div className="status-readout-text">
                             Currently {this.state.peerMediaCalls.length} active
-                          viewers watching this stream
+                            viewers watching this stream
                           </div>
                           <div className="status-readout-text">
-                            {!this.state.movementDetected ? "No movement detected" : " Movement in the system has been spotted"}
+                            {!this.state.movementDetected
+                              ? "No movement detected"
+                              : " Movement in the system has been spotted"}
                           </div>
                         </div>
                       ) : (
