@@ -47,10 +47,72 @@ class UpdateUserRequest{
     };
 }
 
+class StreamingOptions{
+    publicView:boolean;
+    sms:boolean;
+    push:boolean;
+
+    constructor(publicView: boolean, sms: boolean, push: boolean) {
+        console.log("here");
+        if (!publicView || !sms || !push) throw new Error("INVALID REQUEST BODY")
+        this.publicView = publicView;
+        this.sms = sms;
+        this.push = push;
+    };
+}
+
+class StartStreamingRequest{
+    username : string;
+    peerId: string;
+    streamingOptions : StreamingOptions;
+    device: string;
+
+    constructor(username:string, peerId: string, device: string, streamingOptions: StreamingOptions){
+        this.username = username;
+        this.streamingOptions = streamingOptions;
+        this.peerId = peerId;
+        this.device = device;
+    }
+}
+class StartStreamingRequestMaker {
+    static create(input: StartStreamingRequest) {
+        if((input.streamingOptions.publicView === null) || (input.streamingOptions.push === null)  || (input.streamingOptions.sms === null) ){
+            throw new Error("INVALID REQUEST BODY");
+        }
+        return new StartStreamingRequest(input.username, input.peerId,  input.device, input.streamingOptions);
+    }
+}
+
+class StopStreamingRequest{
+    username : string;
+    peerId: string;
+    password: string;
+
+    constructor(username:string, peerId: string, password: string){
+        this.username = username;
+        this.peerId = peerId;
+        this.password = password;
+    }
+}
+
+class StopStreamingRequestMaker {
+    static create(input: StopStreamingRequest) {
+        if(!input.username || !input.peerId || !input.password ){
+            throw new Error("INVALID REQUEST BODY");
+        }
+        return new StopStreamingRequest(input.username, input.peerId, input.password);
+    }
+}
+
 export {
     SignupRequest,
     SignupRequestMaker,
     SigninRequest,
     SigninRequestMaker,
-    UpdateUserRequest
+    UpdateUserRequest,
+    StartStreamingRequest,
+    StreamingOptions, 
+    StartStreamingRequestMaker,
+    StopStreamingRequest,
+    StopStreamingRequestMaker
  }
