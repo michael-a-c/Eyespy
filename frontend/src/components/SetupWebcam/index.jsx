@@ -68,6 +68,7 @@ class SetupWebcam extends Component {
     this.loadFacialDetection = this.loadFacialDetection.bind(this);
     this.doFacialDetection = this.doFacialDetection.bind(this);
     this.stopStreaming = this.stopStreaming.bind(this);
+    this.sendNotifications = this.sendNotifications.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -86,6 +87,7 @@ class SetupWebcam extends Component {
       peerMediaCalls: [],
       movementDetected: false,
       serverError: false
+
     };
   }
   componentDidMount() {
@@ -100,10 +102,29 @@ class SetupWebcam extends Component {
       });
   }
 
+  // Send notifications for logged in user
+  sendNotifications(options) {
+    let newBody = {
+      username: this.props.username,
+      title: options.title,
+      body: options.body,
+      image: "" //Persons face?
+    }
+    return fetch(`api/serviceworker/sendnotifications`, {
+      method: 'POST',
+      body: JSON.stringify(newBody),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+
   componentWillUnmount() {
     // use intervalId from the state to clear the interval
     clearInterval(this.state.timer);
   }
+
+
 
   async loadFacialDetection() {
     await faceapi.nets.ssdMobilenetv1.load("/models");
@@ -124,12 +145,11 @@ class SetupWebcam extends Component {
       );
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
-
-        /**
-         * Sean Put Stuff Here
-         * Send Movement detected notification
-         * (Simple Backend Request)
-         */
+        console.log("AHHH");
+        this.sendNotifications({
+          title: "My Le title",
+          body: "SPAAAAAAAAAAAMMMMM"
+        });
       }
 
       faceapi.draw.drawDetections(
@@ -177,7 +197,7 @@ class SetupWebcam extends Component {
         console.log("My peer ID is: " + id);
         let req = {
           title: subReq.title,
-          device: "placeHolder",
+          device: "placeHolder", // Device that is doing le stream
           peerId: id,
           username: parent.props.username,
           streamingOptions: {

@@ -6,11 +6,10 @@ import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import FadeIn from 'react-fade-in';
 
-//https://itnext.io/react-push-notifications-with-hooks-d293d36f4836
 
-const publicVapidKey = 'BKdAf4wZ1P1Lj2eLC56FMAWBggkimcNWsM98Eznu0gBsiRLk_5QA3DwQ2PcumLSpGPHwxTBkhcItxl96vfSUIPI'
-const privateVapidKey = 'VTKDYGn12pvy2fHEYuy_GEWenDuQWsCXK9N56tQ5LMY'
 
+const publicVapidKey = 'BEzSSHLjWPAcmup8zTpIC4MQDRV_Cs7zKdM1B4Z5MfZZV8AmwnqUfjbsFcqEGpK17Rpel0yFUhO7LKwogiqm5Us'
+const privateVapidKey = 'y8fCm7zEQLnsMQsOH3nYbmD0fNIRQJPqpMb-oLAUu8o'
 
 
 function urlBase64ToUint8Array(base64String) {
@@ -36,7 +35,7 @@ export class PushNotifications extends Component {
         this.state = {
             triggerPermission: null,
             supported: "null",
-            temp: "null"
+            response: "Unknown"
         };
 
         this.handleSubscription = this.handleSubscription.bind(this);
@@ -61,14 +60,13 @@ export class PushNotifications extends Component {
         return;
     }
 
-    sendSubscription(subscription, options) {
-        console.log("sendSubscription")
+    sendNotification(subscription, options) {
         let newBody = {
             subscription: subscription,
             title: options.title,
             body: options.body
         }
-        return fetch(`api/serviceworker/subscribe`, {
+        return fetch(`api/serviceworker/sendnotification`, {
           method: 'POST',
           body: JSON.stringify(newBody),
           headers: {
@@ -77,7 +75,7 @@ export class PushNotifications extends Component {
         })
     }
 
-    subscribeUser(title, body) {
+    handleSendingNotifications(title, body) {
         if ('serviceWorker' in navigator) {
           
           navigator.serviceWorker.ready.then((registration) => {
@@ -94,10 +92,11 @@ export class PushNotifications extends Component {
                   userVisibleOnly: true,
                 }).then((newSubscription) =>{
                   console.log('New subscription added.')
-                  this.sendSubscription(newSubscription, {
+                  this.sendNotification(newSubscription, {
                     title: title,
                     body: body,
                 })
+                //// update this subscription to backend ??? (ERROR ATM)
                 }).catch(function(e) {
                   if (Notification.permission !== 'granted') {
                     console.log('Permission was not granted.')
@@ -107,10 +106,11 @@ export class PushNotifications extends Component {
                 })
               } else {
                 console.log('Existed subscription detected.')
-                this.sendSubscription(existedSubscription, {
+                this.sendNotification(existedSubscription, {
                     title: title,
                     body: body,
                 })
+                ////update this subscription to backend
               }
             })
           })
@@ -152,7 +152,7 @@ export class PushNotifications extends Component {
 
     async handleTriggerAllDevices() {
         //console.log(this.state.mySub);
-        this.subscribeUser("FACE DETECTED", "Unknown face detected on stream, dismiss?")
+        this.handleSendingNotifications("FACE DETECTED", "Unknown face detected on stream, dismiss?")
 
     }
 
@@ -179,14 +179,10 @@ export class PushNotifications extends Component {
                                     >
                                         Trigger Devices
                                     </Button>
+                                    <br/>Send Notification by Clicking Above
+                                    <br/>Response: {this.state.response}
                                 </Col>
-                                <Col xs={6} sm={4} md={6} xl={3} className="welcome-button">
-                                    <Button variant="primary"
-                                        onClick={this.handleSubscription}
-                                    >
-                                        Subscribe: {this.state.supported}
-                                    </Button>
-                                </Col>
+                                
                             </Row>
                         </FadeIn>
                     </Container>

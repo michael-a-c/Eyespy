@@ -48,6 +48,11 @@ let Requests = {
       return await this.requestBody("POST", "/api/stream/stop", request)
   },
 
+  adddevice: async function (request) {
+    return await this.requestBody("PUT", "/api/user/add-new-device", request)
+  },
+
+
   getUserStreams: async function(){
     try{
       const response = await fetch("/api/stream/list")
@@ -57,6 +62,19 @@ let Requests = {
 
     } catch(err){
       return err;
+    }
+  },
+
+  getdevices: async function () {
+    try {
+      const response = await fetch("/api/user/devices")
+      if (!response.ok) { throw response; }
+      let data = response.json();
+      return data;
+
+    } catch (err) {
+      return err;
+
     }
   }
 

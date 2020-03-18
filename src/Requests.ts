@@ -53,7 +53,6 @@ class StreamingOptions{
     push:boolean;
 
     constructor(publicView: boolean, sms: boolean, push: boolean) {
-        console.log("here");
         if (!publicView || !sms || !push) throw new Error("INVALID REQUEST BODY")
         this.publicView = publicView;
         this.sms = sms;
@@ -106,6 +105,29 @@ class StopStreamingRequestMaker {
     }
 }
 
+class DeviceAdditionRequest {
+    username: string;
+    deviceName: string;
+    subscription: any;
+    isRecording: boolean;
+    isReceivingNotifications: boolean;
+
+    constructor(username: string, deviceName: string, subscription: any, isRecording: boolean, isReceivingNotifications: boolean) {
+        if (!username || !deviceName) throw new Error("INVALID REQUEST BODY")
+        this.username = username;
+        this.deviceName = deviceName;
+        this.subscription = subscription;
+        this.isRecording = isRecording;
+        this.isReceivingNotifications = isReceivingNotifications
+    };
+}
+
+class DeviceAdditionRequestMaker {
+    static create(input: DeviceAdditionRequest) {
+        return new DeviceAdditionRequest(input.username, input.deviceName, input.subscription, input.isRecording, input.isReceivingNotifications);
+    }
+}
+
 export {
     SignupRequest,
     SignupRequestMaker,
@@ -116,5 +138,8 @@ export {
     StreamingOptions, 
     StartStreamingRequestMaker,
     StopStreamingRequest,
-    StopStreamingRequestMaker
+    StopStreamingRequestMaker,
+    DeviceAdditionRequest,
+    DeviceAdditionRequestMaker
+
  }

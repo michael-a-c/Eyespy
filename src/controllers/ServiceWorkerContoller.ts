@@ -11,8 +11,8 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const publicVapidKey = 'BKdAf4wZ1P1Lj2eLC56FMAWBggkimcNWsM98Eznu0gBsiRLk_5QA3DwQ2PcumLSpGPHwxTBkhcItxl96vfSUIPI';
-const privateVapidKey = 'VTKDYGn12pvy2fHEYuy_GEWenDuQWsCXK9N56tQ5LMY';
+const publicVapidKey = 'BKsJP1In7bQ355CoihscfwRyTEzPxdx0m6ejMfWGWzCMEejJrz8TVXZwtjYGftkMlOdey7FSnRHoZUiH-egxueg'
+const privateVapidKey = 'cNh_4IbL4S7u0hig_MGz-y8LEfFpxGgDkwcf4ohPTjg'
 
 const webpush = require('web-push')
 webpush.setVapidDetails('mailto: seanapplebaum@gmail.com', publicVapidKey, privateVapidKey)
@@ -21,8 +21,9 @@ webpush.setVapidDetails('mailto: seanapplebaum@gmail.com', publicVapidKey, priva
 @Controller('api/serviceworker')
 export default class ServiceWorkerController {
 
-    @Post('subscribe')
-    private subscribe(req: Request, res: Response) {
+    //SEND SINGLE NOTIF
+    @Post('sendnotification')
+    private sendnotification(req: Request, res: Response) {
         const subscription = req.body.subscription;
         const title = req.body.title;
         const body = req.body.body;
@@ -33,6 +34,7 @@ export default class ServiceWorkerController {
             body: body
         });
 
+        console.log(subscription)
 
         webpush.sendNotification(subscription, payload)
             .then((result: any) => console.log(result))
@@ -41,9 +43,47 @@ export default class ServiceWorkerController {
         res.status(200).json({ 'success': true });
     }
 
+    // SEND NOTIFICATIONS
+    @Post('sendnotifications')
+    private sendnotifications(req: Request, res: Response) {
+        const title = req.body.title;
+        const body = req.body.body;
+
+        console.log(req.body.username)
+
+        User.find({ username: req.body.username }).exec((err: NativeError, result: IUser[]) => {
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+            else if (result.length === 0) {
+                return res.status(NOT_FOUND).json({ "message": "user not found" }).end();
+            } else {
+                // Ping le devices
+                for (let i = 0; i < result[0].devices.length; i++) {
+                    if (result[0].devices[i].isReceivingNotifications) {
+                        let payload =
+                            JSON.stringify({
+                                title: title,
+                                body: body
+                            });
+
+                        webpush.sendNotification(result[0].devices[i].subscription, payload)
+                            .then((result: any) => console.log(result))
+                            .catch((e: any) => console.log(e.stack))
+                    }
+                }
+
+            }
+        });
+
+
+        res.status(200).json({ 'success': true, 'message': 'le pinged' });
+    }
+
     @Get('test')
     private test(req: Request, res: Response) {
         res.send('Hello world!');
     }
 
 }
+

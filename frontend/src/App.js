@@ -3,6 +3,7 @@ import About from "./components/About";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
+import Devices from "./components/Devices";
 import MainNavbar from "./components/MainNavBar";
 import PushNotifications from "./components/PushNotifications";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
@@ -69,6 +70,9 @@ class App extends React.Component {
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/account">
             <AccountInfo />
+          </PrivateRoute>
+          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/devices">
+            <Devices username={this.props.username}/>
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/record">
             <SetupWebcam username={this.props.username}/>

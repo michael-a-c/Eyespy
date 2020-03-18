@@ -54,7 +54,7 @@ class MainNavBar extends Component {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
             <Nav.Link href="/about">About</Nav.Link>
-            <Nav.Link href="#link">Devices</Nav.Link>
+            <Nav.Link href="/devices">Devices</Nav.Link>
             <Nav.Link href="/pushnotifications">Push Notifications (Beta)</Nav.Link>
           </Nav>
         </Navbar.Collapse>

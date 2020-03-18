@@ -20,6 +20,7 @@ self.addEventListener('push', event => {
       actions: actions,
       requireInteraction: true
     }
+    console.log(event.data.json())
     event.waitUntil(
       self.registration.showNotification(data.title, options)
     );
