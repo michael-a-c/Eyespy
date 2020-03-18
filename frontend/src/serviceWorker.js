@@ -32,7 +32,9 @@ export function register(config) {
     }
 
     window.addEventListener('load', () => {
-      const swFileName = process.env.NODE_ENV === 'production' ? 'service-worker.js' : 'sw.js'
+      //const swFileName = process.env.NODE_ENV === 'production' ? 'service-worker.js' : 'sw.js'
+      const swFileName = 'sw.js'
+
       const swUrl = `${process.env.PUBLIC_URL}/${swFileName}`;
 
       if (isLocalhost) {
