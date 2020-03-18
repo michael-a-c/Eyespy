@@ -107,8 +107,7 @@ class SetupWebcam extends Component {
     let newBody = {
       username: this.props.username,
       title: options.title,
-      body: options.body,
-      image: "" //Persons face?
+      body: options.body
     }
     return fetch(`api/serviceworker/sendnotifications`, {
       method: 'POST',
@@ -145,10 +144,10 @@ class SetupWebcam extends Component {
       );
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
-        console.log("AHHH");
+
         this.sendNotifications({
-          title: "My Le title",
-          body: "SPAAAAAAAAAAAMMMMM"
+          title: "Face detected on stream",
+          body: "Click Live Watch to view"
         });
       }
 
@@ -226,11 +225,10 @@ class SetupWebcam extends Component {
               serverError: false
             });
 
-            /**
-             * Sean Put Stuff Here
-             * Send Start monitoring notification
-             * (Simple Backend Request)
-             */
+            parent.sendNotifications({
+              title: "Started a stream: "+res.title,
+              body: "Click Live Watch to view"
+            });
           }
         });
       });
@@ -272,11 +270,10 @@ class SetupWebcam extends Component {
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
 
-    /**
-     * Sean Put Stuff Here
-     * Send Stop monitoring notification
-     * (Simple Backend Request)
-     */
+    this.sendNotifications({
+      title: "Ended a stream",
+      body: "Click Live Watch to view"
+    });
   }
   render() {
     return (

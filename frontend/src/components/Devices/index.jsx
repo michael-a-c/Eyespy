@@ -17,8 +17,8 @@ import './styles.scss'
 const { Formik } = require("formik");
 const yup = require("yup");
 
-const publicVapidKey = 'BKsJP1In7bQ355CoihscfwRyTEzPxdx0m6ejMfWGWzCMEejJrz8TVXZwtjYGftkMlOdey7FSnRHoZUiH-egxueg'
-const privateVapidKey = 'cNh_4IbL4S7u0hig_MGz-y8LEfFpxGgDkwcf4ohPTjg'
+const publicVapidKey = 'BJQ8iD1NgY3xgdHuGCiJ4K__0pqq5f0Q8xNa22YBEpm2Tp_5HXbTBgvjNxp1DJ5q6NBZoPfS6ow3-eDuU1E37JI'
+const privateVapidKey = 'SE6CoB9hiAVgIc8E-SrI8iX8i1NstbAnw6H0coY5kiI'
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - base64String.length % 4) % 4)

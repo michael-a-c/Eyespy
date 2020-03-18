@@ -5,17 +5,17 @@ self.addEventListener('push', event => {
         {//<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
             action: 'good-action',
             title: 'Dismiss',
-            icon: '/good.jpg'
+            icon: '/good.png'
           },
         {//<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
             action: 'bad-action',
             title: 'THIS IS NOT OK',
-            icon: '/bad.jpg'
+            icon: '/bad.png'
           }
     ];
     const options = {
       body: data.body,
-      image: "/face4.jpg",
+      image: "/face3.jpg",
       icon: "/logo192.png",
       actions: actions,
       requireInteraction: true

@@ -8,9 +8,8 @@ import FadeIn from 'react-fade-in';
 
 
 
-const publicVapidKey = 'BEzSSHLjWPAcmup8zTpIC4MQDRV_Cs7zKdM1B4Z5MfZZV8AmwnqUfjbsFcqEGpK17Rpel0yFUhO7LKwogiqm5Us'
-const privateVapidKey = 'y8fCm7zEQLnsMQsOH3nYbmD0fNIRQJPqpMb-oLAUu8o'
-
+const publicVapidKey = 'BJQ8iD1NgY3xgdHuGCiJ4K__0pqq5f0Q8xNa22YBEpm2Tp_5HXbTBgvjNxp1DJ5q6NBZoPfS6ow3-eDuU1E37JI'
+const privateVapidKey = 'SE6CoB9hiAVgIc8E-SrI8iX8i1NstbAnw6H0coY5kiI'
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - base64String.length % 4) % 4)
