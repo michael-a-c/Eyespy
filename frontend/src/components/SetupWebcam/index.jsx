@@ -144,11 +144,12 @@ class SetupWebcam extends Component {
       );
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
-
-        this.sendNotifications({
-          title: "Face detected on stream",
-          body: "Click Live Watch to view"
-        });
+        if (this.state.isRecording) {
+          this.sendNotifications({
+            title: "Face detected on stream",
+            body: "Click Live Watch to view"
+          });
+        }
       }
 
       faceapi.draw.drawDetections(
