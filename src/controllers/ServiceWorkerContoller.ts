@@ -27,14 +27,21 @@ export default class ServiceWorkerController {
         const subscription = req.body.subscription;
         const title = req.body.title;
         const body = req.body.body;
+        const leftText = req.body.leftText;
+        const rightText = req.body.rightText;
+        const url = req.body.url;
 
         const payload = 
         JSON.stringify({
             title: title,
-            body: body
+            body: body,
+            data: {
+                leftText: leftText,
+                rightText: rightText,
+                url: url
+            }
         });
 
-        console.log(subscription)
 
         webpush.sendNotification(subscription, payload)
             .then((result: any) => console.log(result))
@@ -48,6 +55,9 @@ export default class ServiceWorkerController {
     private sendnotifications(req: Request, res: Response) {
         const title = req.body.title;
         const body = req.body.body;
+        const leftText = req.body.leftText;
+        const rightText = req.body.rightText;
+        const url = req.body.url;
 
         console.log(req.body.username)
 
@@ -64,7 +74,12 @@ export default class ServiceWorkerController {
                         let payload =
                             JSON.stringify({
                                 title: title,
-                                body: body
+                                body: body,
+                                data: {
+                                    leftText: leftText,
+                                    rightText: rightText,
+                                    url: url
+                                }
                             });
 
                         webpush.sendNotification(result[0].devices[i].subscription, payload)

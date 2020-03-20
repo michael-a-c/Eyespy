@@ -63,7 +63,10 @@ export class PushNotifications extends Component {
         let newBody = {
             subscription: subscription,
             title: options.title,
-            body: options.body
+            body: options.body,
+            leftText: "left",
+            rightText: "right",
+            url: options.url
         }
         return fetch(`api/serviceworker/sendnotification`, {
           method: 'POST',

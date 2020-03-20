@@ -1,15 +1,23 @@
 // WHEN A NOTIFICATION IS REQUESTED TO BE PUSHED
 self.addEventListener('push', event => {
     const data = event.data.json()
+    let leftText = data.data.leftText
+    if (!data.data.leftText) {
+      leftText = "N/A"
+    }
+    let rightText = data.data.rightText
+    if (!data.data.rightText) {
+      rightText = "N/A"
+    }
     const actions = [
         {//<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
             action: 'good-action',
-            title: 'Dismiss',
+            title: leftText,
             icon: '/good.png'
           },
         {//<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
             action: 'bad-action',
-            title: 'THIS IS NOT OK',
+            title: rightText,
             icon: '/bad.png'
           }
     ];
@@ -17,6 +25,7 @@ self.addEventListener('push', event => {
       body: data.body,
       image: "/face3.jpg",
       icon: "/logo192.png",
+      data: data.data.url,
       actions: actions,
       requireInteraction: true
     }
@@ -33,7 +42,7 @@ self.addEventListener('notificationclick', function(event) {
       console.log('Notification Click.');
       return;
     }
-
+    console.log("event:");
     console.log(event);
   
     switch (event.action) {
@@ -42,6 +51,9 @@ self.addEventListener('notificationclick', function(event) {
         break;
       case 'bad-action':
         console.log('table flip');
+        const url = event.notification.data
+        const promiseChain = clients.openWindow(url);
+        event.waitUntil(promiseChain);
         break;
       default:
         console.log(`Unknown action clicked: '${event.action}'`);
