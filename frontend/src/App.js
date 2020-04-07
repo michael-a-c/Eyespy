@@ -1,5 +1,6 @@
 import React from "react";
 import About from "./components/About";
+import Email from "./components/Email";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
@@ -67,6 +68,9 @@ class App extends React.Component {
           </Route>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/pushnotifications">
             <PushNotifications />
+          </PrivateRoute>
+          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/email">
+            <Email />
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/account">
             <AccountInfo />
