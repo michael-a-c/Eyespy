@@ -77,7 +77,7 @@ export class UserController {
     }
 
     @Put('add-new-device')
-    //@Middleware(isAuthenticated)
+    @Middleware(isAuthenticated)
     private adddevice(req: Request, res: Response) {
         Logger.Info(req.url);
         let DeviceAdditionRequest: any;
@@ -86,7 +86,7 @@ export class UserController {
         } catch (e) {
             return res.status(BAD_REQUEST).json(e.message)
         }
-        
+
         return User.find({ username: DeviceAdditionRequest.username }).exec((err: NativeError, result: IUser[]) => {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
@@ -115,11 +115,11 @@ export class UserController {
                 //Add the device to the user
                 result[0].devices.push(newDevice)
                 // Update the user with the new device
-                let query = {username: DeviceAdditionRequest.username}
-                let newvalue = {$set: {devices: result[0].devices}}
+                let query = { username: DeviceAdditionRequest.username }
+                let newvalue = { $set: { devices: result[0].devices } }
                 User.updateOne(query, newvalue, (err2, res2) => {
                     if (err2) return res.status(BAD_REQUEST).json(err2);
-                    return res.status(OK).json({"message": "Device saved to database"});
+                    return res.status(OK).json({ "message": "Device saved to database" });
                 });
             }
         });
@@ -138,22 +138,46 @@ export class UserController {
 
     }
 
-    @Put("record")
-    private record(req: Request, res: Response) {
+    @Put('remove-device')
+    private removedevice(req: Request, res: Response) {
         Logger.Info(req.url);
 
         if (!req.session!.user) {
             return res.status(BAD_REQUEST).json({ "message": "you're not signed in ya muppet" });
         }
 
-        let RecordDeviceRequest: any;
-        try {
-            RecordDeviceRequest = RecordDeviceRequest.create(req.body);
-        } catch (e) {
-            return res.status(BAD_REQUEST).json(e.message)
-        }
+        return User.find({ username: req.session!.user }).exec((err: NativeError, result: IUser[]) => {
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+            else if (result.length === 0) {
+                return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
+            } else {
+                // For each device check if its the one to be removed
 
-        return res.status(OK).json({"message": "Attempting to record device"});
+                //Check if device exists already
+                let deviceIndex = -1;
+
+                for (let i = 0; i < result[0].devices.length; i++) {
+                    if (result[0].devices[i].deviceName == req.body.deviceName) {
+                        deviceIndex = i;
+                    }
+                }
+
+                if (deviceIndex === -1) return res.status(CONFLICT).json({ "message": "Could not find the device" }).end();
+
+                // remove it
+                result[0].devices.splice(deviceIndex, 1);
+                // Update the user with the new device
+                let query = { username: req.session!.user }
+                let newvalue = { $set: { devices: result[0].devices } }
+                User.updateOne(query, newvalue, (err2, res2) => {
+                    if (err2) return res.status(BAD_REQUEST).json(err2);
+                    return res.status(OK).json({ "message": "Successfully removed the device" });
+                });
+            }
+
+        });
     }
 
     @Get("devices")
@@ -174,8 +198,8 @@ export class UserController {
                 return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
             } else {
                 //Return the users devices
-                return res.status(OK).json({ "message": "Successfully retrieved devices", "devices":result[0].devices });
-            }           
+                return res.status(OK).json({ "message": "Successfully retrieved devices", "devices": result[0].devices });
+            }
         });
     }
 

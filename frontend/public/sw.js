@@ -1,6 +1,11 @@
 // WHEN A NOTIFICATION IS REQUESTED TO BE PUSHED
 self.addEventListener('push', event => {
+    // Set up options from data
     const data = event.data.json()
+    let image = data.image
+    if (!data.image) {
+      image = ""
+    }
     let leftText = data.data.leftText
     if (!data.data.leftText) {
       leftText = "N/A"
@@ -11,19 +16,19 @@ self.addEventListener('push', event => {
     }
     const actions = [
         {//<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-            action: 'good-action',
+            action: 'dismiss-notification',
             title: leftText,
             icon: '/good.png'
           },
         {//<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-            action: 'bad-action',
+            action: 'live-view',
             title: rightText,
             icon: '/bad.png'
           }
     ];
     const options = {
       body: data.body,
-      image: "/face3.jpg",
+      image: image,
       icon: "/logo192.png",
       data: data.data.url,
       actions: actions,
@@ -46,11 +51,10 @@ self.addEventListener('notificationclick', function(event) {
     console.log(event);
   
     switch (event.action) {
-      case 'good-action':
-        console.log("yeye");
+      case 'dismiss-notification':
+        console.log("dismissed notification");
         break;
-      case 'bad-action':
-        console.log('table flip');
+      case 'live-view':
         const url = event.notification.data
         const promiseChain = clients.openWindow(url);
         event.waitUntil(promiseChain);

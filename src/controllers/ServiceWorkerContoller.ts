@@ -11,8 +11,10 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const publicVapidKey = 'BJQ8iD1NgY3xgdHuGCiJ4K__0pqq5f0Q8xNa22YBEpm2Tp_5HXbTBgvjNxp1DJ5q6NBZoPfS6ow3-eDuU1E37JI'
-const privateVapidKey = 'SE6CoB9hiAVgIc8E-SrI8iX8i1NstbAnw6H0coY5kiI'
+console.log("key: ",process.env.publicVapidKey)
+
+const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
+const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
 
 const webpush = require('web-push')
 webpush.setVapidDetails('mailto: seanapplebaum@gmail.com', publicVapidKey, privateVapidKey)

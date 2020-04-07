@@ -52,6 +52,10 @@ let Requests = {
     return await this.requestBody("PUT", "/api/user/add-new-device", request)
   },
 
+  removedevice: async function (request) {
+    return await this.requestBody("PUT", "/api/user/remove-device", request)
+  },
+
 
   getUserStreams: async function(){
     try{
