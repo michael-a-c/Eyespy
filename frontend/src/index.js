@@ -14,3 +14,6 @@ ReactDOM.render( <Provider store={store}><App /></Provider>, document.getElement
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.register();
+
+
+console.log("here")
