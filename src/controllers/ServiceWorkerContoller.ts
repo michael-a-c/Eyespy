@@ -11,8 +11,10 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const publicVapidKey = 'BJQ8iD1NgY3xgdHuGCiJ4K__0pqq5f0Q8xNa22YBEpm2Tp_5HXbTBgvjNxp1DJ5q6NBZoPfS6ow3-eDuU1E37JI'
-const privateVapidKey = 'SE6CoB9hiAVgIc8E-SrI8iX8i1NstbAnw6H0coY5kiI'
+console.log("key: ",process.env.publicVapidKey)
+
+const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
+const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
 
 const webpush = require('web-push')
 webpush.setVapidDetails('mailto: seanapplebaum@gmail.com', publicVapidKey, privateVapidKey)
@@ -27,14 +29,21 @@ export default class ServiceWorkerController {
         const subscription = req.body.subscription;
         const title = req.body.title;
         const body = req.body.body;
+        const leftText = req.body.leftText;
+        const rightText = req.body.rightText;
+        const url = req.body.url;
 
         const payload = 
         JSON.stringify({
             title: title,
-            body: body
+            body: body,
+            data: {
+                leftText: leftText,
+                rightText: rightText,
+                url: url
+            }
         });
 
-        console.log(subscription)
 
         webpush.sendNotification(subscription, payload)
             .then((result: any) => console.log(result))
@@ -48,6 +57,9 @@ export default class ServiceWorkerController {
     private sendnotifications(req: Request, res: Response) {
         const title = req.body.title;
         const body = req.body.body;
+        const leftText = req.body.leftText;
+        const rightText = req.body.rightText;
+        const url = req.body.url;
 
         console.log(req.body.username)
 
@@ -64,7 +76,12 @@ export default class ServiceWorkerController {
                         let payload =
                             JSON.stringify({
                                 title: title,
-                                body: body
+                                body: body,
+                                data: {
+                                    leftText: leftText,
+                                    rightText: rightText,
+                                    url: url
+                                }
                             });
 
                         webpush.sendNotification(result[0].devices[i].subscription, payload)

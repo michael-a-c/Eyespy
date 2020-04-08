@@ -107,7 +107,10 @@ class SetupWebcam extends Component {
     let newBody = {
       username: this.props.username,
       title: options.title,
-      body: options.body
+      body: options.body,
+      leftText: options.leftText,
+      rightText: options.rightText,
+      url: options.url
     }
     return fetch(`api/serviceworker/sendnotifications`, {
       method: 'POST',
@@ -147,7 +150,10 @@ class SetupWebcam extends Component {
         if (this.state.isRecording) {
           this.sendNotifications({
             title: "Face detected on stream",
-            body: "Click Live Watch to view"
+            body: "Click Live Watch to view",
+            leftText: "Dismiss Notification",
+            rightText: "Live Watch",
+            url: `/watch/${this.state.peerId}`
           });
         }
       }
@@ -228,7 +234,10 @@ class SetupWebcam extends Component {
 
             parent.sendNotifications({
               title: "Started a stream: "+res.title,
-              body: "Click Live Watch to view"
+              body: "Click Live Watch to view",
+              leftText: "Dismiss Notification",
+              rightText: "Live Watch",
+              url: `/watch/${parent.state.peerId}`
             });
           }
         });
@@ -273,7 +282,10 @@ class SetupWebcam extends Component {
 
     this.sendNotifications({
       title: "Ended a stream",
-      body: "Click Live Watch to view"
+      body: "Click \"Home Page\" to take you to your home page",
+      leftText: "Dismiss Notification",
+      rightText: "Home Page",
+      url: "/devices"
     });
   }
   render() {

@@ -6,10 +6,12 @@ import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import FadeIn from 'react-fade-in';
 
+require('dotenv').config();
 
+console.log("key: ",process.env.publicVapidKey)
 
-const publicVapidKey = 'BJQ8iD1NgY3xgdHuGCiJ4K__0pqq5f0Q8xNa22YBEpm2Tp_5HXbTBgvjNxp1DJ5q6NBZoPfS6ow3-eDuU1E37JI'
-const privateVapidKey = 'SE6CoB9hiAVgIc8E-SrI8iX8i1NstbAnw6H0coY5kiI'
+const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
+const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - base64String.length % 4) % 4)
@@ -63,7 +65,10 @@ export class PushNotifications extends Component {
         let newBody = {
             subscription: subscription,
             title: options.title,
-            body: options.body
+            body: options.body,
+            leftText: "left",
+            rightText: "right",
+            url: options.url
         }
         return fetch(`api/serviceworker/sendnotification`, {
           method: 'POST',
