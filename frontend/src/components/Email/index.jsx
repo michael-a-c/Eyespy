@@ -11,15 +11,7 @@ import { connect } from "react-redux";
 
 import "./styles.scss";
 
-let nodemailer = require('nodemailer');
-
-let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'eyespy978@gmail.com',
-        pass: 'snowden123'
-    }
-});
+let emailjs = require('emailjs')
 
 export class Email extends Component {
     constructor(props) {
@@ -30,23 +22,30 @@ export class Email extends Component {
 
     sendEmail() {
         console.log("sending email")
-        var mailOptions = {
-            from: 'eyespy978@gmail.com',
-            to: 'seanapplebaum@gmail.com',
-            subject: 'Security Breach',
-            text: 'Hi Sean,\n We have detected a security breach on your stream.\n Please click here to see the breach: *link here*'
-        };
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log(error);
-            } else {
-                console.log('Email sent: ' + info.response);
-            }
+        var email = require('emailjs');
+
+        var server = email.server.connect({
+            user: 'nodejsiscool@gmail.com',
+            password: 'stackoverflow',
+            host: 'smtp.gmail.com',
+            ssl: true
         });
+        /*
+        server.send({
+            text: 'Hey howdy',
+            from: 'NodeJS',
+            to: 'Wilson <wilson.balderrama@gmail.com>',
+            cc: '',
+            subject: 'Greetings'
+        }, function (err, message) {
+            console.log(err || message);
+        });*/
+
     }
 
     render() {
         return (
+
             <FadeIn>
                 <Jumbotron className="jumbotron-dark jumbotron-welcome">
                     <h1>EyeSpy</h1>
