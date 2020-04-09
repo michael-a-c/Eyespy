@@ -58,9 +58,14 @@ export class ScreenshotController {
         })
     }
 
-    @Get('list')
-    @Middleware(isAuthenticated)
+    @Get('list/:username')
+    //@Middleware(isAuthenticated)
     private list(req: Request, res: Response){
-
+        Screenshot.find({username : req.params.username}, (err, result) => {
+            if(err){
+                return res.status(INTERNAL_SERVER_ERROR).end(INTERNAL_SERVER_ERROR);
+            }
+            return res.json(result.map((screenshot) =>{ return ({"id": screenshot.id, "title": screenshot.title})}));
+        })
     }
 }
