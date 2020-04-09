@@ -12,6 +12,7 @@ import Spinner from "react-bootstrap/Spinner";
 import Peer from "peerjs";
 import { Link } from "react-router-dom";
 import * as faceapi from "face-api.js";
+import ListGroup from "react-bootstrap/ListGroup";
 import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
@@ -25,7 +26,7 @@ const schema = yup.object({
   title: yup.string().required("Title is required"),
   sms: yup.bool("Type Error"),
   push: yup.bool("Type Error"),
-  public: yup.bool("Type Error"),
+  email: yup.bool("Type Error"),
 });
 
 function WebcamSelect(props) {
@@ -44,6 +45,64 @@ function WebcamSelect(props) {
           }
         </Form.Control>
       </Form.Group>
+    </div>
+  );
+}
+
+function ControlPanel(props) {
+  return (
+    <div className="control-panel">
+      <h4 className="status-readout-heading">Control Panel</h4>
+      <div className="status-readout-heading control-panel-block">
+        <Button> Screen Shot </Button>{" "}
+      </div>
+      <div className="status-readout-heading control-panel-block">
+        <h4>Sensitivity Adjustment</h4>
+        <Form.Group controlId="formBasicRangeCustom">
+          <Form.Label>Facial Detection Sensitivity</Form.Label>
+          <Form.Control type="range" custom />
+        </Form.Group>
+        <Form.Group controlId="formBasicRangeCustom">
+          <Form.Label>Motion Detection Sensitivity</Form.Label>
+          <Form.Control type="range" custom />
+        </Form.Group>
+      </div>
+      <div className="status-readout-heading control-panel-block">
+        <div className="control-panel-heading"> Choose devices</div>
+
+        <div className="control-panel-subtext">
+          Chosen Devices will receive push notifications
+        </div>
+
+        <div className="devices-list">
+          <ListGroup variant="flush">
+            <ListGroup.Item className="devices-list-actual">
+              <Form.Group className="device-checkbox" controlId="t480">
+                <Form.Check type="checkbox" label="T480" />
+              </Form.Group>
+            </ListGroup.Item>
+            <ListGroup.Item className="devices-list-actual">
+              <Form.Group className="device-checkbox" controlId="iphone">
+                <Form.Check type="checkbox" label="IPhone" />
+              </Form.Group>
+            </ListGroup.Item>
+            <ListGroup.Item className="devices-list-actual">
+              <Form.Group className="device-checkbox" controlId="laptop2">
+                <Form.Check type="checkbox" label="Laptop 2" />
+              </Form.Group>
+            </ListGroup.Item>
+            <ListGroup.Item className="devices-list-actual">
+              <Form.Group className="device-checkbox" controlId="laptop2">
+                <Form.Check type="checkbox" label="Laptop 2" />
+              </Form.Group>
+            </ListGroup.Item><ListGroup.Item className="devices-list-actual">
+              <Form.Group className="device-checkbox" controlId="laptop2">
+                <Form.Check type="checkbox" label="Laptop 2" />
+              </Form.Group>
+            </ListGroup.Item>
+          </ListGroup>
+        </div>
+      </div>
     </div>
   );
 }
@@ -154,15 +213,15 @@ class SetupWebcam extends Component {
     let newBody = {
       title: options.title,
       body: options.body,
-      url: options.url
-    }
+      url: options.url,
+    };
     return fetch(`api/user/SMSalert`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(newBody),
       headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   componentWillUnmount() {
@@ -241,7 +300,7 @@ class SetupWebcam extends Component {
           this.sendSMSnotification({
             title: "Face detected on stream: ",
             body: "watch from here ",
-            url: `/watch/${this.state.peerId}`
+            url: `/watch/${this.state.peerId}`,
           });
         }
       }
@@ -281,7 +340,7 @@ class SetupWebcam extends Component {
   }
 
   doArmWait(subReq) {
-    this.setState({ armCounter: 10, countdownActive: true });
+    this.setState({ armCounter: 3, countdownActive: true });
     let armTimer = setInterval(() => {
       let counter = this.state.armCounter;
       counter -= 1;
@@ -289,7 +348,7 @@ class SetupWebcam extends Component {
       if (counter == 0) {
         clearInterval(this.state.armTimer);
         this.setState({ armCounter: 0, isLoading: true });
-        this.activateRecording(subReq)
+        this.activateRecording(subReq);
       } else {
         this.setState({ armCounter: counter });
       }
@@ -312,7 +371,7 @@ class SetupWebcam extends Component {
         streamingOptions: {
           sms: subReq.sms,
           push: subReq.push,
-          publicView: subReq.public,
+          email: subReq.email,
         },
       };
       console.log(req);
@@ -324,8 +383,7 @@ class SetupWebcam extends Component {
             peerId: null,
             serverError: true,
             isLoading: false,
-            countdownActive: false
-
+            countdownActive: false,
           });
         } else if (res && !res.status) {
           console.log("success");
@@ -335,7 +393,7 @@ class SetupWebcam extends Component {
             peerId: id,
             isLoading: false,
             serverError: false,
-            countdownActive: false
+            countdownActive: false,
           });
 
           parent.sendNotifications({
@@ -349,7 +407,7 @@ class SetupWebcam extends Component {
           parent.sendSMSnotification({
             title: "Started stream - " + res.title + ": ",
             body: "watch from here ",
-            url: `/watch/${parent.state.peerId}`
+            url: `/watch/${parent.state.peerId}`,
           });
         }
       });
@@ -399,7 +457,6 @@ class SetupWebcam extends Component {
   handleToggleRecord(subReq) {
     if (!this.state.isRecording) {
       this.doArmWait(subReq);
-
     } else {
       // render modal
       this.setState({ shouldRenderPasswordModal: true });
@@ -429,17 +486,19 @@ class SetupWebcam extends Component {
     this.sendSMSnotification({
       title: "Ended stream: ",
       body: "to return home, go here ",
-      url: "/devices"
+      url: "/devices",
     });
   }
   render() {
     return (
       <FadeIn>
-        <Jumbotron className="jumbotron-dark jumbotron-setup">
-          <Container>
+        <Jumbotron className="jumbotron-setup">
+          <Container fluid="true" className="main-container">
             <Row>
-              <Col xs={0}></Col>
-              <Col sm={12} lg={9}>
+              <Col xl={2}>
+                <ControlPanel />
+              </Col>
+              <Col lg={12} xl={8}>
                 <h2>
                   {!this.state.isRecording ? "Setup Your Security Cam" : "LIVE"}
                 </h2>
@@ -490,8 +549,6 @@ class SetupWebcam extends Component {
                     ref={ref}
                     className="webcam-actual"
                     screenshotFormat="image/jpeg"
-                    width={100 + "%"}
-                    height={100 + "%"}
                     videoConstraints={this.state.videoConstraints}
                     onUserMedia={this.handleStartCam}
                     onUserMediaError={this.handleUserDenied}
@@ -500,7 +557,7 @@ class SetupWebcam extends Component {
                   {this.state.countdownActive ? (
                     <div className="countdownOverlay">
                       <div className="countdownText">
-                       {<ReactTextTransition text={this.state.armCounter} />}
+                        {<ReactTextTransition text={this.state.armCounter} />}
                       </div>
                     </div>
                   ) : (
@@ -518,7 +575,7 @@ class SetupWebcam extends Component {
                         onSubmit={this.handleToggleRecord}
                         initialValues={{
                           title: "",
-                          public: true,
+                          email: true,
                           sms: true,
                           push: true,
                         }}
@@ -556,12 +613,12 @@ class SetupWebcam extends Component {
                                 <Form.Check
                                   onChange={handleChange}
                                   type="switch"
-                                  name="public"
+                                  name="email"
                                   disabled={this.state.isRecording}
-                                  label="Public"
-                                  id="public"
-                                  checked={values.public}
-                                  isInvalid={touched.public && !!errors.public}
+                                  label="Notify with Email"
+                                  id="email"
+                                  checked={values.email}
+                                  isInvalid={touched.email && !!errors.email}
                                 />
                               </Form.Group>
                               <Form.Group>
@@ -656,12 +713,12 @@ class SetupWebcam extends Component {
                   ""
                 )}
               </Col>
-              <Col lg={3} sm={12}>
+              <Col xl={2} lg={12}>
                 {!this.state.userDenied &&
                 !this.state.waitingForUserAccept &
                   !this.state.loadingFaceDetection ? (
                   <div className="status-readout">
-                    <div className="status-readout-heading">SYSTEM STATUS</div>
+                    <h4 className="status-readout-heading">System Status</h4>
 
                     <div className="status-readout-content">
                       {this.state.isRecording ? (
@@ -685,7 +742,6 @@ class SetupWebcam extends Component {
                   ""
                 )}
               </Col>
-              <Col xs={0}></Col>
             </Row>
           </Container>
         </Jumbotron>

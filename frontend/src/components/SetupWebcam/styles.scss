@@ -10,34 +10,46 @@
 .webcam-spinner-text {
   align-self: center;
 }
+
 .jumbotron-setup {
 
-  margin: 30px;
-  margin-left:100px;
-  margin-right:100px;
-
+  margin: 10px;
+  margin-left:50px;
+  background-color: #1f1f1f !important;
+  color: white !important;
+  margin-right:50px;
+  margin-bottom: 0 !important;
   @include for-sm {
     margin: 5px;
-    margin-top: 10px;
   }
   @include for-xs  {
     margin: 5px;
-    margin-top: 10px;
   }
+  padding: 1rem !important;
 }
 .status-readout{
-  margin-top:15px;
-  @include for-lg {
-    margin-top: 45px;
-  }
+
   background-color:#292929;
-  height:87%;  
+  height:100%;  
 
   border-radius:5px;
 }
 
 .status-readout-content{
   margin-top:10px
+}
+.control-panel{
+  background-color:#292929;
+  height: 100%;
+}
+.control-panel-block{
+  padding:1em !important;
+}
+.devices-list{
+  padding:0.2em;
+  border-radius: 5px;
+  max-height: 200px;
+  overflow-y: scroll;
 }
 .status-readout-heading{
   background-color:#292929;
@@ -58,12 +70,34 @@
 
 }
 
+.devices-list-actual{ 
+   background-color: #363636 !important;
+   text-align: left;
+   
+}
+.control-panel-heading{
+  font-size: 1.3rem;
+
+}
+.control-panel-subtext{
+  font-size: 0.8rem;
+}
 .form-checkmarks{
-  display:flex;
-  justify-content: space-between;
+
+  @include for-lg{
+    display:flex;
+    justify-content: space-between;
+  }
 }
 .webcam-actual{
     border-radius: 5px;
+    width: 100%;
+    height: 100%;
+  @include for-xl {
+    height: 450px;
+    width: auto;
+ }
+  
 }
 
 .webcam-error-button{
@@ -104,4 +138,7 @@
   border-radius: 5px;
   margin-top:10px;
   margin-bottom: 10px;
+}
+.device-checkbox{
+  margin-bottom: 0 !important;
 }
