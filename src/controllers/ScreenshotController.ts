@@ -49,6 +49,7 @@ export class ScreenshotController {
 
     }
 
+    
     @Get('view/:id')
     private view(req: Request, res: Response) {
         Logger.Info(req.url);

@@ -16,6 +16,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
+import ToastNotif from "../ToastNotif";
 
 const { Formik } = require("formik");
 const yup = require("yup");
@@ -549,6 +550,12 @@ class SetupWebcam extends Component {
         },
       }).then((res) => {
         console.log(res);
+        if(res && res.status === 200){
+          ToastNotif({"title":"Took a Screenshot", "type":"success","message": "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly"});
+        } else{
+          ToastNotif({"title":"Failed to take a Screenshot", "type":"failure", "message": "Perhaps you have lost connect to the network"});
+
+        }
       });
     }
   }
