@@ -44,7 +44,6 @@ export class ScreenshotController {
     }
 
     @Get('view/:id')
-    //@Middleware(isAuthenticated)
     private view(req: Request, res: Response) {
         Logger.Info(req.url);
         let ObjectId = Types.ObjectId(req.params.id);
