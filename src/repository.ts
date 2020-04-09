@@ -72,6 +72,12 @@ interface IUser extends mongoose.Document {
   password: string;
   email: string;
 }
+interface IScreenshot extends mongoose.Document{
+  username: string,
+  path: string,
+  mimetype:string,
+  title:string
+}
 
 const StreamSchema = new mongoose.Schema({
   username:
@@ -92,7 +98,7 @@ const StreamSchema = new mongoose.Schema({
       type: Boolean,
       required: true
     },
-    publicView: {
+    email: {
       type: Boolean,
       required: true
     },
@@ -101,11 +107,25 @@ const StreamSchema = new mongoose.Schema({
 
 const Stream = mongoose.model<IStream>("Stream", StreamSchema);
 
+const ScreenshotSchema = new mongoose.Schema({
+  username:
+  {
+    type: String,
+    require: true
+  },
+  title: {type: String, required: true},
+  path: {type: String, required: true},
+  mimetype: {type: String, required: true}
+})
+
+const Screenshot = mongoose.model<IScreenshot>("Screenshot", ScreenshotSchema);
+
 export {
   User,
   UserSchema,
   IUser,
   IStream,
   StreamSchema,
-  Stream
+  Stream,
+  Screenshot
 }

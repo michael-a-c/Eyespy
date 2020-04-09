@@ -130,6 +130,23 @@ class DeviceAdditionRequestMaker {
     }
 }
 
+class CreateScreenshotRequestMaker {
+    static create(username: string, title:string) {
+        return new CreateScreenshotRequest(username, title);
+    }
+}
+
+
+class CreateScreenshotRequest{
+    username: string;
+    title: string;
+    constructor(username:string, title: string){
+        if(!username || !title) throw new Error ("INVALID REQUEST BODY");
+        this.username = username;
+        this.title = title;
+    }
+}
+
 export {
     SignupRequest,
     SignupRequestMaker,
@@ -142,6 +159,8 @@ export {
     StopStreamingRequest,
     StopStreamingRequestMaker,
     DeviceAdditionRequest,
-    DeviceAdditionRequestMaker
+    DeviceAdditionRequestMaker,
+    CreateScreenshotRequest,
+    CreateScreenshotRequestMaker
 
  }
