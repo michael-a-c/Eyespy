@@ -192,7 +192,6 @@ export class UserController {
         }
 
         User.find({ username: req.session?.user }).exec((err: NativeError, result: IUser[]) => {
-            console.log("here")
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
@@ -215,7 +214,6 @@ export class UserController {
         }
 
         User.find({ username: req.session?.user }).exec((err: NativeError, result: IUser[]) => {
-            console.log("here")
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }

@@ -195,14 +195,21 @@ export class Devices extends Component {
   }
 
   sendNotification(device) {
-    let newBody = {
+    let options = {
       subscription: device.subscription,
-      title: "INTRUDER DETECTED",
-      body: "Your device \"" + device.deviceName + "\" is set up to receive notifications"
+      title: "Testing Notifications",
+      body: "Your device \"" + device.deviceName + "\" is receiving a test notification from EyeSpy Security",
+      image: "/face.jpg",
+      leftText: "yes",
+      rightText: "no",
+      url: "/devices"
+      /*
+
+      */
     }
     return fetch(`api/serviceworker/sendnotification`, {
       method: 'POST',
-      body: JSON.stringify(newBody),
+      body: JSON.stringify(options),
       headers: {
         'Content-Type': 'application/json'
       }
@@ -221,18 +228,21 @@ export class Devices extends Component {
     return (
       <FadeIn>
         <Jumbotron className="jumbotron-dark jumbotron-welcome">
-            <Row>
-              <Col xs={6} md={5} lg={4} xl={3}><h1>My Devices</h1></Col>
-              <Col xs={6} md={7} lg={8} xl={9}><Button onClick={this.handleShow} variant="primary">Add this device</Button></Col>
-            </Row>
-            <Row>
-              <Col>
-                < DeviceList
-                  devices={this.state.devices}
-                  removeDevice={this.removeDevice}
-                  notifyDevice={this.sendNotification}
-                /></Col>
-            </Row>
+          <Row>
+            <Col><h1>My Devices</h1></Col>
+          </Row>
+
+          <Row>
+            <Col>
+              < DeviceList
+                devices={this.state.devices}
+                removeDevice={this.removeDevice}
+                notifyDevice={this.sendNotification}
+              /></Col>
+          </Row>
+          <Row>
+            <Col><Button onClick={this.handleShow} className="add-device" variant="primary">Add this device</Button></Col>
+          </Row>
 
         </Jumbotron>
 
@@ -315,6 +325,10 @@ function Bell() {
   return (<span role="img" aria-label="bell">🔔</span>)
 }
 
+function TrashIcon() {
+  return (<span role="img" aria-label="trash">🗑️</span>)
+}
+
 function DeviceList(props) {
 
   if (!props.devices) {
@@ -322,11 +336,11 @@ function DeviceList(props) {
   }
   let devicesList = props.devices.map((device) =>
 
-    <ListGroup.Item key={device.deviceName} variant="dark">
+    <ListGroup.Item key={device.deviceName} variant="secondary" className="device-row">
       <Row>
-        <Col xs={7} md={9} lg={9} xl={9}>{device.deviceName}</Col>
-        <Col xs={2} md={1} lg={1} xl={1}><Button onClick={() => props.removeDevice(device)} variant="danger" type="submit">X</Button></Col>
-        <Col xs={3} md={2} lg={2} xl={2}><Button onClick={() => props.notifyDevice(device)} variant="primary" type="submit">Test this device</Button></Col>
+        <Col className="device-col" xs={8} md={9} lg={10} xl={10}><h5>{device.deviceName}</h5></Col>
+        <Col className="device-col" xs={2} md={1} lg={1} xl={1}><Button className="device-button" onClick={() => props.notifyDevice(device)} variant="warning" type="submit"><Bell></Bell></Button></Col>
+        <Col className="device-col" xs={2} md={2} lg={1} xl={1}><Button className="device-button" onClick={() => props.removeDevice(device)} variant="danger" type="submit"><TrashIcon></TrashIcon></Button></Col>
       </Row>
     </ListGroup.Item>
 

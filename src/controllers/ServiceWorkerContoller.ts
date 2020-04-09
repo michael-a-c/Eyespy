@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-console.log("key: ",process.env.publicVapidKey)
+console.log("key: ", process.env.publicVapidKey)
 
 const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
 const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
@@ -26,23 +26,51 @@ export default class ServiceWorkerController {
     //SEND SINGLE NOTIF
     @Post('sendnotification')
     private sendnotification(req: Request, res: Response) {
+        /// These are parameters
         const subscription = req.body.subscription;
         const title = req.body.title;
         const body = req.body.body;
-        const leftText = req.body.leftText;
-        const rightText = req.body.rightText;
-        const url = req.body.url;
+        let image = ""; //optional
+        let leftText; //optional
+        let rightText; //optional
+        let url = ""; //optional
 
-        const payload = 
-        JSON.stringify({
-            title: title,
-            body: body,
-            data: {
-                leftText: leftText,
-                rightText: rightText,
-                url: url
+        let addData = true;
+
+        if (req.body.image) {
+            image = req.body.image;
+        }
+        if (req.body.leftText && req.body.rightText) {
+            leftText = req.body.leftText;
+            rightText = req.body.rightText;
+            if (req.body.url) {
+                url = req.body.url;
             }
-        });
+        } else (addData = false)
+
+
+        let payload;
+        if (addData) {
+            payload =
+                JSON.stringify({
+                    title: title,
+                    body: body,
+                    image: image,
+                    data: {
+                        leftText: leftText,
+                        rightText: rightText,
+                        url: url
+                    }
+                });
+        } else {
+            payload =
+                JSON.stringify({
+                    title: title,
+                    body: body,
+                    image: image
+                });
+        }
+
 
 
         webpush.sendNotification(subscription, payload)
@@ -52,7 +80,7 @@ export default class ServiceWorkerController {
         res.status(200).json({ 'success': true });
     }
 
-    // SEND NOTIFICATIONS
+    // SEND NOTIFICATIONS (TODO: Based on a stream)
     @Post('sendnotifications')
     private sendnotifications(req: Request, res: Response) {
         const title = req.body.title;
