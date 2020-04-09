@@ -1,6 +1,7 @@
 import React, { Component, useState } from "react";
 import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
+import ReactTextTransition, { presets } from "react-text-transition";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
@@ -92,6 +93,9 @@ class SetupWebcam extends Component {
     this.sendNotifications = this.sendNotifications.bind(this);
     this.createWebcamList = this.createWebcamList.bind(this);
     this.selectWebcam = this.selectWebcam.bind(this);
+    this.doArmWait = this.doArmWait.bind(this);
+    this.activateRecording = this.activateRecording.bind(this);
+
     this.state = {
       videoConstraints: {
         width: 1280,
@@ -109,6 +113,7 @@ class SetupWebcam extends Component {
       peerMediaCalls: [],
       movementDetected: false,
       serverError: false,
+      countdownActive: false,
       webcams: [],
     };
   }
@@ -167,28 +172,27 @@ class SetupWebcam extends Component {
   }
   async createWebcamList() {
     let ref = this;
-    if(navigator.mediaDevices.enumerateDevices){
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then(function (devices) {
-        let cams = devices
-          .filter((device) => {
-            return device.kind == "videoinput";
-          })
-          .map((cam) => {
-            return { id: cam.deviceId, label: cam.label };
+    if (navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then(function (devices) {
+          let cams = devices
+            .filter((device) => {
+              return device.kind == "videoinput";
+            })
+            .map((cam) => {
+              return { id: cam.deviceId, label: cam.label };
+            });
+          ref.setState({
+            webcams: cams,
+            userDenied: devices.length === 0,
           });
-        ref.setState({
-          webcams: cams,
-          userDenied: devices.length === 0,
+        })
+        .catch(function (err) {
+          console.log(err.name + ": " + err.message);
         });
-      })
-      .catch(function (err) {
-        console.log(err.name + ": " + err.message);
-      });
-    }
-    else {
-      this.setState({userDenied: true});
+    } else {
+      this.setState({ userDenied: true });
     }
   }
 
@@ -256,93 +260,126 @@ class SetupWebcam extends Component {
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
+  doArmWait(subReq) {
+    this.setState({ armCounter: 10, countdownActive: true });
+    let armTimer = setInterval(() => {
+      let counter = this.state.armCounter;
+      counter -= 1;
+      console.log(counter);
+      if (counter == 0) {
+        clearInterval(this.state.armTimer);
+        this.setState({ armCounter: 0, isLoading: true });
+        this.activateRecording(subReq)
+      } else {
+        this.setState({ armCounter: counter });
+      }
+    }, 1000);
+    this.setState({ armTimer: armTimer });
+  }
+
+  activateRecording(subReq) {
+    // start peer stuff
+    let peer = new Peer();
+    let parent = this;
+
+    peer.on("open", function (id) {
+      console.log("My peer ID is: " + id);
+      let req = {
+        title: subReq.title,
+        device: "placeHolder", // Device that is doing le stream
+        peerId: id,
+        username: parent.props.username,
+        streamingOptions: {
+          sms: subReq.sms,
+          push: subReq.push,
+          publicView: subReq.public,
+        },
+      };
+      console.log(req);
+      Requests.startStream(req).then((res) => {
+        if (res && res.status && res.status != "200") {
+          console.log(res);
+          parent.setState({
+            isRecording: false,
+            peerId: null,
+            serverError: true,
+            isLoading: false,
+            countdownActive: false
+
+          });
+        } else if (res && !res.status) {
+          console.log("success");
+
+          parent.setState({
+            isRecording: true,
+            peerId: id,
+            isLoading: false,
+            serverError: false,
+            countdownActive: false
+          });
+
+          parent.sendNotifications({
+            title: "Started a stream: " + res.title,
+            body: "Click Live Watch to view",
+            leftText: "Dismiss Notification",
+            rightText: "Live Watch",
+            url: `/watch/${parent.state.peerId}`,
+          });
+        }
+      });
+    });
+
+    peer.on("connection", function (conn) {
+      let connPeerId = conn.peer;
+      console.log(connPeerId);
+      var call = peer.call(connPeerId, ref.current.stream);
+      call.on("close", function () {
+        console.log(call);
+        let currentPeerMediaCalls = parent.state.peerMediaCalls;
+        parent.setState({
+          peerMediaCalls: currentPeerMediaCalls.filter((acall) => {
+            return acall.peer !== call.peer;
+          }),
+        });
+      });
+
+      let currentPeerCons = parent.state.peerCons;
+      let currentPeerMediaCalls = parent.state.peerMediaCalls;
+
+      parent.setState({
+        peerCons: currentPeerCons.concat(conn),
+        peerMediaCalls: currentPeerMediaCalls.concat(call),
+      });
+      conn.on("close", function () {
+        console.log("Dropped connection");
+        let currentPeerCons = parent.state.peerCons;
+        console.log(conn);
+        parent.setState({
+          peerCons: currentPeerCons.filter((aconn) => {
+            return aconn.peer !== conn.peer;
+          }),
+        });
+      });
+      conn.on("data", function (data) {
+        // Will print 'hi!'
+        if (data.action == "STOP") {
+          parent.stopStreaming();
+        }
+        console.log(data);
+      });
+    });
+  }
+
   handleToggleRecord(subReq) {
     if (!this.state.isRecording) {
-      // start peer stuff
-      let peer = new Peer();
-      let parent = this;
-      this.setState({ isLoading: true });
+      this.doArmWait(subReq);
 
-      peer.on("open", function (id) {
-        console.log("My peer ID is: " + id);
-        let req = {
-          title: subReq.title,
-          device: "placeHolder", // Device that is doing le stream
-          peerId: id,
-          username: parent.props.username,
-          streamingOptions: {
-            sms: subReq.sms,
-            push: subReq.push,
-            publicView: subReq.public,
-          },
-        };
-        console.log(req);
-        Requests.startStream(req).then((res) => {
-          if (res && res.status && res.status != "200") {
-            console.log(res);
-            parent.setState({
-              isRecording: false,
-              peerId: null,
-              serverError: true,
-              isLoading: false,
-            });
-          } else if (res && !res.status) {
-            console.log("success");
-
-            parent.setState({
-              isRecording: true,
-              peerId: id,
-              isLoading: false,
-              serverError: false,
-            });
-
-            parent.sendNotifications({
-              title: "Started a stream: " + res.title,
-              body: "Click Live Watch to view",
-              leftText: "Dismiss Notification",
-              rightText: "Live Watch",
-              url: `/watch/${parent.state.peerId}`,
-            });
-          }
-        });
-      });
-
-      peer.on("connection", function (conn) {
-        let connPeerId = conn.peer;
-        console.log(connPeerId);
-        var call = peer.call(connPeerId, ref.current.stream);
-        call.on("close", function() {
-          console.log(call);
-          let currentPeerMediaCalls = parent.state.peerMediaCalls;
-          parent.setState({peerMediaCalls: currentPeerMediaCalls.filter((acall) => {return acall.peer !== call.peer})});
-        });
-
-        let currentPeerCons = parent.state.peerCons;
-        let currentPeerMediaCalls = parent.state.peerMediaCalls;
-
-        parent.setState({
-          peerCons: currentPeerCons.concat(conn),
-          peerMediaCalls: currentPeerMediaCalls.concat(call),
-        });
-        conn.on("close", function(){
-          console.log("Dropped connection");
-          let currentPeerCons = parent.state.peerCons;
-          console.log(conn);
-          parent.setState({peerCons: currentPeerCons.filter((aconn) => {return aconn.peer !== conn.peer})});
-        });
-        conn.on("data", function (data) {
-          // Will print 'hi!'
-          if (data.action == "STOP") {
-            parent.stopStreaming();
-          }
-          console.log(data);
-        });
-      });
     } else {
       // render modal
       this.setState({ shouldRenderPasswordModal: true });
     }
   }
+
   stopStreaming() {
     this.setState({ shouldRenderPasswordModal: false });
 
@@ -428,6 +465,15 @@ class SetupWebcam extends Component {
                     onUserMediaError={this.handleUserDenied}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
+                  {this.state.countdownActive ? (
+                    <div className="countdownOverlay">
+                      <div className="countdownText">
+                       {<ReactTextTransition text={this.state.armCounter} />}
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
                 {!this.state.userDenied &&
                 !this.state.waitingForUserAccept &
@@ -515,16 +561,21 @@ class SetupWebcam extends Component {
                               <div className="setup-button">
                                 <Button
                                   className="record-button"
+                                  disabled={this.state.countdownActive}
                                   type="submit"
                                   variant={
-                                    !this.state.isRecording
-                                      ? "primary"
-                                      : "danger"
+                                    this.state.countdownActive
+                                      ? "warning"
+                                      : this.state.isRecording
+                                      ? "danger"
+                                      : "primary"
                                   }
                                 >
-                                  {!this.state.isRecording
-                                    ? "Arm System"
-                                    : "Disarm System "}
+                                  {this.state.countdownActive
+                                    ? "Arming in " + this.state.armCounter
+                                    : this.state.isRecording
+                                    ? "Armed"
+                                    : "Arm"}
                                   {this.state.isLoading ? (
                                     <Spinner
                                       className={"button-spinner "}

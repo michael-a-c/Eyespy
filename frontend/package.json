@@ -28,6 +28,7 @@
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
+    "react-text-transition": "^1.0.2",
     "react-webcam": "^5.0.0",
     "react-window-size": "^1.2.2",
     "redux": "^4.0.5",
