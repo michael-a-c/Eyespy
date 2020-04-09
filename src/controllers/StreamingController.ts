@@ -91,6 +91,7 @@ export class StreamingController {
             if(dbRes.length != 0){
                 return res.status(CONFLICT).json({"message":"peerId exists"});
             }
+            console.log(StartStreamingRequest);
             let newStream = new Stream(StartStreamingRequest);
             newStream.save((err:any, dbRes:any) => {
                 if(err){
