@@ -7,6 +7,31 @@
     justify-content: center;
   }
 }
+.add-device {
+  margin-top: 10px;
+}
+
+.device-button {
+  border-radius: 50% !important;
+  background-color: #303030 !important;
+  height: 35px !important;
+  width: 35px !important;
+  padding: 5px !important;
+}
+
+
+.device-row {
+  background-color: #3a3a3a !important;
+  color: white !important;
+  border-color: black !important;
+}
+
+.device-col {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  height: 50x;
+}
 
 .container-welcome {
   padding-left: 0px !important;
