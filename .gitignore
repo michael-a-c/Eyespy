@@ -28,3 +28,6 @@ yarn-error.log*
 
 # configs and secrets
 **/config.json
+
+
+**/uploads
