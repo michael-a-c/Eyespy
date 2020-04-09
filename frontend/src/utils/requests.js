@@ -56,6 +56,11 @@ let Requests = {
     return await this.requestBody("PUT", "/api/user/remove-device", request)
   },
 
+  sendemail: async function (request) {
+    return await this.requestBody("POST", "/api/email/sendemail", request)
+  },
+
+
 
   getUserStreams: async function(){
     try{
