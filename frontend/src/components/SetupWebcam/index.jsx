@@ -606,7 +606,7 @@ class SetupWebcam extends Component {
                                   {this.state.countdownActive
                                     ? "Arming in " + this.state.armCounter
                                     : this.state.isRecording
-                                    ? "Armed"
+                                    ? "Disarm"
                                     : "Arm"}
                                   {this.state.isLoading ? (
                                     <Spinner
