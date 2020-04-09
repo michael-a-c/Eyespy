@@ -174,6 +174,9 @@ class SetupWebcam extends Component {
       serverError: false,
       countdownActive: false,
       webcams: [],
+      sendPush: true,
+      sendSMS: true,
+      sendEmail: true,
     };
   }
   componentDidMount() {
@@ -290,18 +293,22 @@ class SetupWebcam extends Component {
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
-          this.sendNotifications({
-            title: "Face detected on stream",
-            body: "Click Live Watch to view",
-            leftText: "Dismiss Notification",
-            rightText: "Live Watch",
-            url: `/watch/${this.state.peerId}`,
-          });
-          this.sendSMSnotification({
-            title: "Face detected on stream: ",
-            body: "watch from here ",
-            url: `/watch/${this.state.peerId}`,
-          });
+          if(this.state.sendPush){
+            this.sendNotifications({
+              title: "Face detected on stream",
+              body: "Click Live Watch to view",
+              leftText: "Dismiss Notification",
+              rightText: "Live Watch",
+              url: `/watch/${this.state.peerId}`,
+            });
+          }
+          if(this.state.sendSMS){
+            this.sendSMSnotification({
+              title: "Face detected on stream: ",
+              body: "watch from here ",
+              url: `/watch/${this.state.peerId}`,
+            });
+          }
         }
       }
 
@@ -396,19 +403,23 @@ class SetupWebcam extends Component {
             countdownActive: false,
           });
 
-          parent.sendNotifications({
-            title: "Started a stream: " + res.title,
-            body: "Click Live Watch to view",
-            leftText: "Dismiss Notification",
-            rightText: "Live Watch",
-            url: `/watch/${parent.state.peerId}`,
-          });
+          if(parent.state.sendPush){
+            parent.sendNotifications({
+              title: "Started a stream: " + res.title,
+              body: "Click Live Watch to view",
+              leftText: "Dismiss Notification",
+              rightText: "Live Watch",
+              url: `/watch/${parent.state.peerId}`,
+            });
+          }
 
-          parent.sendSMSnotification({
-            title: "Started stream - " + res.title + ": ",
-            body: "watch from here ",
-            url: `/watch/${parent.state.peerId}`,
-          });
+          if(parent.state.sendSMS){
+            parent.sendSMSnotification({
+              title: "Started stream - " + res.title + ": ",
+              body: "watch from here ",
+              url: `/watch/${parent.state.peerId}`,
+            });
+          }
         }
       });
     });
@@ -475,19 +486,23 @@ class SetupWebcam extends Component {
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
 
-    this.sendNotifications({
-      title: "Ended a stream",
-      body: 'Click "Home Page" to take you to your home page',
-      leftText: "Dismiss Notification",
-      rightText: "Home Page",
-      url: "/devices",
-    });
+    if(this.state.sendPush){
+      this.sendNotifications({
+        title: "Ended a stream",
+        body: 'Click "Home Page" to take you to your home page',
+        leftText: "Dismiss Notification",
+        rightText: "Home Page",
+        url: "/devices",
+      });
+    }
 
-    this.sendSMSnotification({
-      title: "Ended stream: ",
-      body: "to return home, go here ",
-      url: "/devices",
-    });
+    if(this.state.sendSMS){
+      this.sendSMSnotification({
+        title: "Ended stream: ",
+        body: "to return home, go here ",
+        url: "/devices",
+      });
+    }
   }
   render() {
     return (
@@ -611,37 +626,37 @@ class SetupWebcam extends Component {
                             <div className="form-checkmarks">
                               <Form.Group>
                                 <Form.Check
-                                  onChange={handleChange}
+                                  onChange={(event) => {this.setState({sendEmail: !this.state.sendEmail})}}
                                   type="switch"
                                   name="email"
                                   disabled={this.state.isRecording}
                                   label="Notify with Email"
                                   id="email"
-                                  checked={values.email}
+                                  checked={this.state.sendEmail}
                                   isInvalid={touched.email && !!errors.email}
                                 />
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
-                                  onChange={handleChange}
+                                  onChange={(event) => {this.setState({sendSMS: !this.state.sendSMS})}}
                                   type="switch"
                                   id="sms"
                                   name="sms"
                                   label="Notify with SMS"
-                                  checked={values.sms}
+                                  checked={this.state.sendSMS}
                                   disabled={this.state.isRecording}
                                   isInvalid={touched.sms && !!errors.sms}
                                 />
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
-                                  onChange={handleChange}
+                                  onChange={(event) => {this.setState({sendPush: !this.state.sendPush})}}
                                   id="push"
                                   type="switch"
                                   name="push"
                                   label="Notify with Push Notification"
                                   disabled={this.state.isRecording}
-                                  checked={values.push}
+                                  checked={this.state.sendPush}
                                   isInvalid={touched.push && !!errors.push}
                                 />
                               </Form.Group>

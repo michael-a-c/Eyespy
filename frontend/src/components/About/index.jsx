@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { withRouter, Redirect } from 'react-router-dom';*/
 
 import './styles.scss';
-import Requests from '../../utils/requests';
+// import Requests from '../../utils/requests';
 
 export class About extends Component {
 
