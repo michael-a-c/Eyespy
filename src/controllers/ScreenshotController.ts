@@ -21,20 +21,20 @@ interface MulterRequest extends Request {
 export class ScreenshotController {
     
     @Post('create')
-    // @Middleware(isAuthenticated)
+    @Middleware(isAuthenticated)
     @Middleware(upload.single('picture'))
     private create(req: MulterRequest, res: Response) {
         Logger.Info(req.url);
         let createScreenshotRequest: any;
         try {
-            createScreenshotRequest = CreateScreenshotRequestMaker.create(/*req.session!.user*/ "bing bong", req.body.title);
+            createScreenshotRequest = CreateScreenshotRequestMaker.create(req.session!.user, req.body.title);
         } catch (e) {
             return res.status(BAD_REQUEST).json(e.message)
         }
         // check that image upload succeeded
         if (!req.file) return res.status(400).end("BAD REQUEST: improperly formatted image");
         console.log(req.file);
-        let newScreenshot = new Screenshot({username: "bing bong", title: createScreenshotRequest.title, path: req.file.path, mimetype: req.file.mimetype });
+        let newScreenshot = new Screenshot({username: req.session!.user, title: createScreenshotRequest.title, path: req.file.path, mimetype: req.file.mimetype });
         newScreenshot.save((err, result) => {
             if(err) {res.status(INTERNAL_SERVER_ERROR).end("Server Error")}
             else {
@@ -58,9 +58,14 @@ export class ScreenshotController {
         })
     }
 
-    @Get('list')
+    @Get('list/:username')
     @Middleware(isAuthenticated)
     private list(req: Request, res: Response){
-
+        Screenshot.find({username : req.params.username}, (err, result) => {
+            if(err){
+                return res.status(INTERNAL_SERVER_ERROR).end(INTERNAL_SERVER_ERROR);
+            }
+            return res.json(result.map((screenshot) =>{ return ({"id": screenshot.id, "title": screenshot.title})}));
+        })
     }
 }
