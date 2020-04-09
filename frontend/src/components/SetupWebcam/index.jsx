@@ -121,6 +121,21 @@ class SetupWebcam extends Component {
     })
   }
 
+  sendSMSnotification(options) {
+    let newBody = {
+      title: options.title,
+      body: options.body,
+      url: options.url
+    }
+    return fetch(`api/user/SMSalert`, {
+      method: 'POST',
+      body: JSON.stringify(newBody),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+
   componentWillUnmount() {
     // use intervalId from the state to clear the interval
     clearInterval(this.state.timer);
@@ -153,6 +168,11 @@ class SetupWebcam extends Component {
             body: "Click Live Watch to view",
             leftText: "Dismiss Notification",
             rightText: "Live Watch",
+            url: `/watch/${this.state.peerId}`
+          });
+          this.sendSMSnotification({
+            title: "Face detected on stream: ",
+            body: "watch from here ",
             url: `/watch/${this.state.peerId}`
           });
         }
@@ -239,6 +259,12 @@ class SetupWebcam extends Component {
               rightText: "Live Watch",
               url: `/watch/${parent.state.peerId}`
             });
+
+            parent.sendSMSnotification({
+              title: "Started stream - " + res.title + ": ",
+              body: "watch from here ",
+              url: `/watch/${parent.state.peerId}`
+            });
           }
         });
       });
@@ -285,6 +311,12 @@ class SetupWebcam extends Component {
       body: "Click \"Home Page\" to take you to your home page",
       leftText: "Dismiss Notification",
       rightText: "Home Page",
+      url: "/devices"
+    });
+
+    this.sendSMSnotification({
+      title: "Ended stream: ",
+      body: "to return home, go here ",
       url: "/devices"
     });
   }

@@ -20,7 +20,8 @@ const schema = yup.object({
   password: yup.string().required("Password is required!"),
   confirmPassword: yup.string().required("Confirm password is required").test('passwords-match', 'Passwords must match!', function (value) {
     return this.parent.password === value;
-  })
+  }),
+  phone: yup.string().matches(/^[1-9]{1}[0-9]{9}/, "10 digit phone number with area code, no spaces", {excludeEmptyString: true})
 });
 
 class Signup extends Component {
@@ -82,7 +83,8 @@ class Signup extends Component {
             username: "",
             email: "",
             password: "",
-            confirmPassword: ""
+            confirmPassword: "",
+            phone: ""
           }}
         >
           {({
@@ -157,6 +159,22 @@ class Signup extends Component {
                     placeholder="Confirm Password" />
                   <Form.Control.Feedback type="invalid">
                     {errors.confirmPassword}
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group controlId="formPhone">
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control
+                    //required
+                    type="text"
+                    placeholder="Enter Phone Number"
+                    name="phone"
+                    value={values.phone}
+                    onChange={handleChange}
+                    isInvalid={touched.phone && !!errors.phone}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.phone}
                   </Form.Control.Feedback>
                 </Form.Group>
                 {this.state.serverError ? <div className="error-text"> A server error has occured</div>: ""}

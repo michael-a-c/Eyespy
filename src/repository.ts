@@ -17,6 +17,7 @@ interface IUser extends mongoose.Document {
   username: string;
   password: string;
   email: string;
+  phone: string;
   devices: any;
 }
 
@@ -30,6 +31,7 @@ const UserSchema = new mongoose.Schema({
   },
   password: { type: String, required: true },
   email: { type: String, required: true },
+  phone: {type: String},
   devices: [{
     deviceName: {
       type: String,

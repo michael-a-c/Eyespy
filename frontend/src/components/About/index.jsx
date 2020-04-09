@@ -12,8 +12,37 @@ import { connect } from 'react-redux';
 import { withRouter, Redirect } from 'react-router-dom';*/
 
 import './styles.scss';
+import Requests from '../../utils/requests';
 
 export class About extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+          /*submitted: false,
+          loading: false,
+          userNameExistsError: false,
+          serverError: false,
+          badRequestError:false,*/
+        }
+        this.handleSMS = this.handleSMS.bind(this);
+      }
+
+    handleSMS(SMSreq) {
+        let newBody = {
+            title: "WHY YOU PRESS: ",
+            body: " it says DO NOT PRESS ",
+            url: "/about"
+        }
+        return fetch(`api/user/SMSalert`, {
+            method: 'POST',
+            body: JSON.stringify(newBody),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+        })
+    } 
+
     render() {
         return (
             <ItemContainer>
@@ -73,7 +102,7 @@ export class About extends Component {
                     </Card>
                 </Accordion>
                 <div className="flex-plz-button">
-                    <Button variant="danger">DO NOT PRESS</Button>
+                    <Button variant="danger" onClick={this.handleSMS}>DO NOT PRESS</Button>
                 </div>
                 <p className="disclaim">*DISCLAIMER: none of the above information is true, this is all in good fun</p>
             </ItemContainer>

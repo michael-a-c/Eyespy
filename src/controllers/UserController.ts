@@ -7,6 +7,8 @@ import { User, UserSchema, IUser } from "../repository";
 import { NativeError } from 'mongoose';
 import { isAuthenticated } from '../middleware'
 const bcrypt = require('bcryptjs');
+const twilio = require('twilio')('AC9e52c9c34772601e7260597eabb183cc', '2f63ecb944038ba4413a507babc34b27');
+// eyespysnowdenc09
 
 @Controller('api/user')
 export class UserController {
@@ -202,6 +204,39 @@ export class UserController {
             }
         });
     }
+
+    @Post("SMSalert")
+    @Middleware(isAuthenticated)
+    private sendSMS(req: Request, res: Response){
+        Logger.Info(req.url);
+
+        if (!req.session!.user) {
+            return res.status(BAD_REQUEST).json({ "message": "you're not signed in ya muppet" });
+        }
+
+        User.find({ username: req.session?.user }).exec((err: NativeError, result: IUser[]) => {
+            console.log("here")
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+            else if (result.length === 0) {
+                return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
+            } else {
+                let userP = '+1' + result[0].phone;
+                let fullSMS = req.body.title + req.body.body + req.body.url;
+                if(userP == ""){
+                    return res.status(OK).json({"message": "no phone number for account"});
+                }
+                twilio.messages.create({
+                    body: fullSMS,
+                    from: '+12057298375',
+                    to: userP
+                });
+                return res.status(OK).json({"message": "sent SMS: " + fullSMS, "number": userP});
+            }
+        });
+    }
+
 
     @Get("whoami")
     @Middleware(isAuthenticated)
