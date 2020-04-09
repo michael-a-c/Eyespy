@@ -131,8 +131,8 @@ class DeviceAdditionRequestMaker {
 }
 
 class CreateScreenshotRequestMaker {
-    static create(username: string, title:string) {
-        return new CreateScreenshotRequest(username, title);
+    static create(username: string, title:string, data:string) {
+        return new CreateScreenshotRequest(username, title, data);
     }
 }
 
@@ -140,10 +140,12 @@ class CreateScreenshotRequestMaker {
 class CreateScreenshotRequest{
     username: string;
     title: string;
-    constructor(username:string, title: string){
-        if(!username || !title) throw new Error ("INVALID REQUEST BODY");
+    data: string;
+    constructor(username:string, title: string, data:string){
+        if(!username || !title || !data) throw new Error ("INVALID REQUEST BODY");
         this.username = username;
         this.title = title;
+        this.data = data;
     }
 }
 

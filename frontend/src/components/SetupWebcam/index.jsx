@@ -54,17 +54,23 @@ function ControlPanel(props) {
     <div className="control-panel">
       <h4 className="status-readout-heading">Control Panel</h4>
       <div className="status-readout-heading control-panel-block">
-        <Button> Screen Shot </Button>{" "}
+        <Button
+          disabled={!props.isStreaming}
+          onClick={props.screenShotCallback}
+        >
+          {" "}
+          Screen Shot{" "}
+        </Button>
       </div>
       <div className="status-readout-heading control-panel-block">
         <h4>Sensitivity Adjustment</h4>
         <Form.Group controlId="formBasicRangeCustom">
           <Form.Label>Facial Detection Sensitivity</Form.Label>
-          <Form.Control type="range" custom />
+          <Form.Control disabled={props.isStreaming} type="range" custom />
         </Form.Group>
         <Form.Group controlId="formBasicRangeCustom">
           <Form.Label>Motion Detection Sensitivity</Form.Label>
-          <Form.Control type="range" custom />
+          <Form.Control disabled={props.isStreaming} type="range" custom />
         </Form.Group>
       </div>
       <div className="status-readout-heading control-panel-block">
@@ -78,26 +84,47 @@ function ControlPanel(props) {
           <ListGroup variant="flush">
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="t480">
-                <Form.Check type="checkbox" label="T480" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="T480"
+                />
               </Form.Group>
             </ListGroup.Item>
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="iphone">
-                <Form.Check type="checkbox" label="IPhone" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="IPhone"
+                />
               </Form.Group>
             </ListGroup.Item>
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check type="checkbox" label="Laptop 2" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="Laptop 2"
+                />
               </Form.Group>
             </ListGroup.Item>
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check type="checkbox" label="Laptop 2" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="Laptop 2"
+                />
               </Form.Group>
-            </ListGroup.Item><ListGroup.Item className="devices-list-actual">
+            </ListGroup.Item>
+            <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check type="checkbox" label="Laptop 2" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="Laptop 2"
+                />
               </Form.Group>
             </ListGroup.Item>
           </ListGroup>
@@ -154,6 +181,7 @@ class SetupWebcam extends Component {
     this.selectWebcam = this.selectWebcam.bind(this);
     this.doArmWait = this.doArmWait.bind(this);
     this.activateRecording = this.activateRecording.bind(this);
+    this.takeScreenshot = this.takeScreenshot.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -176,6 +204,7 @@ class SetupWebcam extends Component {
       webcams: [],
       sendPush: true,
       sendSMS: true,
+      streamTitle: null,
       sendEmail: true,
     };
   }
@@ -293,7 +322,7 @@ class SetupWebcam extends Component {
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
-          if(this.state.sendPush){
+          if (this.state.sendPush) {
             this.sendNotifications({
               title: "Face detected on stream",
               body: "Click Live Watch to view",
@@ -302,7 +331,7 @@ class SetupWebcam extends Component {
               url: `/watch/${this.state.peerId}`,
             });
           }
-          if(this.state.sendSMS){
+          if (this.state.sendSMS) {
             this.sendSMSnotification({
               title: "Face detected on stream: ",
               body: "watch from here ",
@@ -398,12 +427,13 @@ class SetupWebcam extends Component {
           parent.setState({
             isRecording: true,
             peerId: id,
+            streamTitle: req.title,
             isLoading: false,
             serverError: false,
             countdownActive: false,
           });
 
-          if(parent.state.sendPush){
+          if (parent.state.sendPush) {
             parent.sendNotifications({
               title: "Started a stream: " + res.title,
               body: "Click Live Watch to view",
@@ -413,7 +443,7 @@ class SetupWebcam extends Component {
             });
           }
 
-          if(parent.state.sendSMS){
+          if (parent.state.sendSMS) {
             parent.sendSMSnotification({
               title: "Started stream - " + res.title + ": ",
               body: "watch from here ",
@@ -486,7 +516,7 @@ class SetupWebcam extends Component {
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
 
-    if(this.state.sendPush){
+    if (this.state.sendPush) {
       this.sendNotifications({
         title: "Ended a stream",
         body: 'Click "Home Page" to take you to your home page',
@@ -496,7 +526,7 @@ class SetupWebcam extends Component {
       });
     }
 
-    if(this.state.sendSMS){
+    if (this.state.sendSMS) {
       this.sendSMSnotification({
         title: "Ended stream: ",
         body: "to return home, go here ",
@@ -504,6 +534,25 @@ class SetupWebcam extends Component {
       });
     }
   }
+
+  takeScreenshot() {
+    console.log("taking screenshot");
+    if (this.state.streamTitle) {
+      fetch("/api/screenshot/create", {
+        method: "POST",
+        body: JSON.stringify({
+          title: this.state.streamTitle,
+          data: ref.current.getScreenshot()
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((res) => {
+        console.log(res);
+      });
+    }
+  }
+
   render() {
     return (
       <FadeIn>
@@ -511,7 +560,10 @@ class SetupWebcam extends Component {
           <Container fluid="true" className="main-container">
             <Row>
               <Col xl={2}>
-                <ControlPanel />
+                <ControlPanel
+                  screenShotCallback={this.takeScreenshot}
+                  isStreaming={this.state.isRecording}
+                />
               </Col>
               <Col lg={12} xl={8}>
                 <h2>
@@ -567,6 +619,7 @@ class SetupWebcam extends Component {
                     videoConstraints={this.state.videoConstraints}
                     onUserMedia={this.handleStartCam}
                     onUserMediaError={this.handleUserDenied}
+                    screenshotQuality={0.5}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
                   {this.state.countdownActive ? (
@@ -626,7 +679,11 @@ class SetupWebcam extends Component {
                             <div className="form-checkmarks">
                               <Form.Group>
                                 <Form.Check
-                                  onChange={(event) => {this.setState({sendEmail: !this.state.sendEmail})}}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      sendEmail: !this.state.sendEmail,
+                                    });
+                                  }}
                                   type="switch"
                                   name="email"
                                   disabled={this.state.isRecording}
@@ -638,7 +695,11 @@ class SetupWebcam extends Component {
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
-                                  onChange={(event) => {this.setState({sendSMS: !this.state.sendSMS})}}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      sendSMS: !this.state.sendSMS,
+                                    });
+                                  }}
                                   type="switch"
                                   id="sms"
                                   name="sms"
@@ -650,7 +711,11 @@ class SetupWebcam extends Component {
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
-                                  onChange={(event) => {this.setState({sendPush: !this.state.sendPush})}}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      sendPush: !this.state.sendPush,
+                                    });
+                                  }}
                                   id="push"
                                   type="switch"
                                   name="push"
