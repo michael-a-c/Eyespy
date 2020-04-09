@@ -3,18 +3,20 @@ class SignupRequest {
     username: string;
     password: string;
     email: string;
+    phone: string;
 
-    constructor(username: string, password: string, email: string) {
+    constructor(username: string, password: string, email: string, phone: string) {
         if (!username || !password || !email) throw new Error("INVALID REQUEST BODY")
         this.username = username;
         this.password = password;
         this.email = email;
+        this.phone = phone;
     };
 }
 
 class SignupRequestMaker {
     static create(input: SignupRequest) {
-        return new SignupRequest(input.username, input.password, input.email);
+        return new SignupRequest(input.username, input.password, input.email, input.phone);
     }
 }
 

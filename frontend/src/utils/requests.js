@@ -80,6 +80,25 @@ let Requests = {
       return err;
 
     }
+  },
+
+  SMSalert: async function (request) {
+    try {
+      const response = await fetch("/api/user/SMSalert", {
+        method: 'POST',
+        body: JSON.stringify(request),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!response.ok) { throw response; }
+      let data = response.json();
+      return data;
+
+    } catch (err) {
+      return err;
+
+    }
   }
 
 }
