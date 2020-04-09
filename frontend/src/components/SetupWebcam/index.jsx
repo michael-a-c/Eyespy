@@ -1,6 +1,7 @@
 import React, { Component, useState } from "react";
 import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
+import ReactTextTransition, { presets } from "react-text-transition";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
@@ -24,19 +25,40 @@ const schema = yup.object({
   title: yup.string().required("Title is required"),
   sms: yup.bool("Type Error"),
   push: yup.bool("Type Error"),
-  public: yup.bool("Type Error")
+  public: yup.bool("Type Error"),
 });
+
+function WebcamSelect(props) {
+  return (
+    <div>
+      <Form.Group>
+        <Form.Label>Select Webcam</Form.Label>
+        <Form.Control as="select">
+          {props.availableDevices.map((device) => {
+            return (
+              <option key={device.id} callback={props.onSelect(device.id)}>
+                {device.label}
+              </option>
+            );
+          })}
+          }
+        </Form.Control>
+      </Form.Group>
+    </div>
+  );
+}
+
 function ModalController(props) {
   const [show, setShow] = useState(true);
   const [passwordError, setPasswordError] = useState(null);
 
-  const handleClose = password => {
+  const handleClose = (password) => {
     let req = {
       username: props.username,
       password: password,
-      peerId: props.peerId
+      peerId: props.peerId,
     };
-    Requests.stopStream(req).then(res => {
+    Requests.stopStream(req).then((res) => {
       if (res && res.status == "401") {
         setPasswordError("Invalid Password");
         setShow(true);
@@ -69,12 +91,16 @@ class SetupWebcam extends Component {
     this.doFacialDetection = this.doFacialDetection.bind(this);
     this.stopStreaming = this.stopStreaming.bind(this);
     this.sendNotifications = this.sendNotifications.bind(this);
+    this.createWebcamList = this.createWebcamList.bind(this);
+    this.selectWebcam = this.selectWebcam.bind(this);
+    this.doArmWait = this.doArmWait.bind(this);
+    this.activateRecording = this.activateRecording.bind(this);
 
     this.state = {
       videoConstraints: {
         width: 1280,
         height: 720,
-        facingMode: "user"
+        facingMode: "user",
       },
       waitingForUserAccept: true,
       isRecording: false,
@@ -86,18 +112,21 @@ class SetupWebcam extends Component {
       peerCons: [],
       peerMediaCalls: [],
       movementDetected: false,
-      serverError: false
-
+      serverError: false,
+      countdownActive: false,
+      webcams: [],
     };
   }
   componentDidMount() {
     this.loadFacialDetection()
       .then(() => {
-        this.setState({ loadingFaceDetection: false });
-        let timer = setInterval(this.doFacialDetection, 5000);
-        this.setState({ timer: timer });
+        this.createWebcamList().then(() => {
+          this.setState({ loadingFaceDetection: false });
+          let timer = setInterval(this.doFacialDetection, 5000);
+          this.setState({ timer: timer });
+        });
       })
-      .catch(e => {
+      .catch((e) => {
         console.log(e);
       });
   }
@@ -110,15 +139,15 @@ class SetupWebcam extends Component {
       body: options.body,
       leftText: options.leftText,
       rightText: options.rightText,
-      url: options.url
-    }
+      url: options.url,
+    };
     return fetch(`api/serviceworker/sendnotifications`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(newBody),
       headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   sendSMSnotification(options) {
@@ -140,8 +169,47 @@ class SetupWebcam extends Component {
     // use intervalId from the state to clear the interval
     clearInterval(this.state.timer);
   }
-
-
+  selectWebcam(newCamId) {
+    if (
+      !this.state.videoConstraints.deviceId ||
+      newCamId !== this.state.videoConstraints.deviceId
+    ) {
+      console.log("i am here");
+      this.setState({
+        videoConstraints: {
+          width: 1280,
+          height: 720,
+          facingMode: "user",
+          deviceId: newCamId,
+        },
+      });
+    }
+  }
+  async createWebcamList() {
+    let ref = this;
+    if (navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then(function (devices) {
+          let cams = devices
+            .filter((device) => {
+              return device.kind == "videoinput";
+            })
+            .map((cam) => {
+              return { id: cam.deviceId, label: cam.label };
+            });
+          ref.setState({
+            webcams: cams,
+            userDenied: devices.length === 0,
+          });
+        })
+        .catch(function (err) {
+          console.log(err.name + ": " + err.message);
+        });
+    } else {
+      this.setState({ userDenied: true });
+    }
+  }
 
   async loadFacialDetection() {
     await faceapi.nets.ssdMobilenetv1.load("/models");
@@ -168,7 +236,7 @@ class SetupWebcam extends Component {
             body: "Click Live Watch to view",
             leftText: "Dismiss Notification",
             rightText: "Live Watch",
-            url: `/watch/${this.state.peerId}`
+            url: `/watch/${this.state.peerId}`,
           });
           this.sendSMSnotification({
             title: "Face detected on stream: ",
@@ -182,11 +250,11 @@ class SetupWebcam extends Component {
         canvasRef.current,
         faceapi.resizeResults(result, dims)
       );
-      this.state.peerCons.forEach(conn => {
+      this.state.peerCons.forEach((conn) => {
         conn.send({
           event: "movementDetected",
           dims: JSON.stringify(dims),
-          faceData: JSON.stringify(result)
+          faceData: JSON.stringify(result),
         });
       });
     } else {
@@ -212,95 +280,139 @@ class SetupWebcam extends Component {
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
+  doArmWait(subReq) {
+    this.setState({ armCounter: 10, countdownActive: true });
+    let armTimer = setInterval(() => {
+      let counter = this.state.armCounter;
+      counter -= 1;
+      console.log(counter);
+      if (counter == 0) {
+        clearInterval(this.state.armTimer);
+        this.setState({ armCounter: 0, isLoading: true });
+        this.activateRecording(subReq)
+      } else {
+        this.setState({ armCounter: counter });
+      }
+    }, 1000);
+    this.setState({ armTimer: armTimer });
+  }
+
+  activateRecording(subReq) {
+    // start peer stuff
+    let peer = new Peer();
+    let parent = this;
+
+    peer.on("open", function (id) {
+      console.log("My peer ID is: " + id);
+      let req = {
+        title: subReq.title,
+        device: "placeHolder", // Device that is doing le stream
+        peerId: id,
+        username: parent.props.username,
+        streamingOptions: {
+          sms: subReq.sms,
+          push: subReq.push,
+          publicView: subReq.public,
+        },
+      };
+      console.log(req);
+      Requests.startStream(req).then((res) => {
+        if (res && res.status && res.status != "200") {
+          console.log(res);
+          parent.setState({
+            isRecording: false,
+            peerId: null,
+            serverError: true,
+            isLoading: false,
+            countdownActive: false
+
+          });
+        } else if (res && !res.status) {
+          console.log("success");
+
+          parent.setState({
+            isRecording: true,
+            peerId: id,
+            isLoading: false,
+            serverError: false,
+            countdownActive: false
+          });
+
+          parent.sendNotifications({
+            title: "Started a stream: " + res.title,
+            body: "Click Live Watch to view",
+            leftText: "Dismiss Notification",
+            rightText: "Live Watch",
+            url: `/watch/${parent.state.peerId}`,
+          });
+
+          parent.sendSMSnotification({
+            title: "Started stream - " + res.title + ": ",
+            body: "watch from here ",
+            url: `/watch/${parent.state.peerId}`
+          });
+        }
+      });
+    });
+
+    peer.on("connection", function (conn) {
+      let connPeerId = conn.peer;
+      console.log(connPeerId);
+      var call = peer.call(connPeerId, ref.current.stream);
+      call.on("close", function () {
+        console.log(call);
+        let currentPeerMediaCalls = parent.state.peerMediaCalls;
+        parent.setState({
+          peerMediaCalls: currentPeerMediaCalls.filter((acall) => {
+            return acall.peer !== call.peer;
+          }),
+        });
+      });
+
+      let currentPeerCons = parent.state.peerCons;
+      let currentPeerMediaCalls = parent.state.peerMediaCalls;
+
+      parent.setState({
+        peerCons: currentPeerCons.concat(conn),
+        peerMediaCalls: currentPeerMediaCalls.concat(call),
+      });
+      conn.on("close", function () {
+        console.log("Dropped connection");
+        let currentPeerCons = parent.state.peerCons;
+        console.log(conn);
+        parent.setState({
+          peerCons: currentPeerCons.filter((aconn) => {
+            return aconn.peer !== conn.peer;
+          }),
+        });
+      });
+      conn.on("data", function (data) {
+        // Will print 'hi!'
+        if (data.action == "STOP") {
+          parent.stopStreaming();
+        }
+        console.log(data);
+      });
+    });
+  }
+
   handleToggleRecord(subReq) {
     if (!this.state.isRecording) {
-      // start peer stuff
-      let peer = new Peer();
-      let parent = this;
-      this.setState({ isLoading: true });
+      this.doArmWait(subReq);
 
-      peer.on("open", function(id) {
-        console.log("My peer ID is: " + id);
-        let req = {
-          title: subReq.title,
-          device: "placeHolder", // Device that is doing le stream
-          peerId: id,
-          username: parent.props.username,
-          streamingOptions: {
-            sms: subReq.sms,
-            push: subReq.push,
-            publicView: subReq.public
-          }
-        };
-        console.log(req);
-        Requests.startStream(req).then(res => {
-          if (res && res.status && res.status != "200") {
-            console.log(res);
-            parent.setState({
-              isRecording: false,
-              peerId: null,
-              serverError: true,
-              isLoading: false
-            });
-          } else if (res && !res.status) {
-            console.log("success");
-
-            parent.setState({
-              isRecording: true,
-              peerId: id,
-              isLoading: false,
-              serverError: false
-            });
-
-            parent.sendNotifications({
-              title: "Started a stream: "+res.title,
-              body: "Click Live Watch to view",
-              leftText: "Dismiss Notification",
-              rightText: "Live Watch",
-              url: `/watch/${parent.state.peerId}`
-            });
-
-            parent.sendSMSnotification({
-              title: "Started stream - " + res.title + ": ",
-              body: "watch from here ",
-              url: `/watch/${parent.state.peerId}`
-            });
-          }
-        });
-      });
-
-      peer.on("connection", function(conn) {
-        let connPeerId = conn.peer;
-        console.log(connPeerId);
-        var call = peer.call(connPeerId, ref.current.stream);
-        let currentPeerCons = parent.state.peerCons;
-        let currentPeerMediaCalls = parent.state.peerMediaCalls;
-
-        parent.setState({
-          peerCons: currentPeerCons.concat(conn),
-          peerMediaCalls: currentPeerMediaCalls.concat(call)
-        });
-
-        conn.on("data", function(data) {
-          // Will print 'hi!'
-          if (data.action == "STOP") {
-            parent.stopStreaming();
-          }
-          console.log(data);
-        });
-      });
     } else {
       // render modal
       this.setState({ shouldRenderPasswordModal: true });
     }
   }
+
   stopStreaming() {
     this.setState({ shouldRenderPasswordModal: false });
 
-    this.state.peerCons.forEach(conn => {
+    this.state.peerCons.forEach((conn) => {
       conn.close();
     });
-    this.state.peerMediaCalls.forEach(call => {
+    this.state.peerMediaCalls.forEach((call) => {
       call.close();
     });
 
@@ -308,10 +420,10 @@ class SetupWebcam extends Component {
 
     this.sendNotifications({
       title: "Ended a stream",
-      body: "Click \"Home Page\" to take you to your home page",
+      body: 'Click "Home Page" to take you to your home page',
       leftText: "Dismiss Notification",
       rightText: "Home Page",
-      url: "/devices"
+      url: "/devices",
     });
 
     this.sendSMSnotification({
@@ -385,6 +497,15 @@ class SetupWebcam extends Component {
                     onUserMediaError={this.handleUserDenied}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
+                  {this.state.countdownActive ? (
+                    <div className="countdownOverlay">
+                      <div className="countdownText">
+                       {<ReactTextTransition text={this.state.armCounter} />}
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
                 {!this.state.userDenied &&
                 !this.state.waitingForUserAccept &
@@ -399,7 +520,7 @@ class SetupWebcam extends Component {
                           title: "",
                           public: true,
                           sms: true,
-                          push: true
+                          push: true,
                         }}
                       >
                         {({
@@ -407,7 +528,7 @@ class SetupWebcam extends Component {
                           handleChange,
                           values,
                           touched,
-                          errors
+                          errors,
                         }) => (
                           <Form noValidate onSubmit={handleSubmit}>
                             <Form.Group required controlId="formTitle">
@@ -426,6 +547,10 @@ class SetupWebcam extends Component {
                                 Please specify a title.
                               </Form.Control.Feedback>
                             </Form.Group>
+                            <WebcamSelect
+                              onSelect={this.selectWebcam}
+                              availableDevices={this.state.webcams}
+                            />
                             <div className="form-checkmarks">
                               <Form.Group>
                                 <Form.Check
@@ -468,16 +593,21 @@ class SetupWebcam extends Component {
                               <div className="setup-button">
                                 <Button
                                   className="record-button"
+                                  disabled={this.state.countdownActive}
                                   type="submit"
                                   variant={
-                                    !this.state.isRecording
-                                      ? "primary"
-                                      : "danger"
+                                    this.state.countdownActive
+                                      ? "warning"
+                                      : this.state.isRecording
+                                      ? "danger"
+                                      : "primary"
                                   }
                                 >
-                                  {!this.state.isRecording
-                                    ? "Arm System"
-                                    : "Disarm System "}
+                                  {this.state.countdownActive
+                                    ? "Arming in " + this.state.armCounter
+                                    : this.state.isRecording
+                                    ? "Armed"
+                                    : "Arm"}
                                   {this.state.isLoading ? (
                                     <Spinner
                                       className={"button-spinner "}

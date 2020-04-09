@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
+import ListGroup from 'react-bootstrap/ListGroup'
 import Badge from 'react-bootstrap/Badge'
 import Spinner from 'react-bootstrap/Spinner';
 import { Link } from 'react-router-dom';
@@ -169,149 +170,145 @@ export class Devices extends Component {
 
 
 
-handleSubmit(req) {
-  this.setState({ loading: true, badRequestError: false, unAuthorizedError: false, notFoundError: false, serverError: false, conflictError: false });
-  req.subscription = this.state.subscription
-  req.username = this.state.username
-  Requests.adddevice(req).then((result) => {
-    if (result.status === 400) {
-      this.setState({ loading: false, badRequestError: true });
-    } else if (result.status === 401) {
-      this.setState({ loading: false, unAuthorizedError: true });
-    } else if (result.status === 404) {
-      this.setState({ loading: false, notFoundError: true });
-    } else if (result.status === 409) {
-      this.setState({ loading: false, conflictError: true });
-    } else if (result.status && result.status !== 200) {
-      this.setState({ loading: false, serverError: true })
-    } else {
-      this.setState({ loading: false });
-      console.log(result.message)
-      this.handleClose();
-      this.getDevices();
-    }
-  })
-}
-
-sendNotification(device) {
-  let newBody = {
-    subscription: device.subscription,
-    title: "INTRUDER DETECTED",
-    body: "Your device \"" + device.deviceName + "\" is set up to receive notifications"
+  handleSubmit(req) {
+    this.setState({ loading: true, badRequestError: false, unAuthorizedError: false, notFoundError: false, serverError: false, conflictError: false });
+    req.subscription = this.state.subscription
+    req.username = this.state.username
+    Requests.adddevice(req).then((result) => {
+      if (result.status === 400) {
+        this.setState({ loading: false, badRequestError: true });
+      } else if (result.status === 401) {
+        this.setState({ loading: false, unAuthorizedError: true });
+      } else if (result.status === 404) {
+        this.setState({ loading: false, notFoundError: true });
+      } else if (result.status === 409) {
+        this.setState({ loading: false, conflictError: true });
+      } else if (result.status && result.status !== 200) {
+        this.setState({ loading: false, serverError: true })
+      } else {
+        this.setState({ loading: false });
+        console.log(result.message)
+        this.handleClose();
+        this.getDevices();
+      }
+    })
   }
-  return fetch(`api/serviceworker/sendnotification`, {
-    method: 'POST',
-    body: JSON.stringify(newBody),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-}
 
-sendNotifications() {
-  for (let i = 0; i < this.state.devices.length; i++) {
-    if (this.state.devices[i].isReceivingNotifications) {
-      this.sendNotification(this.state.devices[i]);
+  sendNotification(device) {
+    let newBody = {
+      subscription: device.subscription,
+      title: "INTRUDER DETECTED",
+      body: "Your device \"" + device.deviceName + "\" is set up to receive notifications"
+    }
+    return fetch(`api/serviceworker/sendnotification`, {
+      method: 'POST',
+      body: JSON.stringify(newBody),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+
+  sendNotifications() {
+    for (let i = 0; i < this.state.devices.length; i++) {
+      if (this.state.devices[i].isReceivingNotifications) {
+        this.sendNotification(this.state.devices[i]);
+      }
     }
   }
-}
 
-render() {
-  return (
-    <FadeIn>
-      <Jumbotron className="jumbotron-dark jumbotron-welcome">
-        <h1>My Devices</h1>
-        <div>
-          < DeviceList
-            devices={this.state.devices}
-            removeDevice={this.removeDevice}
-          />
-        </div>
-        <Container fluid className="container-welcome" >
-          {!this.props.loggedIn ? <FadeIn> <Row noGutters>
-            <Col xs={6} sm={3} md={2} xl={1} className="welcome-button">
-              <Button onClick={this.handleShow} variant="primary">Register this device</Button>
-            </Col>
-            <Col xs={6} sm={3} md={2} xl={1} className="welcome-button">
-              <Button onClick={this.sendNotifications} variant="primary">Send out notifications</Button>
-            </Col>
-          </Row></FadeIn> : ""}
-        </Container>
-      </Jumbotron>
+  render() {
+    return (
+      <FadeIn>
+        <Jumbotron className="jumbotron-dark jumbotron-welcome">
+            <Row>
+              <Col xs={6} md={5} lg={4} xl={3}><h1>My Devices</h1></Col>
+              <Col xs={6} md={7} lg={8} xl={9}><Button onClick={this.handleShow} variant="primary">Add this device</Button></Col>
+            </Row>
+            <Row>
+              <Col>
+                < DeviceList
+                  devices={this.state.devices}
+                  removeDevice={this.removeDevice}
+                  notifyDevice={this.sendNotification}
+                /></Col>
+            </Row>
+
+        </Jumbotron>
 
 
 
-      <Modal show={this.state.showRegister} onHide={this.handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Register this device</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+        <Modal show={this.state.showRegister} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Register this device</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
 
-          <Formik
-            validationSchema={yup.object({ deviceName: yup.string().required("Device Name is required!") })}
-            onSubmit={this.handleSubmit}
-            initialValues={{
-              username: null,
-              deviceName: "",
-              serviceWorker: {
-                subscription: null
-              },
-              isRecording: false,
-              isReceivingNotifications: true
-            }}
-          >
-            {({
-              handleSubmit,
-              handleChange,
-              values,
-              touched,
-              errors,
-            }) => (
-                <Form
-                  noValidate
-                  onSubmit={handleSubmit}
-                >
-                  <Form.Group controlId="formBasicEmail">
-                    <Form.Label>Device Name</Form.Label>
-                    <Form.Control
-                      type="Username"
-                      required placeholder="Enter Device Name"
-                      onChange={handleChange}
-                      value={values.deviceName}
-                      name="deviceName"
-                      isInvalid={(touched.deviceName && !!errors.deviceName)}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {!!errors.deviceName ? <div>{errors.deviceName}</div> : ""}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  {this.state.conflictError ? <div className="error-text"> This device already exists</div> : ""}
-                  {this.state.serverError ? <div className="error-text"> A server error has occured</div> : ""}
-                  {this.state.badRequestError ? <div className="error-text"> Bad Request!</div> : ""}
-                  {this.state.unAuthorizedError ? <div className="error-text"> Wrong Password</div> : ""}
-                  {this.state.notFoundError ? <div className="error-text"> User not found</div> : ""}
+            <Formik
+              validationSchema={yup.object({ deviceName: yup.string().required("Device Name is required!") })}
+              onSubmit={this.handleSubmit}
+              initialValues={{
+                username: null,
+                deviceName: "",
+                serviceWorker: {
+                  subscription: null
+                },
+                isRecording: false,
+                isReceivingNotifications: true
+              }}
+            >
+              {({
+                handleSubmit,
+                handleChange,
+                values,
+                touched,
+                errors,
+              }) => (
+                  <Form
+                    noValidate
+                    onSubmit={handleSubmit}
+                  >
+                    <Form.Group controlId="formBasicEmail">
+                      <Form.Label>Device Name</Form.Label>
+                      <Form.Control
+                        type="Username"
+                        required placeholder="Enter Device Name"
+                        onChange={handleChange}
+                        value={values.deviceName}
+                        name="deviceName"
+                        isInvalid={(touched.deviceName && !!errors.deviceName)}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {!!errors.deviceName ? <div>{errors.deviceName}</div> : ""}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    {this.state.conflictError ? <div className="error-text"> This device already exists</div> : ""}
+                    {this.state.serverError ? <div className="error-text"> A server error has occured</div> : ""}
+                    {this.state.badRequestError ? <div className="error-text"> Bad Request!</div> : ""}
+                    {this.state.unAuthorizedError ? <div className="error-text"> Wrong Password</div> : ""}
+                    {this.state.notFoundError ? <div className="error-text"> User not found</div> : ""}
 
-                  <Button variant="primary" type="submit" disabled={this.state.loading}>
-                    Add this Device
+                    <Button variant="primary" type="submit" disabled={this.state.loading}>
+                      Add this Device
                   {this.state.loading ?
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        className="button-spinner"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                      /> : ""}
-                  </Button>
-                </Form>)}
-          </Formik>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          className="button-spinner"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        /> : ""}
+                    </Button>
+                  </Form>)}
+            </Formik>
 
-        </Modal.Body>
-      </Modal>
-    </FadeIn>
+          </Modal.Body>
+        </Modal>
+      </FadeIn>
 
-  )
-}
+    )
+  }
 }
 
 function Bell() {
@@ -321,24 +318,23 @@ function Bell() {
 function DeviceList(props) {
 
   if (!props.devices) {
-    return ("loading")
+    return ("Attempting to load your devices...")
   }
-  const devicesList = props.devices.map((device) =>
-    <h6 key={device.deviceName}>
-      • {device.deviceName}
-      {device.isReceivingNotifications ?
-        <span>{' '}<Badge variant="warning"><Bell />Receiving Notifications<Bell /></Badge></span> :
-        ""}
-      {device.isRecording ?
-        <span>{' '}<Badge variant="danger">•Recording•</Badge></span> :
-        ""}
-      {' '}<Button onClick={() => props.removeDevice(device)} variant="danger" type="submit">X</Button>
-    </h6>
+  let devicesList = props.devices.map((device) =>
+
+    <ListGroup.Item key={device.deviceName} variant="dark">
+      <Row>
+        <Col xs={7} md={9} lg={9} xl={9}>{device.deviceName}</Col>
+        <Col xs={2} md={1} lg={1} xl={1}><Button onClick={() => props.removeDevice(device)} variant="danger" type="submit">X</Button></Col>
+        <Col xs={3} md={2} lg={2} xl={2}><Button onClick={() => props.notifyDevice(device)} variant="primary" type="submit">Test this device</Button></Col>
+      </Row>
+    </ListGroup.Item>
+
   );
   return (
-    <div>
+    <ListGroup >
       {devicesList}
-    </div>
+    </ListGroup>
   );
 }
 

@@ -5,7 +5,7 @@ const mongo = spawn("docker-compose", ["up", "--build"], {
   env: {
     PROJ_MONGO_INITDB_DATABASE: "eyespy",
     PROJ_MONGO_INITDB_ROOT_USERNAME: "eyespy-user",
-    PROJ_MONGO_INITDB_ROOT_PASSWORD: "snowden1"
+    PROJ_MONGO_INITDB_ROOT_PASSWORD: "snowden"
   }
 });
 
