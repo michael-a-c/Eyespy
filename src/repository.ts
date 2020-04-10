@@ -76,7 +76,8 @@ interface IScreenshot extends mongoose.Document{
   username: string,
   path: string,
   mimetype:string,
-  title:string
+  title:string,
+  date:  Date 
 }
 
 const StreamSchema = new mongoose.Schema({
@@ -88,6 +89,7 @@ const StreamSchema = new mongoose.Schema({
   device: { type: String, required: true },
   peerId: { type: String, required: true },
   title: { type: String, required: true },
+  
 
   streamingOptions: {
     sms: {
@@ -115,8 +117,10 @@ const ScreenshotSchema = new mongoose.Schema({
   },
   title: {type: String, required: true},
   path: {type: String, required: true},
-  mimetype: {type: String, required: true}
-})
+  mimetype: {type: String, required: true},
+  date: { type: Date, default: Date.now }
+
+}, { collection: "Screenshots", timestamps: { createdAt: 'created_at' } })
 
 const Screenshot = mongoose.model<IScreenshot>("Screenshot", ScreenshotSchema);
 

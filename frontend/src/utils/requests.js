@@ -91,7 +91,7 @@ let Requests = {
     }
   },
 
-  SMSalert: async function (request) {
+  /*SMSalert: async function (request) {
     try {
       const response = await fetch("/api/user/SMSalert", {
         method: 'POST',
@@ -108,7 +108,7 @@ let Requests = {
       return err;
 
     }
-  }
+  }*/
 
 }
 

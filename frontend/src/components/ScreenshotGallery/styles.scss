@@ -1,0 +1,33 @@
+@import "../../style/main.scss";
+
+.gallery-view{
+    margin: 1rem;
+}
+.black-text{
+    color:black
+}
+
+
+.image-header{
+    @include for-xs {
+        font-size: 0.8em;
+      }
+    @include for-sm {
+        font-size: 1.2em;
+      }
+      @include for-lg {
+        font-size: 2rem;
+      }
+}
+
+.image-subtext{
+    @include for-xs {
+        font-size: 0.6em;
+      }
+    @include for-sm {
+        font-size: 1em;
+      }
+      @include for-lg {
+        font-size: 1rem;
+      }
+}

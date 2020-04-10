@@ -16,6 +16,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
+import ToastNotif from "../ToastNotif";
 
 const { Formik } = require("formik");
 const yup = require("yup");
@@ -54,17 +55,23 @@ function ControlPanel(props) {
     <div className="control-panel">
       <h4 className="status-readout-heading">Control Panel</h4>
       <div className="status-readout-heading control-panel-block">
-        <Button> Screen Shot </Button>{" "}
+        <Button
+          disabled={!props.isStreaming}
+          onClick={props.screenShotCallback}
+        >
+          {" "}
+          Screen Shot{" "}
+        </Button>
       </div>
       <div className="status-readout-heading control-panel-block">
         <h4>Sensitivity Adjustment</h4>
         <Form.Group controlId="formBasicRangeCustom">
           <Form.Label>Facial Detection Sensitivity</Form.Label>
-          <Form.Control type="range" custom />
+          <Form.Control disabled={props.isStreaming} type="range" custom />
         </Form.Group>
         <Form.Group controlId="formBasicRangeCustom">
           <Form.Label>Motion Detection Sensitivity</Form.Label>
-          <Form.Control type="range" custom />
+          <Form.Control disabled={props.isStreaming} type="range" custom />
         </Form.Group>
       </div>
       <div className="status-readout-heading control-panel-block">
@@ -78,26 +85,47 @@ function ControlPanel(props) {
           <ListGroup variant="flush">
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="t480">
-                <Form.Check type="checkbox" label="T480" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="T480"
+                />
               </Form.Group>
             </ListGroup.Item>
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="iphone">
-                <Form.Check type="checkbox" label="IPhone" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="IPhone"
+                />
               </Form.Group>
             </ListGroup.Item>
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check type="checkbox" label="Laptop 2" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="Laptop 2"
+                />
               </Form.Group>
             </ListGroup.Item>
             <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check type="checkbox" label="Laptop 2" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="Laptop 2"
+                />
               </Form.Group>
-            </ListGroup.Item><ListGroup.Item className="devices-list-actual">
+            </ListGroup.Item>
+            <ListGroup.Item className="devices-list-actual">
               <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check type="checkbox" label="Laptop 2" />
+                <Form.Check
+                  disabled={props.isStreaming}
+                  type="checkbox"
+                  label="Laptop 2"
+                />
               </Form.Group>
             </ListGroup.Item>
           </ListGroup>
@@ -155,6 +183,7 @@ class SetupWebcam extends Component {
     this.selectWebcam = this.selectWebcam.bind(this);
     this.doArmWait = this.doArmWait.bind(this);
     this.activateRecording = this.activateRecording.bind(this);
+    this.takeScreenshot = this.takeScreenshot.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -175,6 +204,10 @@ class SetupWebcam extends Component {
       serverError: false,
       countdownActive: false,
       webcams: [],
+      sendPush: true,
+      sendSMS: true,
+      streamTitle: null,
+      sendEmail: true,
     };
   }
   componentDidMount() {
@@ -405,6 +438,7 @@ class SetupWebcam extends Component {
           parent.setState({
             isRecording: true,
             peerId: id,
+            streamTitle: req.title,
             isLoading: false,
             serverError: false,
             countdownActive: false,
@@ -447,6 +481,8 @@ class SetupWebcam extends Component {
             url: `/watch/${parent.state.peerId}`,
           });
           */
+
+
         }
       });
     });
@@ -512,6 +548,7 @@ class SetupWebcam extends Component {
     });
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
+<<<<<<< HEAD
     /*
     this.sendNotifications({
       title: "Ended a stream",
@@ -527,7 +564,52 @@ class SetupWebcam extends Component {
       url: "/devices",
     });
     */
+=======
+
+    if (this.state.sendPush) {
+      this.sendNotifications({
+        title: "Ended a stream",
+        body: 'Click "Home Page" to take you to your home page',
+        leftText: "Dismiss Notification",
+        rightText: "Home Page",
+        url: "/devices",
+      });
+    }
+
+    if (this.state.sendSMS) {
+      this.sendSMSnotification({
+        title: "Ended stream: ",
+        body: "to return home, go here ",
+        url: "/devices",
+      });
+    }
   }
+
+  takeScreenshot() {
+    console.log("taking screenshot");
+    if (this.state.streamTitle) {
+      fetch("/api/screenshot/create", {
+        method: "POST",
+        body: JSON.stringify({
+          title: this.state.streamTitle,
+          data: ref.current.getScreenshot()
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((res) => {
+        console.log(res);
+        if(res && res.status === 200){
+          ToastNotif({"title":"Took a Screenshot", "type":"success","message": "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly"});
+        } else{
+          ToastNotif({"title":"Failed to take a Screenshot", "type":"failure", "message": "Perhaps you have lost connect to the network"});
+
+        }
+      });
+    }
+>>>>>>> 73551408bc171354c92f7494aff9c04e84e24ff7
+  }
+
   render() {
     return (
       <FadeIn>
@@ -535,7 +617,10 @@ class SetupWebcam extends Component {
           <Container fluid="true" className="main-container">
             <Row>
               <Col xl={2}>
-                <ControlPanel />
+                <ControlPanel
+                  screenShotCallback={this.takeScreenshot}
+                  isStreaming={this.state.isRecording}
+                />
               </Col>
               <Col lg={12} xl={8}>
                 <h2>
@@ -591,6 +676,7 @@ class SetupWebcam extends Component {
                     videoConstraints={this.state.videoConstraints}
                     onUserMedia={this.handleStartCam}
                     onUserMediaError={this.handleUserDenied}
+                    screenshotQuality={0.5}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
                   {this.state.countdownActive ? (
@@ -650,37 +736,49 @@ class SetupWebcam extends Component {
                             <div className="form-checkmarks">
                               <Form.Group>
                                 <Form.Check
-                                  onChange={handleChange}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      sendEmail: !this.state.sendEmail,
+                                    });
+                                  }}
                                   type="switch"
                                   name="email"
                                   disabled={this.state.isRecording}
                                   label="Notify with Email"
                                   id="email"
-                                  checked={values.email}
+                                  checked={this.state.sendEmail}
                                   isInvalid={touched.email && !!errors.email}
                                 />
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
-                                  onChange={handleChange}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      sendSMS: !this.state.sendSMS,
+                                    });
+                                  }}
                                   type="switch"
                                   id="sms"
                                   name="sms"
                                   label="Notify with SMS"
-                                  checked={values.sms}
+                                  checked={this.state.sendSMS}
                                   disabled={this.state.isRecording}
                                   isInvalid={touched.sms && !!errors.sms}
                                 />
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
-                                  onChange={handleChange}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      sendPush: !this.state.sendPush,
+                                    });
+                                  }}
                                   id="push"
                                   type="switch"
                                   name="push"
                                   label="Notify with Push Notification"
                                   disabled={this.state.isRecording}
-                                  checked={values.push}
+                                  checked={this.state.sendPush}
                                   isInvalid={touched.push && !!errors.push}
                                 />
                               </Form.Group>
