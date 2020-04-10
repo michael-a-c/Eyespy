@@ -12,6 +12,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import { Link } from 'react-router-dom';
 import Requests from '../../utils/requests.js';
 import FadeIn from 'react-fade-in';
+import { store } from 'react-notifications-component';
 
 import './styles.scss'
 
@@ -148,49 +149,93 @@ export class Devices extends Component {
   }
 
   removeDevice(device) {
-    console.log("remove:", device)
-    Requests.removedevice(device).then((result) => {
-      if (result.status === 400) {
-        this.setState({ loading: false, badRequestError: true });
-      } else if (result.status === 401) {
-        this.setState({ loading: false, unAuthorizedError: true });
-      } else if (result.status === 404) {
-        this.setState({ loading: false, notFoundError: true });
-      } else if (result.status === 409) {
-        this.setState({ loading: false, conflictError: true });
-      } else if (result.status && result.status !== 200) {
-        this.setState({ loading: false, serverError: true })
-      } else {
-        this.setState({ loading: false });
-        console.log(result.message)
-        this.getDevices();
+    Requests.getUserStreams().then((result) => {
+      if (result.length != 0) {
+        let streamC = result.length;
+        store.addNotification({
+          title: "Cannot remove a device when a stream is active",
+          message: `This account has ` + streamC + ` stream(s) active`,
+          type: "danger",
+          insert: "bottom",
+          container: "bottom-center",
+          animationIn: ["animated", "fadeIn"],
+          animationOut: ["animated", "fadeOut"],
+          dismiss: {
+            duration: 3500,
+            onScreen: true
+          }
+        });
+      }
+      else {
+        Requests.removedevice(device).then((result) => {
+          if (result.status === 400) {
+            this.setState({ loading: false, badRequestError: true });
+          } else if (result.status === 401) {
+            this.setState({ loading: false, unAuthorizedError: true });
+          } else if (result.status === 404) {
+            this.setState({ loading: false, notFoundError: true });
+          } else if (result.status === 409) {
+            this.setState({ loading: false, conflictError: true });
+          } else if (result.status && result.status !== 200) {
+            this.setState({ loading: false, serverError: true })
+          } else {
+            this.setState({ loading: false });
+            console.log(result.message)
+            this.getDevices();
+          }
+        })
       }
     })
+    console.log("remove:", device)
+
   }
 
 
 
   handleSubmit(req) {
     this.setState({ loading: true, badRequestError: false, unAuthorizedError: false, notFoundError: false, serverError: false, conflictError: false });
-    req.subscription = this.state.subscription
-    req.username = this.state.username
-    Requests.adddevice(req).then((result) => {
-      if (result.status === 400) {
-        this.setState({ loading: false, badRequestError: true });
-      } else if (result.status === 401) {
-        this.setState({ loading: false, unAuthorizedError: true });
-      } else if (result.status === 404) {
-        this.setState({ loading: false, notFoundError: true });
-      } else if (result.status === 409) {
-        this.setState({ loading: false, conflictError: true });
-      } else if (result.status && result.status !== 200) {
-        this.setState({ loading: false, serverError: true })
-      } else {
+    Requests.getUserStreams().then((result) => {
+      if (result.length != 0) {
+        let streamC = result.length;
+        store.addNotification({
+          title: "Cannot add a device when a stream is active",
+          message: `This account has ` + streamC + ` stream(s) active`,
+          type: "danger",
+          insert: "bottom",
+          container: "bottom-center",
+          animationIn: ["animated", "fadeIn"],
+          animationOut: ["animated", "fadeOut"],
+          dismiss: {
+            duration: 3500,
+            onScreen: true
+          }
+        });
         this.setState({ loading: false });
-        console.log(result.message)
         this.handleClose();
-        this.getDevices();
       }
+      else {
+        req.subscription = this.state.subscription
+        req.username = this.state.username
+        Requests.adddevice(req).then((result) => {
+          if (result.status === 400) {
+            this.setState({ loading: false, badRequestError: true });
+          } else if (result.status === 401) {
+            this.setState({ loading: false, unAuthorizedError: true });
+          } else if (result.status === 404) {
+            this.setState({ loading: false, notFoundError: true });
+          } else if (result.status === 409) {
+            this.setState({ loading: false, conflictError: true });
+          } else if (result.status && result.status !== 200) {
+            this.setState({ loading: false, serverError: true })
+          } else {
+            this.setState({ loading: false });
+            console.log(result.message)
+            this.getDevices();
+            this.handleClose();
+          }
+        })
+      }
+      
     })
   }
 
