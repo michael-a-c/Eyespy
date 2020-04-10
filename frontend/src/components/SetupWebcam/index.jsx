@@ -139,25 +139,31 @@ function ModalController(props) {
   const [show, setShow] = useState(true);
   const [passwordError, setPasswordError] = useState(null);
 
-  const handleClose = (password) => {
-    let req = {
-      username: props.username,
-      password: password,
-      peerId: props.peerId,
-    };
-    Requests.stopStream(req).then((res) => {
-      if (res && res.status == "401") {
-        setPasswordError("Invalid Password");
-        setShow(true);
-      } else if (res && res.status) {
-        setPasswordError("Server Error");
-        setShow(true);
-      } else if (res && !res.status) {
-        setPasswordError(null);
-        setShow(false);
-        props.callback();
-      }
-    });
+  const handleClose = (password, close) => {
+    if(!close){
+      setShow(false);
+      props.callback2();
+    }
+    if(close){
+      let req = {
+        username: props.username,
+        password: password,
+        peerId: props.peerId,
+      };
+      Requests.stopStream(req).then((res) => {
+        if (res && res.status == "401") {
+          setPasswordError("Invalid Password");
+          setShow(true);
+        } else if (res && res.status) {
+          setPasswordError("Server Error");
+          setShow(true);
+        } else if (res && !res.status) {
+          setPasswordError(null);
+          setShow(false);
+          props.callback();
+        }
+      });
+    }
   };
   return (
     <PasswordModal
@@ -183,6 +189,7 @@ class SetupWebcam extends Component {
     this.doArmWait = this.doArmWait.bind(this);
     this.activateRecording = this.activateRecording.bind(this);
     this.takeScreenshot = this.takeScreenshot.bind(this);
+    this.closeModal = this.closeModal.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -224,6 +231,20 @@ class SetupWebcam extends Component {
   }
 
   // Send notifications for logged in user
+  addAlert(){
+    let req = {
+      username: this.props.username,
+      peerId: this.state.peerId,
+    };
+    return fetch(`api/stream/addAlert`, {
+      method: "POST",
+      body: JSON.stringify(req),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
   sendNotifications(options) {
     let newBody = {
       username: this.props.username,
@@ -323,6 +344,7 @@ class SetupWebcam extends Component {
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
+          this.addAlert();
           if (this.state.sendPush) {
             this.sendNotifications({
               title: "Face detected on stream",
@@ -503,6 +525,10 @@ class SetupWebcam extends Component {
       // render modal
       this.setState({ shouldRenderPasswordModal: true });
     }
+  }
+
+  closeModal(){
+    this.setState({ shouldRenderPasswordModal: false });
   }
 
   stopStreaming() {
@@ -777,6 +803,7 @@ class SetupWebcam extends Component {
                     username={this.props.username}
                     peerId={this.state.peerId}
                     callback={this.stopStreaming}
+                    callback2={this.closeModal}
                   />
                 ) : (
                   ""

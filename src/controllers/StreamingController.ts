@@ -87,7 +87,6 @@ export class StreamingController {
             if(err){
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
-
             if(dbRes.length != 0){
                 return res.status(CONFLICT).json({"message":"peerId exists"});
             }
@@ -101,5 +100,27 @@ export class StreamingController {
                 }
             });
         });
+    }
+
+    @Post('addAlert')
+    @Middleware(isAuthenticated)
+    private addAlert(req: Request, res: Response){
+        Logger.Info(req.url);
+        if(req.session?.user !== req.body.username){
+            return res.status(UNAUTHORIZED).json({"message":"cannot start stream of another user"});
+        }
+        Stream.find({peerId: req.body.peerId}).exec((err:any, dbRes:IStream[]) => {
+            if(err){
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+            console.log(dbRes);
+            let increm = dbRes[0].alerts + 1;
+            let query = { peerId: req.body.peerId };
+            let newvalues = { $set: {alerts: increm}};
+            Stream.updateOne(query, newvalues, (err2, dbRes2) => {
+                if (err2) return res.status(BAD_REQUEST).json(err2);
+                return res.status(OK).json({ "message": "Alerts incremented" });
+            });
+        })
     }
 }

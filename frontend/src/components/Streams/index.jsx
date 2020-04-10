@@ -42,16 +42,25 @@ function Stream(props) {
 
   const handleShow = () => setShow(true);
 
+  function parseTime(timestamp){
+    let first = timestamp.split('T');
+    let date = first[0];
+    let second = first[1].split('.');
+    let hour = second[0];
+    return [date, hour];
+  }
+
   return (
     <div className="stream">
       <div className="stream-info">
-        <div className="stream-title">{props.device}</div>
         <div className="stream-title">{props.name}</div>
-        <div className="stream-started">{props.startTime}</div>
+        <div className="stream-started">
+          <div className="stream-date">{parseTime(props.startTime)[0]}</div>
+          <div className="stream-date">{parseTime(props.startTime)[1]}</div>
+        </div>
       </div>
       <div className="stream-info-2">
-        <div className="stream-alerts "> 0 unacknowledged alerts</div>
-        <div className="stream-alerts-total"> 0 total alerts</div>
+        <div className="stream-alerts-total"> {props.alerts} total alerts</div>
       </div>
       <div className="stream-buttons">
         <Link
@@ -109,6 +118,7 @@ class Streams extends Component {
               startTime={stream.created_at}
               peerId={stream.peerId}
               username={stream.username}
+              alerts={stream.alerts}
               callback={this.getStreams}
             />
           );

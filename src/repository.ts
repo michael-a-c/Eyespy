@@ -59,6 +59,7 @@ interface IStream extends mongoose.Document {
   device: string,
   peerId: string,
   title: string,
+  alerts: number,
   streamingOptions: {
     sms: boolean,
     push: boolean,
@@ -88,6 +89,7 @@ const StreamSchema = new mongoose.Schema({
   device: { type: String, required: true },
   peerId: { type: String, required: true },
   title: { type: String, required: true },
+  alerts: {type: Number, default: 0},
 
   streamingOptions: {
     sms: {
