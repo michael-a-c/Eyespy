@@ -147,4 +147,88 @@ export class StreamingController {
             });
         })
     }
+
+    @Post('sendnotifications')
+    @Middleware(isAuthenticated)
+    private sendnotifications(req: Request, res: Response) {
+        console.log("sending notifications for stream hopefully")
+
+        if (req.session?.user !== req.body.username) {
+            return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
+        }
+
+        Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: any) => {
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+
+            if (dbRes.length > 1 || dbRes.length < 1) {
+                return res.status(CONFLICT).json({ "message": "invalid stream" });
+            }
+
+            User.find({ username: dbRes[0].username }).exec((err: NativeError, result: IUser[]) => {
+                console.log(dbRes);
+                if (err) {
+                    return res.status(INTERNAL_SERVER_ERROR).json(err);
+                }
+                else if (result.length === 0) {
+                    return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
+                } else {
+
+                    /// If set up, send email notification
+                    if (dbRes[0].streamingOptions.email) {
+                        let mail = {
+                            from: "EyeSpy Security",
+                            to: result[0].email,
+                            subject: req.body.emailoptions.subject,
+                            html: req.body.emailoptions.content,
+                            /*
+                            attachments: [
+                                {   
+                                    filename: 'screen-shot.jpg',
+                                    content: fs.readFileSync(imagePath)
+                                }]
+                            */
+                        };
+                        transporter.sendMail(mail, (err: any, data: any) => {
+                            if (err) {
+                                res.status(BAD_REQUEST).json({
+                                    message: 'Failure in sedning E-mail'
+                                })
+                            } else {
+                                res.status(OK).json({
+                                    message: 'E-mail sent successfully'
+                                })
+                            }
+                        })
+
+                    }
+
+                    /// If setup, send SMS notifications
+                    if (dbRes[0].streamingOptions.sms) {
+                        let userP = '+1' + result[0].phone;
+                        let fullSMS = req.body.smsoptions.title + req.body.smsoptions.body + req.body.smsoptions.url;
+                        if (userP == "+1") {
+                            return res.status(OK).json({ "message": "no phone number for account" });
+                        }
+                        twilio.messages.create({
+                            body: fullSMS,
+                            from: '+12057298375',
+                            to: userP
+                        });
+                    }
+
+
+                    /// If set up, send push notifications
+
+                    // For every device in user
+                    // If device is selected in stream, notify it
+
+
+
+                }
+            });
+        });
+        res.status(200).json({ 'success': true, 'message': 'le pinged' });
+    }
 }
