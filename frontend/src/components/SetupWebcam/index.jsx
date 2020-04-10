@@ -150,6 +150,7 @@ class SetupWebcam extends Component {
     this.doFacialDetection = this.doFacialDetection.bind(this);
     this.stopStreaming = this.stopStreaming.bind(this);
     this.sendNotifications = this.sendNotifications.bind(this);
+    this.sendPushNotifications = this.sendPushNotifications.bind(this);
     this.createWebcamList = this.createWebcamList.bind(this);
     this.selectWebcam = this.selectWebcam.bind(this);
     this.doArmWait = this.doArmWait.bind(this);
@@ -190,8 +191,18 @@ class SetupWebcam extends Component {
       });
   }
 
-  // Send notifications for logged in user
   sendNotifications(options) {
+    return fetch(`api/stream/sendnotifications`, {
+      method: "POST",
+      body: JSON.stringify(options),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  // Send notifications for logged in user
+  sendPushNotifications(options) {
     let newBody = {
       username: this.props.username,
       title: options.title,
@@ -290,6 +301,8 @@ class SetupWebcam extends Component {
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
+
+          /*
           this.sendNotifications({
             title: "Face detected on stream",
             body: "Click Live Watch to view",
@@ -302,6 +315,7 @@ class SetupWebcam extends Component {
             body: "watch from here ",
             url: `/watch/${this.state.peerId}`,
           });
+          */
         }
       }
 
@@ -396,6 +410,29 @@ class SetupWebcam extends Component {
             countdownActive: false,
           });
 
+          let notificationoptions = {
+            username: res.username,
+            peerId: id,
+            pushoptions: {
+              title: "Started a stream: " + res.title,
+              body: "Click Live Watch to view",
+              leftText: "Dismiss Notification",
+              rightText: "Live Watch",
+              url: `/watch/${parent.state.peerId}`,
+            },
+            smsoptions: {
+              title: "Started stream - " + res.title + ": ",
+              body: "\nWatch from here: ",
+              url: `http://localhost:3000/watch/${parent.state.peerId}`,
+            },
+            emailoptions: {
+              subject: "Started a stream: " + res.title,
+              content: "To watch the stream, click <a href=\"http://localhost:3000/watch/"+parent.state.peerId+"\">link text</a>"
+            }
+          }
+          parent.sendNotifications(notificationoptions);
+
+          /*
           parent.sendNotifications({
             title: "Started a stream: " + res.title,
             body: "Click Live Watch to view",
@@ -409,6 +446,7 @@ class SetupWebcam extends Component {
             body: "watch from here ",
             url: `/watch/${parent.state.peerId}`,
           });
+          */
         }
       });
     });
@@ -474,7 +512,7 @@ class SetupWebcam extends Component {
     });
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
-
+    /*
     this.sendNotifications({
       title: "Ended a stream",
       body: 'Click "Home Page" to take you to your home page',
@@ -488,6 +526,7 @@ class SetupWebcam extends Component {
       body: "to return home, go here ",
       url: "/devices",
     });
+    */
   }
   render() {
     return (

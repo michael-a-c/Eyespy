@@ -1,11 +1,6 @@
 import { Response, Request } from 'express';
 import { Controller, Middleware, Get, Put, Post, Delete } from '@overnightjs/core';
-import { Logger } from '@overnightjs/logger';
 import { OK, BAD_REQUEST, INTERNAL_SERVER_ERROR, CONFLICT, NOT_FOUND, UNAUTHORIZED } from 'http-status-codes';
-import { SignupRequestMaker, SignupRequest, SigninRequest, SigninRequestMaker } from '../Requests'
-import { User, UserSchema, IUser } from "../repository";
-import { NativeError } from 'mongoose';
-import { isAuthenticated } from '../middleware'
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -40,36 +35,47 @@ export class EmailController {
     private sendemail(req: Request, res: Response) {
         /// These are parameters
         let email = req.body.email
-        let message = req.body.message
-        let content = `<img src="frontend/public/face.jpg">`
+        let subject = req.body.subject
+        let content = req.body.content
+        let imagePath;
 
-        var mail = {
-            from: "EyeSpy Security",
-            to: 'seanapplebaum@gmail.com',  //Change to email address that you want to receive messages on
-            subject: 'Intruder has been detected!',
-            html: content,
-            attachments: [
-                {   // utf-8 string as an attachment
-                    filename: 'img.jpg',
-                    content: fs.readFileSync("frontend/public/face.jpg")
-                }]
+
+        let mail;
+        if (req.body.imagePath) {
+            imagePath = req.body.imagePath
+            mail = {
+                from: "EyeSpy Security",
+                to: email,
+                subject: subject,
+                html: content,
+                attachments: [
+                    {   
+                        filename: 'screen-shot.jpg',
+                        content: fs.readFileSync(imagePath)
+                    }]
+            }
+        } else {
+            mail = {
+                from: "EyeSpy Security",
+                to: email,
+                subject: subject,
+                html: content,
+            }
         }
-
-        console.log("SENDING EMAIL");
-
+        console.log(mail);
         transporter.sendMail(mail, (err: any, data: any) => {
             if (err) {
-                res.status(500).json({
-                    msg: 'fail'
+                res.status(BAD_REQUEST).json({
+                    message: 'Failure in sedning E-mail'
                 })
             } else {
-                res.status(200).json({
-                    msg: 'success'
+                res.status(OK).json({
+                    message: 'E-mail sent successfully'
                 })
             }
         })
 
-        res.status(200).json({ 'success': true });
+        res.status(INTERNAL_SERVER_ERROR).json({ message: 'Failure in sedning E-mail' });
     }
 
 
