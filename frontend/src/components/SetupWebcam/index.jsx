@@ -52,8 +52,8 @@ function WebcamSelect(props) {
 
 function DevicesList(props) {
 
-  if (!props.devices) {
-    return ("Could not load devices")
+  if (props.devices.length == 0) {
+    return ("You currently have no devices set up to recieve push notifications")
   }
   let devicesList = props.devices.map((device) =>
     <ListGroup.Item className="devices-list-actual" key={device.deviceName}>
@@ -133,6 +133,26 @@ function ModalController(props) {
         password: password,
         peerId: props.peerId,
       };
+      let notificationoptions = {
+        username: props.username,
+        peerId: props.peerId,
+        pushoptions: {
+          title: "Ended the stream: " + props.streamTitle,
+          body: "If this was not you, consider changing your password immediately",
+        },
+        smsoptions: {
+          title: "Ended stream - " + props.streamTitle,
+          body: "\nIf this was not you, consider changing your password immediately",
+          url: "",
+        },
+        emailoptions: {
+          subject: "Ended the stream: " + props.streamTitle,
+          content: "If this was not you, consider changing your password immediately"
+        }
+      }
+      console.log("notif:", notificationoptions)
+      props.notify(notificationoptions)
+
       Requests.stopStream(req).then((res) => {
         if (res && res.status == "401") {
           setPasswordError("Invalid Password");
@@ -179,6 +199,7 @@ class SetupWebcam extends Component {
 
 
     this.state = {
+      username: props.username,
       videoConstraints: {
         width: 1280,
         height: 720,
@@ -202,10 +223,11 @@ class SetupWebcam extends Component {
       streamTitle: null,
       sendEmail: true,
       streamDevices: {},
-      devices: this.getDevices()
+      devices: []
     };
   }
   componentDidMount() {
+    this.getDevices()
     this.loadFacialDetection()
       .then(() => {
         this.createWebcamList().then(() => {
@@ -511,24 +533,6 @@ class SetupWebcam extends Component {
             }
           }
           parent.sendNotifications(notificationoptions);
-
-          /*
-          parent.sendNotifications({
-            title: "Started a stream: " + res.title,
-            body: "Click Live Watch to view",
-            leftText: "Dismiss Notification",
-            rightText: "Live Watch",
-            url: `/watch/${parent.state.peerId}`,
-          });
-
-          parent.sendSMSnotification({
-            title: "Started stream - " + res.title + ": ",
-            body: "watch from here ",
-            url: `/watch/${parent.state.peerId}`,
-          });
-          */
-
-
         }
       });
     });
@@ -588,6 +592,7 @@ class SetupWebcam extends Component {
   }
 
   stopStreaming() {
+
     this.setState({ shouldRenderPasswordModal: false });
 
     this.state.peerCons.forEach((conn) => {
@@ -599,21 +604,7 @@ class SetupWebcam extends Component {
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
 
-    /*
-    this.sendNotifications({
-      title: "Ended a stream",
-      body: 'Click "Home Page" to take you to your home page',
-      leftText: "Dismiss Notification",
-      rightText: "Home Page",
-      url: "/devices",
-    });
 
-    this.sendSMSnotification({
-      title: "Ended stream: ",
-      body: "to return home, go here ",
-      url: "/devices",
-    });
-    */
   }
 
 
@@ -813,9 +804,9 @@ class SetupWebcam extends Component {
                                       id="push"
                                       type="switch"
                                       name="push"
-                                      label="Notify with Push Notification"
-                                      disabled={this.state.isRecording}
-                                      checked={this.state.sendPush}
+                                      label={this.state.devices.length == 0 ? "You no devices set up" : "Notify with Push Notification"}
+                                      disabled={this.state.isRecording || this.state.devices.length == 0}
+                                      checked={this.state.devices.length == 0 ? false : this.state.sendPush}
                                       isInvalid={touched.push && !!errors.push}
                                     />
                                   </Form.Group>
@@ -863,6 +854,8 @@ class SetupWebcam extends Component {
                   <ModalController
                     username={this.props.username}
                     peerId={this.state.peerId}
+                    notify={this.sendNotifications}
+                    streamTitle={this.state.streamTitle}
                     callback={this.stopStreaming}
                     callback2={this.closeModal}
                   />
