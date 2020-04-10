@@ -34,8 +34,8 @@ export default class ScreenshotGallery extends Component {
       <Jumbotron className="jumbotron-dark gallery-view">
         <Container>
           <Row>
-            <Col>
-              <h3>Your Screen Shots</h3>
+            <Col sm={12}>
+              <h4>Your Screen Shots</h4>
               {!this.state.failed && this.state.loaded ? (
                 this.state.images.length == 0 ? (
                   <div>You do not have any screenshots</div>
@@ -50,8 +50,8 @@ export default class ScreenshotGallery extends Component {
                             alt={image.title}
                           />
                           <Carousel.Caption>
-                            <h3>{image.title}</h3>
-                            <p>{image.date}</p>
+                            <h3 className="image-header">{image.title}</h3>
+                            <p className="image-subtext">{image.date}</p>
                           </Carousel.Caption>
                         </Carousel.Item>
                       );
