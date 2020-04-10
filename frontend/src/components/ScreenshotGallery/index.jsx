@@ -40,7 +40,7 @@ export default class ScreenshotGallery extends Component {
                 this.state.images.length == 0 ? (
                   <div>You do not have any screenshots</div>
                 ) : (
-                  <Carousel pause={"hover"} interval={30000}>
+                  <Carousel pause={"hover"} interval={300000}>
                     {this.state.images.map((image) => {
                       return (
                         <Carousel.Item key={image.id}>
