@@ -1,9 +1,9 @@
 import React from "react";
 import About from "./components/About";
-import Email from "./components/Email";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
+import ScreenshotGallery from "./components/ScreenshotGallery";
 import Devices from "./components/Devices";
 import MainNavbar from "./components/MainNavBar";
 import PushNotifications from "./components/PushNotifications";
@@ -69,9 +69,6 @@ class App extends React.Component {
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/pushnotifications">
             <PushNotifications />
           </PrivateRoute>
-          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/email">
-            <Email />
-          </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/account">
             <AccountInfo />
           </PrivateRoute>
@@ -80,6 +77,9 @@ class App extends React.Component {
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/record">
             <SetupWebcam username={this.props.username}/>
+          </PrivateRoute>
+          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/screenshots">
+            <ScreenshotGallery username={this.props.username}/>
           </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} path="/watch/:id" component={Watch} />
           <Route exact path="/">

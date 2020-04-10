@@ -65,14 +65,15 @@ export class ScreenshotController {
         })
     }
 
-    @Get('list/:username')
+    @Get('list/')
     @Middleware(isAuthenticated)
     private list(req: Request, res: Response){
-        Screenshot.find({username : req.params.username}, (err, result) => {
+        Screenshot.find({username : req.session!.user}).sort({date: -1}).exec((err, result) => {
             if(err){
                 return res.status(INTERNAL_SERVER_ERROR).end(INTERNAL_SERVER_ERROR);
             }
-            return res.json(result.map((screenshot) =>{ return ({"id": screenshot.id, "title": screenshot.title})}));
+            let filteredArray = result.map((screenshot) =>{ return ({"id": screenshot.id, "title": screenshot.title, date:screenshot.date})});
+            return res.json(filteredArray).end();
         })
     }
 }

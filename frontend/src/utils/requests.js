@@ -60,6 +60,10 @@ let Requests = {
     return await this.requestBody("POST", "/api/email/sendemail", request)
   },
 
+  sendnotifications: async function (request) {
+    return await this.requestBody("POST", "/api/stream/sendnotifications", request)
+  },
+
 
 
   getUserStreams: async function(){

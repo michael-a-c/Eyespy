@@ -93,7 +93,7 @@ class Watch extends Component {
 
   render() {
     return (
-      <Jumbotron className="jumbotron-dark">
+      <Jumbotron className="jumbotron-dark watch-view">
         <Container>
           <Row>
             <Col>
