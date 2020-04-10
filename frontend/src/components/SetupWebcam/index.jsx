@@ -485,7 +485,7 @@ class SetupWebcam extends Component {
             },
             emailoptions: {
               subject: "Started a stream: " + res.title,
-              content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + parent.state.peerId + "\">link text</a>"
+              content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + parent.state.peerId + "\">here</a>"
             }
           }
           parent.sendNotifications(notificationoptions);

@@ -8,8 +8,12 @@ import { NativeError, Schema } from 'mongoose';
 import { isAuthenticated } from '../middleware'
 const bcrypt = require('bcryptjs');
 
+const twilio = require('twilio')('AC9e52c9c34772601e7260597eabb183cc', '2f63ecb944038ba4413a507babc34b27');
+// eyespysnowdenc09
+
 var nodemailer = require('nodemailer');
 var fs = require('fs');
+
 
 var transport = {
     host: 'smtp.gmail.com',
