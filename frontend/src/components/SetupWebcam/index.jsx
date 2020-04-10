@@ -52,7 +52,6 @@ function WebcamSelect(props) {
 
 function DevicesList(props) {
 
-  
   if (!props.devices) {
     return ("Could not load devices")
   }
