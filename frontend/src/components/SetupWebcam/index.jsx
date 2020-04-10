@@ -62,6 +62,9 @@ function DevicesList(props) {
           disabled={props.isStreaming}
           type="checkbox"
           label={device.deviceName}
+          onChange={(event) => {
+            props.selectDevice(device.deviceName)
+          }}
         />
       </Form.Group>
     </ListGroup.Item>
@@ -72,8 +75,8 @@ function DevicesList(props) {
         {devicesList}
       </ListGroup>
     </div>
-  );   
-  
+  );
+
 }
 
 function ControlPanel(props) {
@@ -107,7 +110,7 @@ function ControlPanel(props) {
           Chosen Devices will receive push notifications
         </div>
 
-        <DevicesList devices={props.devices} isStreaming={props.isStreaming}></DevicesList>
+        <DevicesList devices={props.devices} isStreaming={props.isStreaming} selectDevice={props.selectDevice}></DevicesList>
 
 
       </div>
@@ -172,6 +175,8 @@ class SetupWebcam extends Component {
     this.takeScreenshot = this.takeScreenshot.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.getDevices = this.getDevices.bind(this);
+    this.selectDevice = this.selectDevice.bind(this);
+
 
     this.state = {
       videoConstraints: {
@@ -196,6 +201,7 @@ class SetupWebcam extends Component {
       sendSMS: true,
       streamTitle: null,
       sendEmail: true,
+      streamDevices: {},
       devices: this.getDevices()
     };
   }
@@ -227,7 +233,12 @@ class SetupWebcam extends Component {
         //this.setState({ loading: false, serverError: true })
       } else {
         //this.setState({ loading: false })
-        this.setState({ devices: result.devices })
+        let streamDevices = {};
+        result.devices.forEach((device) => {
+          streamDevices[device.deviceName] = false
+        });
+        console.log("stream info: ", streamDevices);
+        this.setState({ devices: result.devices, streamDevices: streamDevices })
         console.log(result.message)
       }
     })
@@ -435,13 +446,20 @@ class SetupWebcam extends Component {
     let peer = new Peer();
     let parent = this;
 
-    console.log("SUBREQ!!!!!!: ",parent.state)
+    let streamDevices = [];
+    for (let streamDevice in parent.state.streamDevices) {
+      if (parent.state.streamDevices.hasOwnProperty(streamDevice)) {
+        if (parent.state.streamDevices[streamDevice]) {
+          streamDevices.push(streamDevice)
+        }
+      }
+    }
 
     peer.on("open", function (id) {
       console.log("My peer ID is: " + id);
       let req = {
         title: subReq.title,
-        devices: ["Sean's laptop"], //// Need this to be based off of checkboxed devices
+        devices: streamDevices, //// Need this to be based off of checkboxed devices
         peerId: id,
         username: parent.props.username,
         streamingOptions: {
@@ -623,6 +641,10 @@ class SetupWebcam extends Component {
     }
   }
 
+  selectDevice(deviceName) {
+    this.state.streamDevices[deviceName] = !this.state.streamDevices[deviceName]
+  }
+
   render() {
     return (
       <FadeIn>
@@ -634,6 +656,7 @@ class SetupWebcam extends Component {
                   screenShotCallback={this.takeScreenshot}
                   isStreaming={this.state.isRecording}
                   devices={this.state.devices}
+                  selectDevice={this.selectDevice}
                 />
               </Col>
               <Col lg={12} xl={8}>
