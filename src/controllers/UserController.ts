@@ -222,7 +222,7 @@ export class UserController {
             } else {
                 let userP = '+1' + result[0].phone;
                 let fullSMS = req.body.title + req.body.body + req.body.url;
-                if(userP == ""){
+                if(userP == "+1"){
                     return res.status(OK).json({"message": "no phone number for account"});
                 }
                 twilio.messages.create({

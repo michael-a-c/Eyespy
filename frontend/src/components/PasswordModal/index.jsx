@@ -13,10 +13,10 @@ function PasswordModal(props) {
         show={props.show}
         onHide={() => {
           setPassword("");
-          props.handleClose(password);
+          props.handleClose(password, false);
         }}
       >
-        <Modal.Header closeButton={false}>
+        <Modal.Header closeButton>
           <Modal.Title>Password confirm</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -42,7 +42,7 @@ function PasswordModal(props) {
               variant="primary"
               disabled={password === ""}
               onClick={() => {
-                props.handleClose(password);
+                props.handleClose(password, true);
               }}
             >
               Submit

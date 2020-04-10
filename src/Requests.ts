@@ -66,14 +66,14 @@ class StartStreamingRequest{
     username : string;
     peerId: string;
     streamingOptions : StreamingOptions;
-    device: string;
+    devices: any;
     title:string;
 
-    constructor(username:string, peerId: string, device: string, title: string, streamingOptions: StreamingOptions){
+    constructor(username:string, peerId: string, devices: any, title: string, streamingOptions: StreamingOptions){
         this.username = username;
         this.streamingOptions = streamingOptions;
         this.peerId = peerId;
-        this.device = device;
+        this.devices = devices;
         this.title = title;
     }
 }
@@ -82,7 +82,7 @@ class StartStreamingRequestMaker {
         if((input.streamingOptions.publicView === null) || (input.streamingOptions.push === null)  || (input.streamingOptions.sms === null) ){
             throw new Error("INVALID REQUEST BODY");
         }
-        return new StartStreamingRequest(input.username, input.peerId,  input.device, input.title, input.streamingOptions);
+        return new StartStreamingRequest(input.username, input.peerId,  input.devices, input.title, input.streamingOptions);
     }
 }
 

@@ -49,6 +49,35 @@ function WebcamSelect(props) {
   );
 }
 
+function DevicesList(props) {
+
+  if (props.devices.length == 0) {
+    return ("You currently have no devices set up to recieve push notifications")
+  }
+  let devicesList = props.devices.map((device) =>
+    <ListGroup.Item className="devices-list-actual" key={device.deviceName}>
+      <Form.Group className="device-checkbox" controlId={device.deviceName}>
+        <Form.Check
+          disabled={props.isStreaming}
+          type="checkbox"
+          label={device.deviceName}
+          onChange={(event) => {
+            props.selectDevice(device.deviceName)
+          }}
+        />
+      </Form.Group>
+    </ListGroup.Item>
+  );
+  return (
+    <div className="devices-list">
+      <ListGroup variant="flush">
+        {devicesList}
+      </ListGroup>
+    </div>
+  );
+
+}
+
 function ControlPanel(props) {
   return (
     <div className="control-panel">
@@ -79,55 +108,9 @@ function ControlPanel(props) {
           Chosen Devices will receive push notifications
         </div>
 
-        <div className="devices-list">
-          <ListGroup variant="flush">
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="t480">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="T480"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="iphone">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="IPhone"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="Laptop 2"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="Laptop 2"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="Laptop 2"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-          </ListGroup>
-        </div>
+        <DevicesList devices={props.devices} isStreaming={props.isStreaming} selectDevice={props.selectDevice}></DevicesList>
+
+
       </div>
     </div>
   );
@@ -137,25 +120,51 @@ function ModalController(props) {
   const [show, setShow] = useState(true);
   const [passwordError, setPasswordError] = useState(null);
 
-  const handleClose = (password) => {
-    let req = {
-      username: props.username,
-      password: password,
-      peerId: props.peerId,
-    };
-    Requests.stopStream(req).then((res) => {
-      if (res && res.status == "401") {
-        setPasswordError("Invalid Password");
-        setShow(true);
-      } else if (res && res.status) {
-        setPasswordError("Server Error");
-        setShow(true);
-      } else if (res && !res.status) {
-        setPasswordError(null);
-        setShow(false);
-        props.callback();
+  const handleClose = (password, close) => {
+    if (!close) {
+      setShow(false);
+      props.callback2();
+    }
+    if (close) {
+      let req = {
+        username: props.username,
+        password: password,
+        peerId: props.peerId,
+      };
+      let notificationoptions = {
+        username: props.username,
+        peerId: props.peerId,
+        pushoptions: {
+          title: "Ended the stream: " + props.streamTitle,
+          body: "If this was not you, consider changing your password immediately",
+        },
+        smsoptions: {
+          title: "Ended stream - " + props.streamTitle,
+          body: "\nIf this was not you, consider changing your password immediately",
+          url: "",
+        },
+        emailoptions: {
+          subject: "Ended the stream: " + props.streamTitle,
+          content: "If this was not you, consider changing your password immediately"
+        }
       }
-    });
+      console.log("notif:", notificationoptions)
+      props.notify(notificationoptions)
+
+      Requests.stopStream(req).then((res) => {
+        if (res && res.status == "401") {
+          setPasswordError("Invalid Password");
+          setShow(true);
+        } else if (res && res.status) {
+          setPasswordError("Server Error");
+          setShow(true);
+        } else if (res && !res.status) {
+          setPasswordError(null);
+          setShow(false);
+          props.callback();
+        }
+      });
+    }
   };
   return (
     <PasswordModal
@@ -176,14 +185,19 @@ class SetupWebcam extends Component {
     this.doFacialDetection = this.doFacialDetection.bind(this);
     this.stopStreaming = this.stopStreaming.bind(this);
     this.sendNotifications = this.sendNotifications.bind(this);
+    this.sendPushNotifications = this.sendPushNotifications.bind(this);
     this.createWebcamList = this.createWebcamList.bind(this);
     this.selectWebcam = this.selectWebcam.bind(this);
     this.doArmWait = this.doArmWait.bind(this);
     this.activateRecording = this.activateRecording.bind(this);
     this.takeScreenshot = this.takeScreenshot.bind(this);
     this.runMotionDetection = this.runMotionDetection.bind(this);
+    this.closeModal = this.closeModal.bind(this);
+    this.getDevices = this.getDevices.bind(this);
+    this.selectDevice = this.selectDevice.bind(this);
 
     this.state = {
+      username: props.username,
       videoConstraints: {
         width: 1280,
         height: 1280,
@@ -206,9 +220,12 @@ class SetupWebcam extends Component {
       sendSMS: true,
       streamTitle: null,
       sendEmail: true,
+      streamDevices: {},
+      devices: []
     };
   }
   componentDidMount() {
+    this.getDevices()
     this.loadFacialDetection()
       .then(() => {
         this.createWebcamList().then(() => {
@@ -222,8 +239,58 @@ class SetupWebcam extends Component {
       });
   }
 
+  getDevices() {
+    Requests.getdevices().then((result) => {
+      if (result.status === 400) {
+        //this.setState({ loading: false, badRequestError: true });
+      } else if (result.status === 401) {
+        //this.setState({ loading: false, unAuthorizedError: true });
+      } else if (result.status === 404) {
+        //this.setState({ loading: false, notFoundError: true });
+      } else if (result.status === 409) {
+        //this.setState({ loading: false, conflictError: true });
+      } else if (result.status && result.status !== 200) {
+        //this.setState({ loading: false, serverError: true })
+      } else {
+        //this.setState({ loading: false })
+        let streamDevices = {};
+        result.devices.forEach((device) => {
+          streamDevices[device.deviceName] = false
+        });
+        console.log("stream info: ", streamDevices);
+        this.setState({ devices: result.devices, streamDevices: streamDevices })
+        console.log(result.message)
+      }
+    })
+  }
+
   // Send notifications for logged in user
+  addAlert() {
+    let req = {
+      username: this.props.username,
+      peerId: this.state.peerId,
+    };
+    return fetch(`api/stream/addAlert`, {
+      method: "POST",
+      body: JSON.stringify(req),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
   sendNotifications(options) {
+    return fetch(`api/stream/sendnotifications`, {
+      method: "POST",
+      body: JSON.stringify(options),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  // Send notifications for logged in user
+  sendPushNotifications(options) {
     let newBody = {
       username: this.props.username,
       title: options.title,
@@ -337,6 +404,8 @@ class SetupWebcam extends Component {
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
+          this.addAlert();
+          /*
           if (this.state.sendPush) {
             this.sendNotifications({
               title: "Face detected on stream",
@@ -353,6 +422,7 @@ class SetupWebcam extends Component {
               url: `/watch/${this.state.peerId}`,
             });
           }
+          */
         }
       }
 
@@ -414,20 +484,28 @@ class SetupWebcam extends Component {
     let peer = new Peer();
     let parent = this;
 
+    let streamDevices = [];
+    for (let streamDevice in parent.state.streamDevices) {
+      if (parent.state.streamDevices.hasOwnProperty(streamDevice)) {
+        if (parent.state.streamDevices[streamDevice]) {
+          streamDevices.push(streamDevice)
+        }
+      }
+    }
+
     peer.on("open", function (id) {
       console.log("My peer ID is: " + id);
       let req = {
         title: subReq.title,
-        device: "placeHolder", // Device that is doing le stream
+        devices: streamDevices, //// Need this to be based off of checkboxed devices
         peerId: id,
         username: parent.props.username,
         streamingOptions: {
-          sms: subReq.sms,
-          push: subReq.push,
-          email: subReq.email,
+          sms: parent.state.sendSMS,
+          push: parent.state.sendPush,
+          email: parent.state.sendEmail,
         },
       };
-      console.log(req);
       Requests.startStream(req).then((res) => {
         if (res && res.status && res.status != "200") {
           console.log(res);
@@ -450,23 +528,27 @@ class SetupWebcam extends Component {
             countdownActive: false,
           });
 
-          if (parent.state.sendPush) {
-            parent.sendNotifications({
+          let notificationoptions = {
+            username: res.username,
+            peerId: id,
+            pushoptions: {
               title: "Started a stream: " + res.title,
               body: "Click Live Watch to view",
               leftText: "Dismiss Notification",
               rightText: "Live Watch",
               url: `/watch/${parent.state.peerId}`,
-            });
-          }
-
-          if (parent.state.sendSMS) {
-            parent.sendSMSnotification({
+            },
+            smsoptions: {
               title: "Started stream - " + res.title + ": ",
-              body: "watch from here ",
-              url: `/watch/${parent.state.peerId}`,
-            });
+              body: "\nWatch from here: ",
+              url: `http://localhost:3000/watch/${parent.state.peerId}`,
+            },
+            emailoptions: {
+              subject: "Started a stream: " + res.title,
+              content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + parent.state.peerId + "\">here</a>"
+            }
           }
+          parent.sendNotifications(notificationoptions);
         }
       });
     });
@@ -521,7 +603,12 @@ class SetupWebcam extends Component {
     }
   }
 
+  closeModal() {
+    this.setState({ shouldRenderPasswordModal: false });
+  }
+
   stopStreaming() {
+
     this.setState({ shouldRenderPasswordModal: false });
 
     this.state.peerCons.forEach((conn) => {
@@ -533,24 +620,9 @@ class SetupWebcam extends Component {
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
 
-    if (this.state.sendPush) {
-      this.sendNotifications({
-        title: "Ended a stream",
-        body: 'Click "Home Page" to take you to your home page',
-        leftText: "Dismiss Notification",
-        rightText: "Home Page",
-        url: "/devices",
-      });
-    }
 
-    if (this.state.sendSMS) {
-      this.sendSMSnotification({
-        title: "Ended stream: ",
-        body: "to return home, go here ",
-        url: "/devices",
-      });
-    }
   }
+
 
   takeScreenshot() {
     console.log("taking screenshot");
@@ -567,21 +639,17 @@ class SetupWebcam extends Component {
       }).then((res) => {
         console.log(res);
         if (res && res.status === 200) {
-          ToastNotif({
-            title: "Took a Screenshot",
-            type: "success",
-            message:
-              "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly",
-          });
+
+          ToastNotif({ "title": "Took a Screenshot", "type": "success", "message": "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly" });
         } else {
-          ToastNotif({
-            title: "Failed to take a Screenshot",
-            type: "failure",
-            message: "Perhaps you have lost connect to the network",
-          });
+          ToastNotif({ "title": "Failed to take a Screenshot", "type": "failure", "message": "Perhaps you have lost connect to the network" });
         }
       });
     }
+  }
+
+  selectDevice(deviceName) {
+    this.state.streamDevices[deviceName] = !this.state.streamDevices[deviceName]
   }
 
   render() {
@@ -594,6 +662,8 @@ class SetupWebcam extends Component {
                 <ControlPanel
                   screenShotCallback={this.takeScreenshot}
                   isStreaming={this.state.isRecording}
+                  devices={this.state.devices}
+                  selectDevice={this.selectDevice}
                 />
               </Col>
               <Col lg={12} xl={8}>
@@ -615,8 +685,8 @@ class SetupWebcam extends Component {
                     </div>
                   </div>
                 ) : (
-                  ""
-                )}
+                    ""
+                  )}
                 {this.state.loadingFaceDetection ? (
                   <div className="webcam-spinner">
                     <div className="webcam-spinner-text">
@@ -624,8 +694,8 @@ class SetupWebcam extends Component {
                     </div>
                   </div>
                 ) : (
-                  ""
-                )}
+                    ""
+                  )}
                 {this.state.userDenied ? (
                   <div>
                     <h3>Failed to access webcam</h3>
@@ -638,8 +708,8 @@ class SetupWebcam extends Component {
                     </div>
                   </div>
                 ) : (
-                  ""
-                )}
+                    ""
+                  )}
 
                 <div className="webcam">
                   <Webcam
@@ -666,151 +736,154 @@ class SetupWebcam extends Component {
                       </div>
                     </div>
                   ) : (
-                    ""
-                  )}
+                      ""
+                    )}
                 </div>
                 {!this.state.userDenied &&
-                !this.state.waitingForUserAccept &
+                  !this.state.waitingForUserAccept &
                   !this.state.loadingFaceDetection ? (
-                  <FadeIn>
-                    <div className="stream-form">
-                      <h3>Stream Info</h3>
-                      <Formik
-                        validationSchema={schema}
-                        onSubmit={this.handleToggleRecord}
-                        initialValues={{
-                          title: "",
-                          email: true,
-                          sms: true,
-                          push: true,
-                        }}
-                      >
-                        {({
-                          handleSubmit,
-                          handleChange,
-                          values,
-                          touched,
-                          errors,
-                        }) => (
-                          <Form noValidate onSubmit={handleSubmit}>
-                            <Form.Group required controlId="formTitle">
-                              <Form.Label>Title</Form.Label>
-                              <Form.Control
-                                required
-                                type="text"
-                                name="title"
-                                placeholder="Living Room 1"
-                                value={values.title}
-                                onChange={handleChange}
-                                disabled={this.state.isRecording}
-                                isInvalid={touched.title && !!errors.title}
-                              />
-                              <Form.Control.Feedback type="invalid">
-                                Please specify a title.
+                    <FadeIn>
+                      <div className="stream-form">
+                        <h3>Stream Info</h3>
+                        <Formik
+                          validationSchema={schema}
+                          onSubmit={this.handleToggleRecord}
+                          initialValues={{
+                            title: "",
+                            email: true,
+                            sms: true,
+                            push: true,
+                          }}
+                        >
+                          {({
+                            handleSubmit,
+                            handleChange,
+                            values,
+                            touched,
+                            errors,
+                          }) => (
+                              <Form noValidate onSubmit={handleSubmit}>
+                                <Form.Group required controlId="formTitle">
+                                  <Form.Label>Title</Form.Label>
+                                  <Form.Control
+                                    required
+                                    type="text"
+                                    name="title"
+                                    placeholder="Living Room 1"
+                                    value={values.title}
+                                    onChange={handleChange}
+                                    disabled={this.state.isRecording}
+                                    isInvalid={touched.title && !!errors.title}
+                                  />
+                                  <Form.Control.Feedback type="invalid">
+                                    Please specify a title.
                               </Form.Control.Feedback>
-                            </Form.Group>
-                            <WebcamSelect
-                              onSelect={this.selectWebcam}
-                              availableDevices={this.state.webcams}
-                            />
-                            <div className="form-checkmarks">
-                              <Form.Group>
-                                <Form.Check
-                                  onChange={(event) => {
-                                    this.setState({
-                                      sendEmail: !this.state.sendEmail,
-                                    });
-                                  }}
-                                  type="switch"
-                                  name="email"
-                                  disabled={this.state.isRecording}
-                                  label="Notify with Email"
-                                  id="email"
-                                  checked={this.state.sendEmail}
-                                  isInvalid={touched.email && !!errors.email}
+                                </Form.Group>
+                                <WebcamSelect
+                                  onSelect={this.selectWebcam}
+                                  availableDevices={this.state.webcams}
                                 />
-                              </Form.Group>
-                              <Form.Group>
-                                <Form.Check
-                                  onChange={(event) => {
-                                    this.setState({
-                                      sendSMS: !this.state.sendSMS,
-                                    });
-                                  }}
-                                  type="switch"
-                                  id="sms"
-                                  name="sms"
-                                  label="Notify with SMS"
-                                  checked={this.state.sendSMS}
-                                  disabled={this.state.isRecording}
-                                  isInvalid={touched.sms && !!errors.sms}
-                                />
-                              </Form.Group>
-                              <Form.Group>
-                                <Form.Check
-                                  onChange={(event) => {
-                                    this.setState({
-                                      sendPush: !this.state.sendPush,
-                                    });
-                                  }}
-                                  id="push"
-                                  type="switch"
-                                  name="push"
-                                  label="Notify with Push Notification"
-                                  disabled={this.state.isRecording}
-                                  checked={this.state.sendPush}
-                                  isInvalid={touched.push && !!errors.push}
-                                />
-                              </Form.Group>
-                            </div>
-                            <FadeIn>
-                              <div className="setup-button">
-                                <Button
-                                  className="record-button"
-                                  disabled={this.state.countdownActive}
-                                  type="submit"
-                                  variant={
-                                    this.state.countdownActive
-                                      ? "warning"
-                                      : this.state.isRecording
-                                      ? "danger"
-                                      : "primary"
-                                  }
-                                >
-                                  {this.state.countdownActive
-                                    ? "Arming in " + this.state.armCounter
-                                    : this.state.isRecording
-                                    ? "Disarm"
-                                    : "Arm"}
-                                  {this.state.isLoading ? (
-                                    <Spinner
-                                      className={"button-spinner "}
-                                      animation="border"
-                                      variant="primary"
+                                <div className="form-checkmarks">
+                                  <Form.Group>
+                                    <Form.Check
+                                      onChange={(event) => {
+                                        this.setState({
+                                          sendEmail: !this.state.sendEmail,
+                                        });
+                                      }}
+                                      type="switch"
+                                      name="email"
+                                      disabled={this.state.isRecording}
+                                      label="Notify with Email"
+                                      id="email"
+                                      checked={this.state.sendEmail}
+                                      isInvalid={touched.email && !!errors.email}
                                     />
-                                  ) : (
-                                    ""
-                                  )}
-                                </Button>
-                              </div>
-                            </FadeIn>
-                          </Form>
-                        )}
-                      </Formik>
-                    </div>
-                  </FadeIn>
-                ) : (
-                  ""
-                )}
+                                  </Form.Group>
+                                  <Form.Group>
+                                    <Form.Check
+                                      onChange={(event) => {
+                                        this.setState({
+                                          sendSMS: !this.state.sendSMS,
+                                        });
+                                      }}
+                                      type="switch"
+                                      id="sms"
+                                      name="sms"
+                                      label="Notify with SMS"
+                                      checked={this.state.sendSMS}
+                                      disabled={this.state.isRecording}
+                                      isInvalid={touched.sms && !!errors.sms}
+                                    />
+                                  </Form.Group>
+                                  <Form.Group>
+                                    <Form.Check
+                                      onChange={(event) => {
+                                        this.setState({
+                                          sendPush: !this.state.sendPush,
+                                        });
+                                      }}
+                                      id="push"
+                                      type="switch"
+                                      name="push"
+                                      label={this.state.devices.length == 0 ? "You no devices set up" : "Notify with Push Notification"}
+                                      disabled={this.state.isRecording || this.state.devices.length == 0}
+                                      checked={this.state.devices.length == 0 ? false : this.state.sendPush}
+                                      isInvalid={touched.push && !!errors.push}
+                                    />
+                                  </Form.Group>
+                                </div>
+                                <FadeIn>
+                                  <div className="setup-button">
+                                    <Button
+                                      className="record-button"
+                                      disabled={this.state.countdownActive}
+                                      type="submit"
+                                      variant={
+                                        this.state.countdownActive
+                                          ? "warning"
+                                          : this.state.isRecording
+                                            ? "danger"
+                                            : "primary"
+                                      }
+                                    >
+                                      {this.state.countdownActive
+                                        ? "Arming in " + this.state.armCounter
+                                        : this.state.isRecording
+                                          ? "Disarm"
+                                          : "Arm"}
+                                      {this.state.isLoading ? (
+                                        <Spinner
+                                          className={"button-spinner "}
+                                          animation="border"
+                                          variant="primary"
+                                        />
+                                      ) : (
+                                          ""
+                                        )}
+                                    </Button>
+                                  </div>
+                                </FadeIn>
+                              </Form>
+                            )}
+                        </Formik>
+                      </div>
+                    </FadeIn>
+                  ) : (
+                    ""
+                  )}
                 {this.state.shouldRenderPasswordModal ? (
                   <ModalController
                     username={this.props.username}
                     peerId={this.state.peerId}
+                    notify={this.sendNotifications}
+                    streamTitle={this.state.streamTitle}
                     callback={this.stopStreaming}
+                    callback2={this.closeModal}
                   />
                 ) : (
-                  ""
-                )}
+                    ""
+                  )}
                 {this.state.isRecording ? (
                   <FadeIn>
                     <div className="webcam-link">
@@ -827,37 +900,37 @@ class SetupWebcam extends Component {
                     </div>
                   </FadeIn>
                 ) : (
-                  ""
-                )}
+                    ""
+                  )}
               </Col>
               <Col xl={2} lg={12}>
                 {!this.state.userDenied &&
-                !this.state.waitingForUserAccept &
+                  !this.state.waitingForUserAccept &
                   !this.state.loadingFaceDetection ? (
-                  <div className="status-readout">
-                    <h4 className="status-readout-heading">System Status</h4>
+                    <div className="status-readout">
+                      <h4 className="status-readout-heading">System Status</h4>
 
-                    <div className="status-readout-content">
-                      {this.state.isRecording ? (
-                        <div>
-                          <div className="status-readout-text">
-                            Currently {this.state.peerMediaCalls.length} active
+                      <div className="status-readout-content">
+                        {this.state.isRecording ? (
+                          <div>
+                            <div className="status-readout-text">
+                              Currently {this.state.peerMediaCalls.length} active
                             viewers watching this stream
                           </div>
-                          <div className="status-readout-text">
-                            {!this.state.movementDetected
-                              ? "No movement detected"
-                              : " Movement in the system has been spotted"}
+                            <div className="status-readout-text">
+                              {!this.state.movementDetected
+                                ? "No movement detected"
+                                : " Movement in the system has been spotted"}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="status-readout-text">Not armed</div>
-                      )}
+                        ) : (
+                            <div className="status-readout-text">Not armed</div>
+                          )}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  ""
-                )}
+                  ) : (
+                    ""
+                  )}
               </Col>
             </Row>
           </Container>

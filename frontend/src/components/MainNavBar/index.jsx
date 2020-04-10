@@ -56,8 +56,6 @@ class MainNavBar extends Component {
             <Nav.Link href="/about">About</Nav.Link>
             <Nav.Link href="/devices">Devices</Nav.Link>
             <Nav.Link href="/screenshots">Screenshot Gallery</Nav.Link>
-
-            <Nav.Link href="/email">Email Notifications (Beta)</Nav.Link>
           </Nav>
         </Navbar.Collapse>
         <Navbar.Collapse id="basic-navbar-nav">
