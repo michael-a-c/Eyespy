@@ -56,7 +56,7 @@ const User = mongoose.model<IUser>("User", UserSchema);
 
 interface IStream extends mongoose.Document {
   username: string,
-  device: string,
+  devices: any,
   peerId: string,
   title: string,
   alerts: number,
@@ -87,7 +87,7 @@ const StreamSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  device: { type: String, required: true },
+  devices: [{ type: String, required: true }],
   peerId: { type: String, required: true },
   title: { type: String, required: true },
   alerts: {type: Number, default: 0},

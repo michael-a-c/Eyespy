@@ -50,6 +50,33 @@ function WebcamSelect(props) {
   );
 }
 
+function DevicesList(props) {
+
+  
+  if (!props.devices) {
+    return ("Could not load devices")
+  }
+  let devicesList = props.devices.map((device) =>
+    <ListGroup.Item className="devices-list-actual" key={device.deviceName}>
+      <Form.Group className="device-checkbox" controlId={device.deviceName}>
+        <Form.Check
+          disabled={props.isStreaming}
+          type="checkbox"
+          label={device.deviceName}
+        />
+      </Form.Group>
+    </ListGroup.Item>
+  );
+  return (
+    <div className="devices-list">
+      <ListGroup variant="flush">
+        {devicesList}
+      </ListGroup>
+    </div>
+  );   
+  
+}
+
 function ControlPanel(props) {
   return (
     <div className="control-panel">
@@ -81,55 +108,9 @@ function ControlPanel(props) {
           Chosen Devices will receive push notifications
         </div>
 
-        <div className="devices-list">
-          <ListGroup variant="flush">
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="t480">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="T480"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="iphone">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="IPhone"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="Laptop 2"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="Laptop 2"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-            <ListGroup.Item className="devices-list-actual">
-              <Form.Group className="device-checkbox" controlId="laptop2">
-                <Form.Check
-                  disabled={props.isStreaming}
-                  type="checkbox"
-                  label="Laptop 2"
-                />
-              </Form.Group>
-            </ListGroup.Item>
-          </ListGroup>
-        </div>
+        <DevicesList devices={props.devices} isStreaming={props.isStreaming}></DevicesList>
+
+
       </div>
     </div>
   );
@@ -140,11 +121,11 @@ function ModalController(props) {
   const [passwordError, setPasswordError] = useState(null);
 
   const handleClose = (password, close) => {
-    if(!close){
+    if (!close) {
       setShow(false);
       props.callback2();
     }
-    if(close){
+    if (close) {
       let req = {
         username: props.username,
         password: password,
@@ -191,6 +172,7 @@ class SetupWebcam extends Component {
     this.activateRecording = this.activateRecording.bind(this);
     this.takeScreenshot = this.takeScreenshot.bind(this);
     this.closeModal = this.closeModal.bind(this);
+    this.getDevices = this.getDevices.bind(this);
 
     this.state = {
       videoConstraints: {
@@ -215,6 +197,7 @@ class SetupWebcam extends Component {
       sendSMS: true,
       streamTitle: null,
       sendEmail: true,
+      devices: this.getDevices()
     };
   }
   componentDidMount() {
@@ -231,8 +214,28 @@ class SetupWebcam extends Component {
       });
   }
 
+  getDevices() {
+    Requests.getdevices().then((result) => {
+      if (result.status === 400) {
+        //this.setState({ loading: false, badRequestError: true });
+      } else if (result.status === 401) {
+        //this.setState({ loading: false, unAuthorizedError: true });
+      } else if (result.status === 404) {
+        //this.setState({ loading: false, notFoundError: true });
+      } else if (result.status === 409) {
+        //this.setState({ loading: false, conflictError: true });
+      } else if (result.status && result.status !== 200) {
+        //this.setState({ loading: false, serverError: true })
+      } else {
+        //this.setState({ loading: false })
+        this.setState({ devices: result.devices })
+        console.log(result.message)
+      }
+    })
+  }
+
   // Send notifications for logged in user
-  addAlert(){
+  addAlert() {
     let req = {
       username: this.props.username,
       peerId: this.state.peerId,
@@ -299,7 +302,6 @@ class SetupWebcam extends Component {
       !this.state.videoConstraints.deviceId ||
       newCamId !== this.state.videoConstraints.deviceId
     ) {
-      console.log("i am here");
       this.setState({
         videoConstraints: {
           width: 1280,
@@ -357,6 +359,7 @@ class SetupWebcam extends Component {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
           this.addAlert();
+          /*
           if (this.state.sendPush) {
             this.sendNotifications({
               title: "Face detected on stream",
@@ -373,6 +376,7 @@ class SetupWebcam extends Component {
               url: `/watch/${this.state.peerId}`,
             });
           }
+          */
         }
       }
 
@@ -432,20 +436,21 @@ class SetupWebcam extends Component {
     let peer = new Peer();
     let parent = this;
 
+    console.log("SUBREQ!!!!!!: ",parent.state)
+
     peer.on("open", function (id) {
       console.log("My peer ID is: " + id);
       let req = {
         title: subReq.title,
-        device: "placeHolder", // Device that is doing le stream
+        devices: ["Sean's laptop"], //// Need this to be based off of checkboxed devices
         peerId: id,
         username: parent.props.username,
         streamingOptions: {
-          sms: subReq.sms,
-          push: subReq.push,
-          email: subReq.email,
+          sms: parent.state.sendSMS,
+          push: parent.state.sendPush,
+          email: parent.state.sendEmail,
         },
       };
-      console.log(req);
       Requests.startStream(req).then((res) => {
         if (res && res.status && res.status != "200") {
           console.log(res);
@@ -561,7 +566,7 @@ class SetupWebcam extends Component {
     }
   }
 
-  closeModal(){
+  closeModal() {
     this.setState({ shouldRenderPasswordModal: false });
   }
 
@@ -629,6 +634,7 @@ class SetupWebcam extends Component {
                 <ControlPanel
                   screenShotCallback={this.takeScreenshot}
                   isStreaming={this.state.isRecording}
+                  devices={this.state.devices}
                 />
               </Col>
               <Col lg={12} xl={8}>

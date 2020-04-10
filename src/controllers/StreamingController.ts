@@ -33,6 +33,13 @@ transporter.verify((error: any, success: any) => {
     }
 });
 
+const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
+const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
+
+const webpush = require('web-push')
+webpush.setVapidDetails('mailto: eyespy978@gmail.com', publicVapidKey, privateVapidKey)
+
+
 @Controller('api/stream')
 export class StreamingController {
     @Get('list')
@@ -111,8 +118,8 @@ export class StreamingController {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
-            if(dbRes.length != 0){
-                return res.status(CONFLICT).json({"message":"peerId exists"});
+            if (dbRes.length != 0) {
+                return res.status(CONFLICT).json({ "message": "peerId exists" });
             }
             console.log(StartStreamingRequest);
             let newStream = new Stream(StartStreamingRequest);
@@ -128,19 +135,19 @@ export class StreamingController {
 
     @Post('addAlert')
     @Middleware(isAuthenticated)
-    private addAlert(req: Request, res: Response){
+    private addAlert(req: Request, res: Response) {
         Logger.Info(req.url);
-        if(req.session?.user !== req.body.username){
-            return res.status(UNAUTHORIZED).json({"message":"cannot start stream of another user"});
+        if (req.session?.user !== req.body.username) {
+            return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
         }
-        Stream.find({peerId: req.body.peerId}).exec((err:any, dbRes:IStream[]) => {
-            if(err){
+        Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: IStream[]) => {
+            if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
             console.log(dbRes);
             let increm = dbRes[0].alerts + 1;
             let query = { peerId: req.body.peerId };
-            let newvalues = { $set: {alerts: increm}};
+            let newvalues = { $set: { alerts: increm } };
             Stream.updateOne(query, newvalues, (err2, dbRes2) => {
                 if (err2) return res.status(BAD_REQUEST).json(err2);
                 return res.status(OK).json({ "message": "Alerts incremented" });
@@ -168,67 +175,91 @@ export class StreamingController {
 
             User.find({ username: dbRes[0].username }).exec((err: NativeError, result: IUser[]) => {
                 console.log(dbRes);
+                /*
                 if (err) {
                     return res.status(INTERNAL_SERVER_ERROR).json(err);
                 }
                 else if (result.length === 0) {
                     return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
                 } else {
-
-                    /// If set up, send email notification
-                    if (dbRes[0].streamingOptions.email) {
-                        let mail = {
-                            from: "EyeSpy Security",
-                            to: result[0].email,
-                            subject: req.body.emailoptions.subject,
-                            html: req.body.emailoptions.content,
-                            /*
-                            attachments: [
-                                {   
-                                    filename: 'screen-shot.jpg',
-                                    content: fs.readFileSync(imagePath)
-                                }]
-                            */
-                        };
-                        transporter.sendMail(mail, (err: any, data: any) => {
-                            if (err) {
-                                res.status(BAD_REQUEST).json({
-                                    message: 'Failure in sedning E-mail'
-                                })
-                            } else {
-                                res.status(OK).json({
-                                    message: 'E-mail sent successfully'
-                                })
-                            }
-                        })
-
-                    }
-
-                    /// If setup, send SMS notifications
-                    if (dbRes[0].streamingOptions.sms) {
-                        let userP = '+1' + result[0].phone;
-                        let fullSMS = req.body.smsoptions.title + req.body.smsoptions.body + req.body.smsoptions.url;
-                        if (userP == "+1") {
-                            return res.status(OK).json({ "message": "no phone number for account" });
+                */
+                /// If set up, send email notification
+                if (dbRes[0].streamingOptions.email) {
+                    let mail = {
+                        from: "EyeSpy Security",
+                        to: result[0].email,
+                        subject: req.body.emailoptions.subject,
+                        html: req.body.emailoptions.content,
+                        /*
+                        attachments: [
+                            {   
+                                filename: 'screen-shot.jpg',
+                                content: fs.readFileSync(imagePath)
+                            }]
+                        */
+                    };
+                    transporter.sendMail(mail, (err: any, data: any) => {
+                        if (err) {
+                            res.status(BAD_REQUEST).json({
+                                message: 'Failure in sedning E-mail'
+                            })
+                        } else {
+                            res.status(OK).json({
+                                message: 'E-mail sent successfully'
+                            })
                         }
-                        twilio.messages.create({
-                            body: fullSMS,
-                            from: '+12057298375',
-                            to: userP
-                        });
+                    })
+
+                }
+
+                /// If setup, send SMS notifications
+                if (dbRes[0].streamingOptions.sms) {
+                    let userP = '+1' + result[0].phone;
+                    let fullSMS = req.body.smsoptions.title + req.body.smsoptions.body + req.body.smsoptions.url;
+                    if (userP == "+1") {
+                        return res.status(OK).json({ "message": "no phone number for account" });
                     }
+                    twilio.messages.create({
+                        body: fullSMS,
+                        from: '+12057298375',
+                        to: userP
+                    });
+                }
 
 
-                    /// If set up, send push notifications
+                /// If set up, send push notifications
+                if (dbRes[0].streamingOptions.push) {
 
                     // For every device in user
                     // If device is selected in stream, notify it
 
+                    for (let i = 0; i < result[0].devices.length; i++) {
+                        if (dbRes[0].devices.includes(result[0].devices[i].deviceName)) {
+                            let payload =
+                                JSON.stringify({
+                                    title: req.body.pushoptions.title,
+                                    body: req.body.pushoptions.body,
+                                    data: {
+                                        leftText: req.body.pushoptions.leftText,
+                                        rightText: req.body.pushoptions.rightText,
+                                        url: req.body.pushoptions.url
+                                    }
 
+                                    //image: req.body.pushoptions.image
+                                });
+
+                            webpush.sendNotification(result[0].devices[i].subscription, payload)
+                                .then((result: any) => console.log(result))
+                                .catch((e: any) => console.log(e.stack))
+
+                            //res.status(200).json({ 'success': true });
+                        }
+                    //}
 
                 }
+            }
             });
-        });
-        res.status(200).json({ 'success': true, 'message': 'le pinged' });
-    }
+    });
+    res.status(200).json({ 'success': true, 'message': 'le pinged' });
+}
 }

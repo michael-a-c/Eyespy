@@ -17,7 +17,7 @@ const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_
 const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
 
 const webpush = require('web-push')
-webpush.setVapidDetails('mailto: seanapplebaum@gmail.com', publicVapidKey, privateVapidKey)
+webpush.setVapidDetails('mailto: eyespy978@gmail.com', publicVapidKey, privateVapidKey)
 
 
 @Controller('api/serviceworker')
