@@ -6,6 +6,7 @@ import Figure from "react-bootstrap/Figure";
 import ItemContainer from "../ItemContainer";
 import Applebaum from "../../Applebaum.png";
 import Cottow from "../../Cottow.png";
+import Sun from "../../Sun.png";
 import logo from "../../logo192.png";
 /*import { setUser } from "../../utils/redux/actions";
 import { connect } from 'react-redux';
@@ -92,7 +93,7 @@ export class About extends Component {
                                 <Figure.Image
                                     width={200}
                                     max-height={200}
-                                    src={logo}
+                                    src={Sun}
                                 />
                                 <Figure.Caption>
                                     L33t h4xor who is notorious for breaching the security at his local Banana Republic to obtain a storewide 30% discount and bonus reward points. Much wow.

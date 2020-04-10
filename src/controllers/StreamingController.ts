@@ -51,6 +51,7 @@ export class StreamingController {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             } else {
+                console.log(dbRes);
                 return res.json(dbRes);
             }
         });
