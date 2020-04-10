@@ -8,8 +8,12 @@ import { NativeError, Schema } from 'mongoose';
 import { isAuthenticated } from '../middleware'
 const bcrypt = require('bcryptjs');
 
+const twilio = require('twilio')('AC9e52c9c34772601e7260597eabb183cc', '2f63ecb944038ba4413a507babc34b27');
+// eyespysnowdenc09
+
 var nodemailer = require('nodemailer');
 var fs = require('fs');
+
 
 var transport = {
     host: 'smtp.gmail.com',
@@ -180,9 +184,24 @@ export class StreamingController {
                     }
 
                     /// If setup, send SMS notifications
+                    if (dbRes[0].streamingOptions.sms) {
+                        let userP = '+1' + result[0].phone;
+                        let fullSMS = req.body.smsoptions.title + req.body.smsoptions.body + req.body.smsoptions.url;
+                        if (userP == "+1") {
+                            return res.status(OK).json({ "message": "no phone number for account" });
+                        }
+                        twilio.messages.create({
+                            body: fullSMS,
+                            from: '+12057298375',
+                            to: userP
+                        });
+                    }
 
 
                     /// If set up, send push notifications
+
+                    // For every device in user
+                    // If device is selected in stream, notify it
 
 
 
