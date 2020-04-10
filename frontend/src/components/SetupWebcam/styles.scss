@@ -132,6 +132,19 @@
   width: 100%;
     height: 100%;
 }
+
+.motion-canvas{
+  position: absolute;
+  width: auto;
+    height: 100%;
+    opacity: 0.8;
+}
+.draw-canvas{
+  position: absolute;
+  width: auto;
+    height: 100%;
+    opacity: 0.1;
+}
 .stream-form{
   padding:20px;
   background-color: #292929;
