@@ -90,11 +90,7 @@ const StreamSchema = new mongoose.Schema({
   device: { type: String, required: true },
   peerId: { type: String, required: true },
   title: { type: String, required: true },
-<<<<<<< HEAD
   alerts: {type: Number, default: 0},
-=======
-  
->>>>>>> 66de5d8ea4dfa74087af0263a224c7232a3a9b22
 
   streamingOptions: {
     sms: {

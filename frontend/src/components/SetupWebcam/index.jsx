@@ -231,7 +231,6 @@ class SetupWebcam extends Component {
       });
   }
 
-<<<<<<< HEAD
   // Send notifications for logged in user
   addAlert(){
     let req = {
@@ -247,8 +246,6 @@ class SetupWebcam extends Component {
     });
   }
 
-=======
->>>>>>> 66de5d8ea4dfa74087af0263a224c7232a3a9b22
   sendNotifications(options) {
     return fetch(`api/stream/sendnotifications`, {
       method: "POST",
@@ -359,7 +356,6 @@ class SetupWebcam extends Component {
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
-<<<<<<< HEAD
           this.addAlert();
           if (this.state.sendPush) {
             this.sendNotifications({
@@ -377,23 +373,6 @@ class SetupWebcam extends Component {
               url: `/watch/${this.state.peerId}`,
             });
           }
-=======
-
-          /*
-          this.sendNotifications({
-            title: "Face detected on stream",
-            body: "Click Live Watch to view",
-            leftText: "Dismiss Notification",
-            rightText: "Live Watch",
-            url: `/watch/${this.state.peerId}`,
-          });
-          this.sendSMSnotification({
-            title: "Face detected on stream: ",
-            body: "watch from here ",
-            url: `/watch/${this.state.peerId}`,
-          });
-          */
->>>>>>> 66de5d8ea4dfa74087af0263a224c7232a3a9b22
         }
       }
 

@@ -107,14 +107,8 @@ export class StreamingController {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
-<<<<<<< HEAD
             if(dbRes.length != 0){
                 return res.status(CONFLICT).json({"message":"peerId exists"});
-=======
-
-            if (dbRes.length != 0) {
-                return res.status(CONFLICT).json({ "message": "peerId exists" });
->>>>>>> 66de5d8ea4dfa74087af0263a224c7232a3a9b22
             }
             console.log(StartStreamingRequest);
             let newStream = new Stream(StartStreamingRequest);
@@ -128,7 +122,6 @@ export class StreamingController {
         });
     }
 
-<<<<<<< HEAD
     @Post('addAlert')
     @Middleware(isAuthenticated)
     private addAlert(req: Request, res: Response){
@@ -149,74 +142,5 @@ export class StreamingController {
                 return res.status(OK).json({ "message": "Alerts incremented" });
             });
         })
-=======
-    @Post('sendnotifications')
-    @Middleware(isAuthenticated)
-    private sendnotifications(req: Request, res: Response) {
-        console.log("sending notifications for stream hopefully")
-
-        if (req.session?.user !== req.body.username) {
-            return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
-        }
-
-        Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: any) => {
-            if (err) {
-                return res.status(INTERNAL_SERVER_ERROR).json(err);
-            }
-
-            if (dbRes.length > 1 || dbRes.length < 1) {
-                return res.status(CONFLICT).json({ "message": "invalid stream" });
-            }
-
-            User.find({ username: dbRes[0].username }).exec((err: NativeError, result: IUser[]) => {
-                console.log(dbRes);
-                if (err) {
-                    return res.status(INTERNAL_SERVER_ERROR).json(err);
-                }
-                else if (result.length === 0) {
-                    return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
-                } else {
-
-                    /// If set up, send email notification
-                    if (dbRes[0].streamingOptions.email) {
-                        let mail = {
-                            from: "EyeSpy Security",
-                            to: result[0].email,
-                            subject: req.body.emailoptions.subject,
-                            html: req.body.emailoptions.content,
-                            /*
-                            attachments: [
-                                {   
-                                    filename: 'screen-shot.jpg',
-                                    content: fs.readFileSync(imagePath)
-                                }]
-                            */
-                        };
-                        transporter.sendMail(mail, (err: any, data: any) => {
-                            if (err) {
-                                res.status(BAD_REQUEST).json({
-                                    message: 'Failure in sedning E-mail'
-                                })
-                            } else {
-                                res.status(OK).json({
-                                    message: 'E-mail sent successfully'
-                                })
-                            }
-                        })
-
-                    }
-
-                    /// If setup, send SMS notifications
-
-
-                    /// If set up, send push notifications
-
-
-
-                }
-            });
-        });
-        res.status(200).json({ 'success': true, 'message': 'le pinged' });
->>>>>>> 66de5d8ea4dfa74087af0263a224c7232a3a9b22
     }
 }
