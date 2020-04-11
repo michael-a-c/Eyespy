@@ -56,6 +56,10 @@ let Requests = {
     return await this.requestBody("PUT", "/api/user/remove-device", request)
   },
 
+  removeSS: async function (request) {
+    return await this.requestBody("DELETE", "api/screenshot/removeSS", request)
+  },
+
   sendemail: async function (request) {
     return await this.requestBody("POST", "/api/email/sendemail", request)
   },
