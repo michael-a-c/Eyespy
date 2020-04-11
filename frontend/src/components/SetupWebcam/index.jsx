@@ -241,7 +241,7 @@ class SetupWebcam extends Component {
       devices: [],
       motion: false,
       lastNotificationTime: new Date(),
-      notificationTimeOut: 30,
+      notificationTimeOut: 10,
     };
   }
 
@@ -387,6 +387,83 @@ class SetupWebcam extends Component {
     // use intervalId from the state to clear the interval
     clearInterval(this.state.timer);
   }
+
+  atttemptNotification() {
+    let datePlusTimeout = new Date(
+      this.state.lastNotificationTime.getTime() +
+        this.state.notificationTimeOut * 1000
+    );
+    let currentTime = new Date();
+    if (
+      this.state.isRecording &&
+      (this.state.motion || this.state.movementDetected) &&
+      datePlusTimeout.getTime() - currentTime.getTime() < 0
+    ) {
+      this.setState({ lastNotificationTime: currentTime });
+
+      this.addAlert();
+
+      console.log("Creating Notification");
+      if (this.state.streamTitle) {
+        fetch("/api/screenshot/create", {
+          method: "POST",
+          body: JSON.stringify({
+            title: this.state.streamTitle,
+            data: ref.current.getScreenshot(),
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((res) => {
+          console.log(res);
+          if (res && res.status === 200) {
+            res.json().then((data) => {
+              let notificationoptions = {
+                username: this.state.username,
+                peerId: this.state.peerId,
+                pushoptions: {
+                  title:
+                    "Potential Intruder detected on stream: " +
+                    this.state.streamTitle,
+                  body: "Click Live Watch to view",
+                  leftText: "Dismiss Notification",
+                  rightText: "Live Watch",
+                  url: `/watch/${this.state.peerId}`,
+                  image:
+                    `${window.location.href}/api/screenshot/view/` + data.id,
+                },
+                smsoptions: {
+                  title:
+                    "Potential Intruder detected on stream - " +
+                    this.state.streamTitle +
+                    ": ",
+                  body:
+                    `\nIntruder: ${window.location.href}/api/screenshot/view/` +
+                    data.id +
+                    "\nWatch from here: ",
+                  url: `${window.location.href}/watch/${this.state.peerId}`,
+                },
+                emailoptions: {
+                  subject:
+                    "Potential Intruder detected on stream: " +
+                    this.state.streamTitle,
+                  content:
+                    `To watch the stream, click <a href=\"${window.location.href}/watch/` +
+                    this.state.peerId +
+                    '">here</a>',
+                  imagePath: data.path, //"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
+                },
+              };
+              this.sendNotifications(notificationoptions);
+            });
+          } else {
+            console.log("failed to capture intruder");
+          }
+        });
+      }
+    }
+  }
+
   runMotionDetection() {
     let ctx = motionRef.current.getContext("2d");
 
@@ -401,7 +478,7 @@ class SetupWebcam extends Component {
     imgDataPrev[1] = ctx.getImageData(0, 0, 256, 177);
 
     (function loop() {
-      if (ref && ref.current.video) {
+      if (ref && ref.current && ref.current.video) {
         ctx.drawImage(ref.current.video, 0, 0, 640, 480, 0, 0, 256, 177);
 
         imgDataPrev[version] = ctx.getImageData(0, 0, 256, 177);
@@ -490,66 +567,7 @@ class SetupWebcam extends Component {
     await faceapi.nets.ssdMobilenetv1.load("/models");
   }
 
-    let currentTime = new Date();
-    if (
-      this.state.isRecording &&
-      (this.state.motion || this.state.movementDetected) &&
-      datePlusTimeout.getTime() - currentTime.getTime() < 0
-    ) {
-      this.setState({ lastNotificationTime: currentTime });
-
-      this.addAlert();
-
-      console.log("Creating Notification");
-      if (this.state.streamTitle) {
-        fetch("/api/screenshot/create", {
-          method: "POST",
-          body: JSON.stringify({
-            title: this.state.streamTitle,
-            data: ref.current.getScreenshot(),
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).then((res) => {
-          console.log(res);
-          if (res && res.status === 200) {
-            res.json().then((data) => {
-              let notificationoptions = {
-                username: this.state.username,
-                peerId: this.state.peerId,
-                pushoptions: {
-                  title:
-                    "Potential Intruder detected on stream: " +
-                    this.state.streamTitle,
-                  body: "Click Live Watch to view",
-                  leftText: "Dismiss Notification",
-                  rightText: "Live Watch",
-                  url: `/watch/${this.state.peerId}`,
-                  image:
-                    `${window.location.protocol}//${window.location.host}/api/screenshot/view/` + data.id,
-                },
-                smsoptions: {
-                  title: "Potential Intruder detected on stream - " + this.state.streamTitle + ": ",
-                  body: `\nIntruder: ${window.location.host}/api/screenshot/view/` + data.id + "\nWatch from here: ",
-                  url: `${window.location.protocol}//${window.location.host}/watch/${this.state.peerId}`,
-                },
-                emailoptions: {
-                  subject: "Potential Intruder detected on stream: " + this.state.streamTitle,
-                  content: `To watch the stream, click <a href=\"${window.location.protocol}//${window.location.host}/watch/` + this.state.peerId + "\">here</a>",
-                  imagePath: data.path//"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
-
-                }
-              }
-              this.sendNotifications(notificationoptions);
-            });
-          } else {
-            console.log("failed to capture intruder");
-          }
-        });
-      }
-    }
-  }
+   
   async doFacialDetection() {
     let minConfidence = this.state.faceSens;
     //console.log(ref);
@@ -605,7 +623,8 @@ class SetupWebcam extends Component {
   }
 
   doArmWait(subReq) {
-    this.setState({ armCounter: 3, countdownActive: true });
+    this.setState({ armCounter: 10, countdownActive: true, lastNotificationTime: new Date() });
+
     let armTimer = setInterval(() => {
       let counter = this.state.armCounter;
       counter -= 1;
@@ -626,7 +645,6 @@ class SetupWebcam extends Component {
     let peer = new Peer();
     let parent = this;
     // set the last notification time to now
-    this.setState({ lastNotificationTime: new Date() });
     let streamDevices = [];
     for (let streamDevice in parent.state.streamDevices) {
       if (parent.state.streamDevices.hasOwnProperty(streamDevice)) {
