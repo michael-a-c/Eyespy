@@ -3,11 +3,15 @@ import Accordion from "react-bootstrap/Accordion";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Figure from "react-bootstrap/Figure";
+import Modal from "react-bootstrap/Modal";
 import ItemContainer from "../ItemContainer";
+import TermsAndConditions from "../TermsAndConditions";
+import PrivacyPolicy from '../PrivacyPolicy';
 import Applebaum from "../../Applebaum.png";
 import Cottow from "../../Cottow.png";
 import Sun from "../../Sun.png";
 import './styles.scss';
+
 
 
 class About extends Component {
@@ -15,14 +19,21 @@ class About extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          /*submitted: false,
-          loading: false,
-          userNameExistsError: false,
-          serverError: false,
-          badRequestError:false,*/
+            TaC: false,
+            PP: false
         }
         this.handleSMS = this.handleSMS.bind(this);
+        this.toggleTerms = this.toggleTerms.bind(this);
+        this.togglePPolicy = this.togglePPolicy.bind(this);
       }
+
+    toggleTerms() {
+        this.setState({ TaC: !this.state.TaC })
+    }
+
+    togglePPolicy() {
+        this.setState({ PP: !this.state.PP })
+    }
 
     handleSMS(SMSreq) {
         let newBody = {
@@ -97,10 +108,38 @@ class About extends Component {
                         </Accordion.Collapse>
                     </Card>
                 </Accordion>
+                <p className="disclaim">*DISCLAIMER: none of the above information is true, this is all in good fun</p>
+                <h1>Dcouments to Read</h1>
+                <div>
+                    <Button variant="link" onClick={this.toggleTerms}>Terms and Conditions</Button>
+                </div>
+                <div>
+                    <Button variant="link" onClick={this.togglePPolicy}>Privacy Policy</Button>
+                </div>
+                <div>
+                    <Button variant="link">Credits</Button>
+                </div>
                 <div className="flex-plz-button">
                     <Button variant="danger" onClick={this.handleSMS}>DO NOT PRESS</Button>
                 </div>
-                <p className="disclaim">*DISCLAIMER: none of the above information is true, this is all in good fun</p>
+                <Modal size="lg" show={this.state.TaC} onHide={this.toggleTerms}>
+                    <Modal.Header closeButton>Terms and Conditions</Modal.Header>
+                    <Modal.Body>
+                        <TermsAndConditions/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={this.toggleTerms}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
+                <Modal size="lg" show={this.state.PP} onHide={this.togglePPolicy}>
+                    <Modal.Header closeButton>Privacy</Modal.Header>
+                    <Modal.Body>
+                        <PrivacyPolicy/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={this.togglePPolicy}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
             </ItemContainer>
         )
     }
