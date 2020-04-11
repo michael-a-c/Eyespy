@@ -1,6 +1,8 @@
 // https://medium.com/create-a-server-with-nodemon-express-typescript/create-a-server-with-nodemon-express-typescript-f7c88fb5ee71 typescript setup
 // https://levelup.gitconnected.com/setup-express-with-typescript-in-3-easy-steps-484772062e01
 
+import { Stream, IStream } from "./repository";
+
 import * as bodyParser from 'body-parser';
 import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
@@ -66,5 +68,22 @@ exampleServer.start(port);
 // setup cleanup jobs
 
 var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
-    
-  });
+    console.log("Performing stream clean up");
+    let cTime = new Date();
+    let timeout = 1; // Every 1 minute should be refreshed
+    Stream.find(({}), (err, ress :IStream[]) => {
+        if(err) {console.log("Failed to find streams");}
+        else{
+            ress.forEach((stream:IStream) => {
+                let refreshTimePlusTimeout = new Date(
+                    cTime.getTime() +
+                    timeout * 60000
+                );
+
+                if(stream.lastRefresh.getTime() < refreshTimePlusTimeout.getTime()){
+                    console.log("Found dead stream: "+ stream.title);
+                }
+            })
+        }
+    })
+});

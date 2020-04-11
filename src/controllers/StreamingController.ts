@@ -70,6 +70,21 @@ export class StreamingController {
         });
     }
 
+    @Post('refresh/:id')
+    @Middleware(isAuthenticated)
+    private refresh(req:Request, res:Response){
+        // step 1. find the stream
+        Stream.findById(req.params.id, (err, ress) =>{
+            if(err) return res.status(INTERNAL_SERVER_ERROR).end();
+            if(!ress) return res.status(NOT_FOUND).end();
+            ress.lastRefresh = new Date();
+            ress.save((err, saved) =>{
+                if(err) return res.status(INTERNAL_SERVER_ERROR).end();
+                res.json(saved);
+            })
+        })
+    }
+
     @Post('start')
     @Middleware(isAuthenticated)
     private start(req: Request, res: Response) {
