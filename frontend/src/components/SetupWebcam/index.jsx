@@ -17,12 +17,11 @@ import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
 import ToastNotif from "../ToastNotif";
-
 const { Formik } = require("formik");
 const yup = require("yup");
 const ref = React.createRef();
 const canvasRef = React.createRef();
-
+const motionRef = React.createRef();
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   sms: yup.bool("Type Error"),
@@ -52,8 +51,8 @@ function WebcamSelect(props) {
 
 function DevicesList(props) {
 
-  if (!props.devices) {
-    return ("Could not load devices")
+  if (props.devices.length == 0) {
+    return ("You currently have no devices set up to recieve push notifications")
   }
   let devicesList = props.devices.map((device) =>
     <ListGroup.Item className="devices-list-actual" key={device.deviceName}>
@@ -62,6 +61,9 @@ function DevicesList(props) {
           disabled={props.isStreaming}
           type="checkbox"
           label={device.deviceName}
+          onChange={(event) => {
+            props.selectDevice(device.deviceName)
+          }}
         />
       </Form.Group>
     </ListGroup.Item>
@@ -72,8 +74,8 @@ function DevicesList(props) {
         {devicesList}
       </ListGroup>
     </div>
-  );   
-  
+  );
+
 }
 
 function ControlPanel(props) {
@@ -85,8 +87,7 @@ function ControlPanel(props) {
           disabled={!props.isStreaming}
           onClick={props.screenShotCallback}
         >
-          {" "}
-          Screen Shot{" "}
+          Screen Shot
         </Button>
       </div>
       <div className="status-readout-heading control-panel-block">
@@ -107,7 +108,7 @@ function ControlPanel(props) {
           Chosen Devices will receive push notifications
         </div>
 
-        <DevicesList devices={props.devices} isStreaming={props.isStreaming}></DevicesList>
+        <DevicesList devices={props.devices} isStreaming={props.isStreaming} selectDevice={props.selectDevice}></DevicesList>
 
 
       </div>
@@ -130,6 +131,26 @@ function ModalController(props) {
         password: password,
         peerId: props.peerId,
       };
+      let notificationoptions = {
+        username: props.username,
+        peerId: props.peerId,
+        pushoptions: {
+          title: "Ended the stream: " + props.streamTitle,
+          body: "If this was not you, consider changing your password immediately",
+        },
+        smsoptions: {
+          title: "Ended stream - " + props.streamTitle,
+          body: "\nIf this was not you, consider changing your password immediately",
+          url: "",
+        },
+        emailoptions: {
+          subject: "Ended the stream: " + props.streamTitle,
+          content: "If this was not you, consider changing your password immediately"
+        }
+      }
+      console.log("notif:", notificationoptions)
+      props.notify(notificationoptions)
+
       Requests.stopStream(req).then((res) => {
         if (res && res.status == "401") {
           setPasswordError("Invalid Password");
@@ -170,13 +191,16 @@ class SetupWebcam extends Component {
     this.doArmWait = this.doArmWait.bind(this);
     this.activateRecording = this.activateRecording.bind(this);
     this.takeScreenshot = this.takeScreenshot.bind(this);
+    this.runMotionDetection = this.runMotionDetection.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.getDevices = this.getDevices.bind(this);
+    this.selectDevice = this.selectDevice.bind(this);
 
     this.state = {
+      username: props.username,
       videoConstraints: {
         width: 1280,
-        height: 720,
+        height: 1280,
         facingMode: "user",
       },
       waitingForUserAccept: true,
@@ -196,15 +220,17 @@ class SetupWebcam extends Component {
       sendSMS: true,
       streamTitle: null,
       sendEmail: true,
-      devices: this.getDevices()
+      streamDevices: {},
+      devices: []
     };
   }
   componentDidMount() {
+    this.getDevices()
     this.loadFacialDetection()
       .then(() => {
         this.createWebcamList().then(() => {
           this.setState({ loadingFaceDetection: false });
-          let timer = setInterval(this.doFacialDetection, 5000);
+          let timer = setInterval(this.doFacialDetection, 2000);
           this.setState({ timer: timer });
         });
       })
@@ -227,7 +253,12 @@ class SetupWebcam extends Component {
         //this.setState({ loading: false, serverError: true })
       } else {
         //this.setState({ loading: false })
-        this.setState({ devices: result.devices })
+        let streamDevices = {};
+        result.devices.forEach((device) => {
+          streamDevices[device.deviceName] = false
+        });
+        console.log("stream info: ", streamDevices);
+        this.setState({ devices: result.devices, streamDevices: streamDevices })
         console.log(result.message)
       }
     })
@@ -296,6 +327,22 @@ class SetupWebcam extends Component {
     // use intervalId from the state to clear the interval
     clearInterval(this.state.timer);
   }
+  runMotionDetection() {
+    let options = {
+      gridSize: {
+        x: 16 * 2,
+        y: 12 * 2,
+      },
+      debug: true,
+      pixelDiffThreshold: 0.3,
+      movementThreshold: 0.0012,
+      fps: 30,
+      canvasOutputElem: motionRef.current,
+    };
+    console.log(ref.current);
+
+
+  }
   selectWebcam(newCamId) {
     if (
       !this.state.videoConstraints.deviceId ||
@@ -358,24 +405,54 @@ class SetupWebcam extends Component {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
           this.addAlert();
-          /*
-          if (this.state.sendPush) {
-            this.sendNotifications({
-              title: "Face detected on stream",
-              body: "Click Live Watch to view",
-              leftText: "Dismiss Notification",
-              rightText: "Live Watch",
-              url: `/watch/${this.state.peerId}`,
+
+
+          console.log("capturing face");
+          if (this.state.streamTitle) {
+            fetch("/api/screenshot/create", {
+              method: "POST",
+              body: JSON.stringify({
+                title: this.state.streamTitle,
+                data: ref.current.getScreenshot()
+              }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }).then((res) => {
+              console.log(res);
+              if (res && res.status === 200) {
+                res.json().then((data) => {
+                  console.log("captured intruder")
+                  let notificationoptions = {
+                    username: this.state.username,
+                    peerId: this.state.peerId,
+                    pushoptions: {
+                      title: "Face detected on stream: " + this.state.streamTitle,
+                      body: "Click Live Watch to view",
+                      leftText: "Dismiss Notification",
+                      rightText: "Live Watch",
+                      url: `/watch/${this.state.peerId}`,
+                      image: "http://localhost:3000/api/screenshot/view/"+data.id
+                    },
+                    smsoptions: {
+                      title: "Face detected on stream - " + this.state.streamTitle + ": ",
+                      body: "\nWatch from here: ",
+                      url: `http://localhost:3000/watch/${this.state.peerId}`,
+                    },
+                    emailoptions: {
+                      subject: "Face detected on stream: " + this.state.streamTitle,
+                      content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + this.state.peerId + "\">here</a>"
+                      //imagePath: 
+                    }
+                  }
+                  this.sendNotifications(notificationoptions);
+                });
+              } else {
+                console.log("failed to capture intruder")
+              }
             });
           }
-          if (this.state.sendSMS) {
-            this.sendSMSnotification({
-              title: "Face detected on stream: ",
-              body: "watch from here ",
-              url: `/watch/${this.state.peerId}`,
-            });
-          }
-          */
+
         }
       }
 
@@ -407,9 +484,11 @@ class SetupWebcam extends Component {
 
   handleStartCam() {
     this.setState({ waitingForUserAccept: false, userDenied: false });
+    this.runMotionDetection();
   }
 
   handleUserDenied() {
+
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
@@ -435,13 +514,20 @@ class SetupWebcam extends Component {
     let peer = new Peer();
     let parent = this;
 
-    console.log("SUBREQ!!!!!!: ",parent.state)
+    let streamDevices = [];
+    for (let streamDevice in parent.state.streamDevices) {
+      if (parent.state.streamDevices.hasOwnProperty(streamDevice)) {
+        if (parent.state.streamDevices[streamDevice]) {
+          streamDevices.push(streamDevice)
+        }
+      }
+    }
 
     peer.on("open", function (id) {
       console.log("My peer ID is: " + id);
       let req = {
         title: subReq.title,
-        devices: ["Sean's laptop"], //// Need this to be based off of checkboxed devices
+        devices: streamDevices, //// Need this to be based off of checkboxed devices
         peerId: id,
         username: parent.props.username,
         streamingOptions: {
@@ -493,24 +579,6 @@ class SetupWebcam extends Component {
             }
           }
           parent.sendNotifications(notificationoptions);
-
-          /*
-          parent.sendNotifications({
-            title: "Started a stream: " + res.title,
-            body: "Click Live Watch to view",
-            leftText: "Dismiss Notification",
-            rightText: "Live Watch",
-            url: `/watch/${parent.state.peerId}`,
-          });
-
-          parent.sendSMSnotification({
-            title: "Started stream - " + res.title + ": ",
-            body: "watch from here ",
-            url: `/watch/${parent.state.peerId}`,
-          });
-          */
-
-
         }
       });
     });
@@ -570,6 +638,7 @@ class SetupWebcam extends Component {
   }
 
   stopStreaming() {
+
     this.setState({ shouldRenderPasswordModal: false });
 
     this.state.peerCons.forEach((conn) => {
@@ -581,21 +650,7 @@ class SetupWebcam extends Component {
 
     this.setState({ isRecording: false, peerCons: [], peerMediaCalls: [] });
 
-    /*
-    this.sendNotifications({
-      title: "Ended a stream",
-      body: 'Click "Home Page" to take you to your home page',
-      leftText: "Dismiss Notification",
-      rightText: "Home Page",
-      url: "/devices",
-    });
 
-    this.sendSMSnotification({
-      title: "Ended stream: ",
-      body: "to return home, go here ",
-      url: "/devices",
-    });
-    */
   }
 
 
@@ -606,7 +661,7 @@ class SetupWebcam extends Component {
         method: "POST",
         body: JSON.stringify({
           title: this.state.streamTitle,
-          data: ref.current.getScreenshot()
+          data: ref.current.getScreenshot(),
         }),
         headers: {
           "Content-Type": "application/json",
@@ -614,13 +669,17 @@ class SetupWebcam extends Component {
       }).then((res) => {
         console.log(res);
         if (res && res.status === 200) {
+
           ToastNotif({ "title": "Took a Screenshot", "type": "success", "message": "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly" });
         } else {
           ToastNotif({ "title": "Failed to take a Screenshot", "type": "failure", "message": "Perhaps you have lost connect to the network" });
-
         }
       });
     }
+  }
+
+  selectDevice(deviceName) {
+    this.state.streamDevices[deviceName] = !this.state.streamDevices[deviceName]
   }
 
   render() {
@@ -634,6 +693,7 @@ class SetupWebcam extends Component {
                   screenShotCallback={this.takeScreenshot}
                   isStreaming={this.state.isRecording}
                   devices={this.state.devices}
+                  selectDevice={this.selectDevice}
                 />
               </Col>
               <Col lg={12} xl={8}>
@@ -693,6 +753,12 @@ class SetupWebcam extends Component {
                     screenshotQuality={0.5}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
+
+                  <canvas
+                    id="motionCanvas"
+                    className="motion-canvas"
+                    ref={motionRef}
+                  ></canvas>
                   {this.state.countdownActive ? (
                     <div className="countdownOverlay">
                       <div className="countdownText">
@@ -790,9 +856,9 @@ class SetupWebcam extends Component {
                                       id="push"
                                       type="switch"
                                       name="push"
-                                      label="Notify with Push Notification"
-                                      disabled={this.state.isRecording}
-                                      checked={this.state.sendPush}
+                                      label={this.state.devices.length == 0 ? "You no devices set up" : "Notify with Push Notification"}
+                                      disabled={this.state.isRecording || this.state.devices.length == 0}
+                                      checked={this.state.devices.length == 0 ? false : this.state.sendPush}
                                       isInvalid={touched.push && !!errors.push}
                                     />
                                   </Form.Group>
@@ -840,6 +906,8 @@ class SetupWebcam extends Component {
                   <ModalController
                     username={this.props.username}
                     peerId={this.state.peerId}
+                    notify={this.sendNotifications}
+                    streamTitle={this.state.streamTitle}
                     callback={this.stopStreaming}
                     callback2={this.closeModal}
                   />

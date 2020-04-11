@@ -165,6 +165,7 @@ export class StreamingController {
             return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
         }
 
+
         Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: any) => {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
@@ -175,7 +176,7 @@ export class StreamingController {
             }
 
             User.find({ username: dbRes[0].username }).exec((err: NativeError, result: IUser[]) => {
-                console.log(dbRes);
+
                 /*
                 if (err) {
                     return res.status(INTERNAL_SERVER_ERROR).json(err);
@@ -234,33 +235,55 @@ export class StreamingController {
                     // For every device in user
                     // If device is selected in stream, notify it
 
+
+
                     for (let i = 0; i < result[0].devices.length; i++) {
                         if (dbRes[0].devices.includes(result[0].devices[i].deviceName)) {
-                            let payload =
-                                JSON.stringify({
+
+                            let payload;
+
+                            let image = "";
+                            if (req.body.pushoptions.image) {
+                                image = req.body.pushoptions.image
+                            }
+
+
+                            if (!req.body.pushoptions.leftText || !req.body.pushoptions.rightText || !req.body.pushoptions.url) {
+                                payload =
+                                {
                                     title: req.body.pushoptions.title,
                                     body: req.body.pushoptions.body,
+                                    image: image
+                                };
+                            } else {
+                                payload =
+                                {
+                                    title: req.body.pushoptions.title,
+                                    body: req.body.pushoptions.body,
+                                    image: image,
                                     data: {
                                         leftText: req.body.pushoptions.leftText,
                                         rightText: req.body.pushoptions.rightText,
                                         url: req.body.pushoptions.url
                                     }
+                                };
+                            }
 
-                                    //image: req.body.pushoptions.image
-                                });
 
-                            webpush.sendNotification(result[0].devices[i].subscription, payload)
+                            console.log(image)
+                            console.log("send notifications to: ", result[0].devices[i].deviceName)
+                            webpush.sendNotification(result[0].devices[i].subscription, JSON.stringify(payload))
                                 .then((result: any) => console.log(result))
                                 .catch((e: any) => console.log(e.stack))
 
                             //res.status(200).json({ 'success': true });
                         }
-                    //}
+                        //}
 
+                    }
                 }
-            }
             });
-    });
-    res.status(200).json({ 'success': true, 'message': 'le pinged' });
-}
+        });
+        res.status(200).json({ 'success': true, 'message': 'le pinged' });
+    }
 }
