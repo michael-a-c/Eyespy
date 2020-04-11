@@ -65,17 +65,6 @@ function Stream(props) {
           });
         }
       });
-<<<<<<< HEAD
-    };
-  }
-
-  const handleShow = () => setShow(true);
-
-  function parseTime(timestamp) {
-    let first = timestamp.split('T');
-    let date = first[0];
-    let second = first[1].split('.');
-=======
     }
   };
 
@@ -85,7 +74,6 @@ function Stream(props) {
     let first = timestamp.split("T");
     let date = first[0];
     let second = first[1].split(".");
->>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
     let hour = second[0];
     return [date, hour];
   }
@@ -112,15 +100,11 @@ function Stream(props) {
         </Link>
 
         <Button onClick={handleShow}> Stop</Button>
-<<<<<<< HEAD
-        <PasswordModal show={show} handleClose={handleClose} error={passwordError} />
-=======
         <PasswordModal
           show={show}
           handleClose={handleClose}
           error={passwordError}
         />
->>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
       </div>
     </div>
   );

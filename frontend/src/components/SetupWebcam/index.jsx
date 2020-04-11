@@ -50,14 +50,9 @@ function WebcamSelect(props) {
 }
 
 function DevicesList(props) {
-<<<<<<< HEAD
 
   if (props.devices.length === 0) {
     return ("You currently have no devices set up to recieve push notifications")
-=======
-  if (props.devices.length == 0) {
-    return "You currently have no devices set up to recieve push notifications";
->>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
   }
   let devicesList = props.devices.map((device) => (
     <ListGroup.Item className="devices-list-actual" key={device.deviceName}>
@@ -750,15 +745,9 @@ class SetupWebcam extends Component {
   }
 
   selectDevice(deviceName) {
-<<<<<<< HEAD
     let cpy = this.state.streamDevices[deviceName];
     cpy[deviceName] = !cpy[deviceName];
     this.setState({ streamDevices: cpy });
-=======
-    this.state.streamDevices[deviceName] = !this.state.streamDevices[
-      deviceName
-    ];
->>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
   }
 
   render() {
@@ -921,55 +910,6 @@ class SetupWebcam extends Component {
                                   checked={this.state.sendEmail}
                                   isInvalid={touched.email && !!errors.email}
                                 />
-<<<<<<< HEAD
-                                <div className="form-checkmarks">
-                                  <Form.Group>
-                                    <Form.Check
-                                      onChange={(event) => {
-                                        this.setState({
-                                          sendEmail: !this.state.sendEmail,
-                                        });
-                                      }}
-                                      type="switch"
-                                      name="email"
-                                      disabled={this.state.isRecording}
-                                      label="Notify with Email"
-                                      id="email"
-                                      checked={this.state.sendEmail}
-                                      isInvalid={touched.email && !!errors.email}
-                                    />
-                                  </Form.Group>
-                                  <Form.Group>
-                                    <Form.Check
-                                      onChange={(event) => {
-                                        this.setState({
-                                          sendSMS: !this.state.sendSMS,
-                                        });
-                                      }}
-                                      type="switch"
-                                      id="sms"
-                                      name="sms"
-                                      label="Notify with SMS"
-                                      checked={this.state.sendSMS}
-                                      disabled={this.state.isRecording}
-                                      isInvalid={touched.sms && !!errors.sms}
-                                    />
-                                  </Form.Group>
-                                  <Form.Group>
-                                    <Form.Check
-                                      onChange={(event) => {
-                                        this.setState({
-                                          sendPush: !this.state.sendPush,
-                                        });
-                                      }}
-                                      id="push"
-                                      type="switch"
-                                      name="push"
-                                      label={this.state.devices.length === 0 ? "You no devices set up" : "Notify with Push Notification"}
-                                      disabled={this.state.isRecording || this.state.devices.length === 0}
-                                      checked={this.state.devices.length === 0 ? false : this.state.sendPush}
-                                      isInvalid={touched.push && !!errors.push}
-=======
                               </Form.Group>
                               <Form.Group>
                                 <Form.Check
@@ -1039,7 +979,6 @@ class SetupWebcam extends Component {
                                       className={"button-spinner "}
                                       animation="border"
                                       variant="primary"
->>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
                                     />
                                   ) : (
                                     ""

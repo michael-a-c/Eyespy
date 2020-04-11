@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import { connect } from 'react-redux';
-import logo from "../../logo192.png";
+//import logo from "../../../public/logo512.png";
 import { Link } from "react-router-dom";
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -40,9 +40,8 @@ class MainNavBar extends Component {
         <Link style={{ textDecoration: 'none' }} to="/">
           <Navbar.Brand className="navbar-brand">
             <img
-              src={logo}
-              width="50"
-              height="50"
+              src={process.env.PUBLIC_URL + '/logo512.png'}
+              width="65"
               className="d-inline-block align-top"
               alt="React Bootstrap logo"
             />
