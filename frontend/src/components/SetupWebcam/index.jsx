@@ -164,7 +164,7 @@ function ModalController(props) {
       props.notify(notificationoptions);
 
       Requests.stopStream(req).then((res) => {
-        if (res && res.status === "401") {
+        if (res && res.status === 401) {
           setPasswordError("Invalid Password");
           setShow(true);
         } else if (res && res.status) {
@@ -241,11 +241,10 @@ class SetupWebcam extends Component {
       devices: [],
       motion: false,
       lastNotificationTime: new Date(),
-      notificationTimeOut: 10,
+      notificationTimeOut: 5,
     };
   }
-
-
+  
   componentWillUnmount() {
     window.onbeforeunload = null;
   }

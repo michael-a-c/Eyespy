@@ -44,7 +44,8 @@ function ModalController(props) {
       if (props.updateEmail) {
         req.infoType = "email";
         Requests.updateInfo(req).then((res) => {
-          if (res && res.status === "401") {
+          console.log(res.status);
+          if (res && res.status === 401) {
             setPasswordError("Invalid Password");
             setShow(true);
           } else if (res && res.status) {
@@ -60,7 +61,7 @@ function ModalController(props) {
       else if (props.updatePhone) {
         req.infoType = "phone";
         Requests.updateInfo(req).then((res) => {
-          if (res && res.status === "401") {
+          if (res && res.status === 401) {
             setPasswordError("Invalid Password");
             setShow(true);
           } else if (res && res.status) {
@@ -76,7 +77,7 @@ function ModalController(props) {
       else if (props.updatePassword) {
         req.infoType = "password";
         Requests.updateInfo(req).then((res) => {
-          if (res && res.status === "401") {
+          if (res && res.status === 401) {
             setPasswordError("Invalid Password");
             setShow(true);
           } else if (res && res.status) {
@@ -140,36 +141,22 @@ class AccountInfo extends Component {
   }
 
   closeModal() {
-    this.setState({ shouldRenderPasswordModal: false });
-    this.setState({ updateEmail: false });
-    this.setState({ updatePhone: false });
-    this.setState({ updatePassword: false });
-    this.setState({ newInfo: null });
-    this.setState({ loading: false });
+    this.setState({ shouldRenderPasswordModal: false, updateEmail: false, updatePhone: false, updatePassword: false, newInfo: null, loading: false });
     this.getUserInfo();
   }
 
   handleSubmitEmail(submitRequest) {
-    this.setState({ loading: true });
-    this.setState({ updateEmail: true });
-    this.setState({ newInfo: submitRequest.email });
-    this.setState({ shouldRenderPasswordModal: true });
+    this.setState({ loading: true, updateEmail: true, newInfo: submitRequest.email, shouldRenderPasswordModal: true });
     submitRequest.email = "";
   }
 
   handleSubmitPhone(submitRequest) {
-    this.setState({ loading: true });
-    this.setState({ updatePhone: true });
-    this.setState({ newInfo: submitRequest.phone });
-    this.setState({ shouldRenderPasswordModal: true });
+    this.setState({ loading: true, updatePhone: true, newInfo: submitRequest.phone, shouldRenderPasswordModal: true });
     submitRequest.phone = "";
   }
 
   handleSubmitPassword(submitRequest) {
-    this.setState({ loading: true });
-    this.setState({ updatePassword: true });
-    this.setState({ newInfo: submitRequest.password });
-    this.setState({ shouldRenderPasswordModal: true });
+    this.setState({ loading: true, updatePassword: true, newInfo: submitRequest.password, shouldRenderPasswordModal: true });
     submitRequest.password = "";
     submitRequest.confirmPassword = "";
   }

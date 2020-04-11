@@ -22,7 +22,10 @@ function PasswordModal(props) {
         <Modal.Body>
           To perform this operation, please enter your password
         </Modal.Body>
-        <Form>
+        <Form
+        onSubmit={(e) => 
+        {e.preventDefault();
+          props.handleClose(password, true);}}>
           <Form.Group
             controlId="formBasicPassord"
             className={"password-modal-form"}
