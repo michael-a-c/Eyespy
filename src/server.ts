@@ -81,7 +81,7 @@ var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
                 );
 
                 if((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0){
-                    console.log("Found Dead Strea ==> "+ stream.title);
+                    console.log("Found Dead Stream ==> "+ stream.title);
                     Stream.findOneAndDelete({ username: stream.username, peerId: stream.peerId }, (err: any, dbRes: any) => {
                         if (err) {   
                             console.log("Failed to remove dead stream : "+ stream.title)
