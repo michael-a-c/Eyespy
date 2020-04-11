@@ -160,7 +160,6 @@ function ModalController(props) {
             "If this was not you, consider changing your password immediately",
         },
       };
-      console.log("notif:", notificationoptions);
       props.notify(notificationoptions);
 
       Requests.stopStream(req).then((res) => {
@@ -288,7 +287,6 @@ class SetupWebcam extends Component {
         result.devices.forEach((device) => {
           streamDevices[device.deviceName] = false;
         });
-        console.log("stream info: ", streamDevices);
         this.setState({
           devices: result.devices,
           streamDevices: streamDevices,
@@ -491,6 +489,7 @@ class SetupWebcam extends Component {
                   subject: "Potential Intruder detected on stream: " + this.state.streamTitle,
                   content: `To watch the stream, click <a href=\"${window.location.href}/watch/` + this.state.peerId + "\">here</a>",
                   imagePath: data.path//"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
+
                 }
               }
               this.sendNotifications(notificationoptions);
@@ -588,7 +587,7 @@ class SetupWebcam extends Component {
     }
 
     peer.on("open", function (id) {
-      console.log("My peer ID is: " + id);
+      //console.log("My peer ID is: " + id);
       let req = {
         title: subReq.title,
         devices: streamDevices, //// Need this to be based off of checkboxed devices
@@ -602,7 +601,6 @@ class SetupWebcam extends Component {
       };
       Requests.startStream(req).then((res) => {
         if (res && res.status && res.status !== "200") {
-          console.log(res);
           parent.setState({
             isRecording: false,
             peerId: null,
@@ -611,7 +609,7 @@ class SetupWebcam extends Component {
             countdownActive: false,
           });
         } else if (res && !res.status) {
-          console.log("success");
+          //console.log("success");
 
           parent.setState({
             isRecording: true,
@@ -635,12 +633,12 @@ class SetupWebcam extends Component {
             smsoptions: {
               title: "Started stream - " + res.title + ": ",
               body: "\nWatch from here: ",
-              url: `http://localhost:3000/watch/${parent.state.peerId}`,
+              url: `${window.location.href}/watch/${parent.state.peerId}`,
             },
             emailoptions: {
               subject: "Started a stream: " + res.title,
               content:
-                'To watch the stream, click <a href="http://localhost:3000/watch/' +
+                'To watch the stream, click <a href="'+window.location.href+'/watch/' +
                 parent.state.peerId +
                 '">here</a>',
             },
@@ -652,10 +650,10 @@ class SetupWebcam extends Component {
 
     peer.on("connection", function (conn) {
       let connPeerId = conn.peer;
-      console.log(connPeerId);
+      //console.log(connPeerId);
       var call = peer.call(connPeerId, ref.current.stream);
       call.on("close", function () {
-        console.log(call);
+        //console.log(call);
         let currentPeerMediaCalls = parent.state.peerMediaCalls;
         parent.setState({
           peerMediaCalls: currentPeerMediaCalls.filter((acall) => {
@@ -672,9 +670,9 @@ class SetupWebcam extends Component {
         peerMediaCalls: currentPeerMediaCalls.concat(call),
       });
       conn.on("close", function () {
-        console.log("Dropped connection");
+        //console.log("Dropped connection");
         let currentPeerCons = parent.state.peerCons;
-        console.log(conn);
+        //console.log(conn);
         parent.setState({
           peerCons: currentPeerCons.filter((aconn) => {
             return aconn.peer !== conn.peer;
@@ -686,7 +684,7 @@ class SetupWebcam extends Component {
         if (data.action === "STOP") {
           parent.stopStreaming();
         }
-        console.log(data);
+        //console.log(data);
       });
     });
   }
@@ -718,7 +716,6 @@ class SetupWebcam extends Component {
   }
 
   takeScreenshot() {
-    console.log("taking screenshot");
     if (this.state.streamTitle) {
       fetch("/api/screenshot/create", {
         method: "POST",
@@ -730,7 +727,6 @@ class SetupWebcam extends Component {
           "Content-Type": "application/json",
         },
       }).then((res) => {
-        console.log(res);
         if (res && res.status === 200) {
           ToastNotif({
             title: "Took a Screenshot",
@@ -750,7 +746,7 @@ class SetupWebcam extends Component {
   }
 
   selectDevice(deviceName) {
-    let cpy = this.state.streamDevices[deviceName];
+    let cpy = this.state.streamDevices;
     cpy[deviceName] = !cpy[deviceName];
     this.setState({ streamDevices: cpy });
   }

@@ -21,8 +21,6 @@ const yup = require("yup");
 
 require('dotenv').config();
 
-console.log("key: ", process.env.publicVapidKey)
-
 const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
 const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
 
@@ -51,6 +49,8 @@ export class Devices extends Component {
     this.state = {
       username: props.username,
       showRegister: false,
+      notifsPermitted: false,
+      deviceValid: false,
       subscription: null,
       devices: []
     };
@@ -76,7 +76,36 @@ export class Devices extends Component {
       window.removeEventListener('beforeunload');
     }
   */
+
+  isPushNotificationSupported() {
+    return "serviceWorker" in navigator && "PushManager" in window;
+  }
+
+  // returns default (no response), denied, or granted 
+  async askUserPermission() {
+    if (typeof Notification !== 'undefined') {
+      return await Notification.requestPermission();
+    }
+    return;
+  }
+
+  verifyAddingDevice() {
+    console.log("checking")
+    if (this.isPushNotificationSupported()) {
+      this.askUserPermission().then((allowed) => {
+        if (allowed === 'granted') {
+          this.setState({ notifsPermitted: true, deviceValid: true });
+        } else {
+          this.setState({ notifsPermitted: false, deviceValid: true });
+        }
+      })
+    } else {
+      this.setState({ notifsPermitted: false, deviceValid: false });
+    }
+  }
+
   componentWillMount() {
+    this.verifyAddingDevice();
     this.getSubscription();
     this.getDevices();
   }
@@ -107,7 +136,6 @@ export class Devices extends Component {
             }).then((newSubscription) => {
               console.log('New subscription added.')
               this.setState({ subscription: newSubscription })
-              //// update this subscription to backend ??? (ERROR ATM)
             }).catch(function (e) {
               if (Notification.permission !== 'granted') {
                 console.log('Permission was not granted.')
@@ -118,7 +146,6 @@ export class Devices extends Component {
           } else {
             console.log('Existed subscription detected.')
             this.setState({ subscription: existedSubscription })
-            ////update this subscription to backend
           }
         })
       })
@@ -186,8 +213,6 @@ export class Devices extends Component {
         })
       }
     })
-    console.log("remove:", device)
-
   }
 
 
@@ -235,7 +260,7 @@ export class Devices extends Component {
           }
         })
       }
-      
+
     })
   }
 
@@ -279,7 +304,11 @@ export class Devices extends Component {
               /></Col>
           </Row>
           <Row>
-            <Col><Button onClick={this.handleShow} className="add-device" variant="primary">Add this device</Button></Col>
+            <Col>
+              <Button disabled={!this.state.deviceValid || !this.state.notifsPermitted} onClick={this.handleShow} className="add-device" variant="primary">Add this device</Button>
+              {!this.state.deviceValid ? <div className="error-text"> The device is invaild</div> : ""}
+              {!this.state.notifsPermitted && this.state.deviceValid ? <div className="error-text"> Please enable notifications for this device</div> : ""}
+            </Col>
           </Row>
 
         </Jumbotron>

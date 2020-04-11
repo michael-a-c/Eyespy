@@ -43,8 +43,6 @@ function ModalController(props) {
       };
       if (props.updateEmail) {
         req.infoType = "email";
-        console.log(req);
-        console.log("cherry");
         Requests.updateInfo(req).then((res) => {
           if (res && res.status === "401") {
             setPasswordError("Invalid Password");
