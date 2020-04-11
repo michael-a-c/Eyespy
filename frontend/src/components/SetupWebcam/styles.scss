@@ -91,12 +91,19 @@
 }
 .webcam-actual{
     border-radius: 5px;
-    width: 100%;
-    height: 100%;
-  @include for-xl {
-    height: 450px;
-    width: auto;
- }
+    
+    @include for-lg{
+      width: 640px;
+      height: 480px;
+    }
+    @include for-sm{
+      width: 512px;
+      height: 384px;
+    }
+    @include for-xs{
+      width: 256px;
+      height: 192px;
+    }
   
 }
 
@@ -129,15 +136,22 @@
 
 .webcam-canvas{
   position: absolute;
-  width: 100%;
-    height: 100%;
+  @include for-lg{
+    width: 640px;
+    height: 480px;
+  }
+  @include for-sm{
+    width: 512px;
+    height: 384px;
+  }
+  @include for-xs{
+    width: 256px;
+    height: 192px;
+  }
 }
 
 .motion-canvas{
-  position: absolute;
-  width: auto;
-    height: 100%;
-    opacity: 0.8;
+  display:none;
 }
 .draw-canvas{
   position: absolute;
@@ -154,4 +168,8 @@
 }
 .device-checkbox{
   margin-bottom: 0 !important;
+}
+
+.red-border{
+  border: 2px solid red;
 }

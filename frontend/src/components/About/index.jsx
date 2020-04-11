@@ -7,15 +7,10 @@ import ItemContainer from "../ItemContainer";
 import Applebaum from "../../Applebaum.png";
 import Cottow from "../../Cottow.png";
 import Sun from "../../Sun.png";
-import logo from "../../logo192.png";
-/*import { setUser } from "../../utils/redux/actions";
-import { connect } from 'react-redux';
-import { withRouter, Redirect } from 'react-router-dom';*/
-
 import './styles.scss';
-// import Requests from '../../utils/requests';
 
-export class About extends Component {
+
+class About extends Component {
 
     constructor(props) {
         super(props);

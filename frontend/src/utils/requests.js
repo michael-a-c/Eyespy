@@ -64,16 +64,8 @@ let Requests = {
     return await this.requestBody("POST", "/api/stream/sendnotifications", request)
   },
 
-  getpath: async function(){
-    try{
-      const response = await fetch("/api/screenshot/path")
-      if (!response.ok) { throw response; }
-      let data = response.json();
-      return data;
-
-    } catch(err){
-      return err;
-    }
+  updateInfo: async function (request) {
+    return await this.requestBody("POST", "/api/user/updateInfo", request)
   },
 
   getUserStreams: async function(){
@@ -100,6 +92,19 @@ let Requests = {
 
     }
   },
+
+  getUserInfo: async function (){
+    try {
+      const response = await fetch("/api/user/info")
+      if (!response.ok) { throw response; }
+      let data = response.json();
+      return data;
+
+    } catch (err) {
+      return err;
+
+    }
+  }
 
   /*SMSalert: async function (request) {
     try {

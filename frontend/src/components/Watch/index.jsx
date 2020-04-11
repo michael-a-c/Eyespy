@@ -6,7 +6,6 @@ import Spinner from "react-bootstrap/Spinner";
 import ReactPlayer from "react-player";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import * as faceapi from "face-api.js";
 import "./styles.scss";
 import Container from "react-bootstrap/Container";
 

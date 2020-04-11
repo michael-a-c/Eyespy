@@ -37,7 +37,7 @@ export default class ScreenshotGallery extends Component {
             <Col sm={12}>
               <h4>Your Screen Shots</h4>
               {!this.state.failed && this.state.loaded ? (
-                this.state.images.length == 0 ? (
+                this.state.images.length === 0 ? (
                   <div>You do not have any screenshots</div>
                 ) : (
                   <Carousel pause={"hover"} interval={300000}>

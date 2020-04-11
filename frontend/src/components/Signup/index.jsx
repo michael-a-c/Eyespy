@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import ItemContainer from "../ItemContainer";
-import Spinner from 'react-bootstrap/Spinner'
+import Spinner from 'react-bootstrap/Spinner';
 import { store } from 'react-notifications-component';
-import 'react-notifications-component/dist/theme.css'
+import 'react-notifications-component/dist/theme.css';
 import { withRouter } from 'react-router-dom';
-import Requests from '../../utils/requests.js'
+import Requests from '../../utils/requests.js';
 import { connect } from 'react-redux';
 import { setUser } from "../../utils/redux/actions";
 
@@ -21,7 +21,7 @@ const schema = yup.object({
   confirmPassword: yup.string().required("Confirm password is required").test('passwords-match', 'Passwords must match!', function (value) {
     return this.parent.password === value;
   }),
-  phone: yup.string().matches(/^[1-9]{1}[0-9]{9}/, "10 digit phone number with area code, no spaces", {excludeEmptyString: true})
+  phone: yup.string().matches(/^[1-9]{1}[0-9]{9}$/, "10 digit phone number with area code, no spaces", {excludeEmptyString: true})
 });
 
 class Signup extends Component {
