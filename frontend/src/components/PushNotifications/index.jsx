@@ -139,14 +139,14 @@ export class PushNotifications extends Component {
 
     async handleGetPermission() {
         this.askUserPermission().then((result) => {
-            if (result == 'granted') {
+            if (result === 'granted') {
                 console.log("granted");
                 this.setState({ triggerPermission: true });
                 
-            } else if (result == 'denied') {
+            } else if (result === 'denied') {
                 console.log("denied");
                 this.setState({ triggerPermission: false });
-            } else if (result == 'default') {
+            } else if (result === 'default') {
                 console.log("default");
             } else {
                 console.log(result);

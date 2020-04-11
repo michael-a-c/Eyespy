@@ -150,7 +150,7 @@ export class Devices extends Component {
 
   removeDevice(device) {
     Requests.getUserStreams().then((result) => {
-      if (result.length != 0) {
+      if (result.length !== 0) {
         let streamC = result.length;
         store.addNotification({
           title: "Cannot remove a device when a stream is active",
@@ -195,7 +195,7 @@ export class Devices extends Component {
   handleSubmit(req) {
     this.setState({ loading: true, badRequestError: false, unAuthorizedError: false, notFoundError: false, serverError: false, conflictError: false });
     Requests.getUserStreams().then((result) => {
-      if (result.length != 0) {
+      if (result.length !== 0) {
         let streamC = result.length;
         store.addNotification({
           title: "Cannot add a device when a stream is active",

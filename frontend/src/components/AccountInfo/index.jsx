@@ -46,7 +46,7 @@ function ModalController(props) {
         console.log(req);
         console.log("cherry");
         Requests.updateInfo(req).then((res) => {
-          if (res && res.status == "401") {
+          if (res && res.status === "401") {
             setPasswordError("Invalid Password");
             setShow(true);
           } else if (res && res.status) {
@@ -62,7 +62,7 @@ function ModalController(props) {
       else if (props.updatePhone) {
         req.infoType = "phone";
         Requests.updateInfo(req).then((res) => {
-          if (res && res.status == "401") {
+          if (res && res.status === "401") {
             setPasswordError("Invalid Password");
             setShow(true);
           } else if (res && res.status) {
@@ -78,7 +78,7 @@ function ModalController(props) {
       else if (props.updatePassword) {
         req.infoType = "password";
         Requests.updateInfo(req).then((res) => {
-          if (res && res.status == "401") {
+          if (res && res.status === "401") {
             setPasswordError("Invalid Password");
             setShow(true);
           } else if (res && res.status) {
@@ -102,7 +102,7 @@ function ModalController(props) {
   );
 }
 
-export default class AccountInfo extends Component {
+class AccountInfo extends Component {
   constructor(props) {
     super(props);
     this.getUserInfo = this.getUserInfo.bind(this);
@@ -120,7 +120,8 @@ export default class AccountInfo extends Component {
       updatePhone: false,
       updatePassword: false,
       newInfo: null,
-      defaultValue: ""
+      defaultValue: "",
+      loading: false
     }
   }
 
@@ -133,7 +134,7 @@ export default class AccountInfo extends Component {
       this.setState({ username: result.username })
       this.setState({ email: result.email });
       let phone = result.phone;
-      if (phone == "") {
+      if (phone === "") {
         phone = "N/A"
       }
       this.setState({ phone: phone });
@@ -146,11 +147,12 @@ export default class AccountInfo extends Component {
     this.setState({ updatePhone: false });
     this.setState({ updatePassword: false });
     this.setState({ newInfo: null });
+    this.setState({ loading: false });
     this.getUserInfo();
   }
 
   handleSubmitEmail(submitRequest) {
-    console.log(this.state.username);
+    this.setState({ loading: true });
     this.setState({ updateEmail: true });
     this.setState({ newInfo: submitRequest.email });
     this.setState({ shouldRenderPasswordModal: true });
@@ -158,6 +160,7 @@ export default class AccountInfo extends Component {
   }
 
   handleSubmitPhone(submitRequest) {
+    this.setState({ loading: true });
     this.setState({ updatePhone: true });
     this.setState({ newInfo: submitRequest.phone });
     this.setState({ shouldRenderPasswordModal: true });
@@ -165,6 +168,7 @@ export default class AccountInfo extends Component {
   }
 
   handleSubmitPassword(submitRequest) {
+    this.setState({ loading: true });
     this.setState({ updatePassword: true });
     this.setState({ newInfo: submitRequest.password });
     this.setState({ shouldRenderPasswordModal: true });
@@ -391,4 +395,4 @@ export default class AccountInfo extends Component {
       </ItemContainer>
     )
   }
-}
+} export default AccountInfo;

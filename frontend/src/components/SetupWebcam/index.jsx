@@ -51,7 +51,7 @@ function WebcamSelect(props) {
 
 function DevicesList(props) {
 
-  if (props.devices.length == 0) {
+  if (props.devices.length === 0) {
     return ("You currently have no devices set up to recieve push notifications")
   }
   let devicesList = props.devices.map((device) =>
@@ -152,7 +152,7 @@ function ModalController(props) {
       props.notify(notificationoptions)
 
       Requests.stopStream(req).then((res) => {
-        if (res && res.status == "401") {
+        if (res && res.status === "401") {
           setPasswordError("Invalid Password");
           setShow(true);
         } else if (res && res.status) {
@@ -366,7 +366,7 @@ class SetupWebcam extends Component {
         .then(function (devices) {
           let cams = devices
             .filter((device) => {
-              return device.kind == "videoinput";
+              return device.kind === "videoinput";
             })
             .map((cam) => {
               return { id: cam.deviceId, label: cam.label };
@@ -498,7 +498,7 @@ class SetupWebcam extends Component {
       let counter = this.state.armCounter;
       counter -= 1;
       console.log(counter);
-      if (counter == 0) {
+      if (counter === 0) {
         clearInterval(this.state.armTimer);
         this.setState({ armCounter: 0, isLoading: true });
         this.activateRecording(subReq);
@@ -537,7 +537,7 @@ class SetupWebcam extends Component {
         },
       };
       Requests.startStream(req).then((res) => {
-        if (res && res.status && res.status != "200") {
+        if (res && res.status && res.status !== "200") {
           console.log(res);
           parent.setState({
             isRecording: false,
@@ -616,7 +616,7 @@ class SetupWebcam extends Component {
       });
       conn.on("data", function (data) {
         // Will print 'hi!'
-        if (data.action == "STOP") {
+        if (data.action === "STOP") {
           parent.stopStreaming();
         }
         console.log(data);
@@ -679,7 +679,9 @@ class SetupWebcam extends Component {
   }
 
   selectDevice(deviceName) {
-    this.state.streamDevices[deviceName] = !this.state.streamDevices[deviceName]
+    let cpy = this.state.streamDevices[deviceName];
+    cpy[deviceName] = !cpy[deviceName];
+    this.setState({ streamDevices: cpy });
   }
 
   render() {
@@ -856,9 +858,9 @@ class SetupWebcam extends Component {
                                       id="push"
                                       type="switch"
                                       name="push"
-                                      label={this.state.devices.length == 0 ? "You no devices set up" : "Notify with Push Notification"}
-                                      disabled={this.state.isRecording || this.state.devices.length == 0}
-                                      checked={this.state.devices.length == 0 ? false : this.state.sendPush}
+                                      label={this.state.devices.length === 0 ? "You no devices set up" : "Notify with Push Notification"}
+                                      disabled={this.state.isRecording || this.state.devices.length === 0}
+                                      checked={this.state.devices.length === 0 ? false : this.state.sendPush}
                                       isInvalid={touched.push && !!errors.push}
                                     />
                                   </Form.Group>

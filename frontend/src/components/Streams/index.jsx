@@ -40,7 +40,7 @@ function Stream(props) {
       props.notify(notificationoptions);
 
       Requests.stopStream(req).then((res) => {
-        if (res && res.status == "401") {
+        if (res && res.status === "401") {
           setPasswordError("Invalid Password");
           setShow(true);
         } else if (res && res.status) {
@@ -61,68 +61,46 @@ function Stream(props) {
             });
           });
         }
-        Requests.stopStream(req).then((res) => {
-          if (res && res.status == "401") {
-            setPasswordError("Invalid Password");
-            setShow(true);
-          } else if (res && res.status) {
-            setPasswordError("Server Password");
-            setShow(true);
-          } else if (res && !res.status) {
-            setPasswordError(null);
-            setShow(false);
-            props.callback();
-            // tell the peer to shut down
-            let peer = new Peer();
-            peer.on("open", function (id) {
-              let conn = peer.connect(props.peerId);
-              conn.on("open", function () {
-                // here you have conn.id
-                conn.send({ action: "STOP" });
-              });
-            });
-          }
-        })
       });
     };
+  }
 
-    const handleShow = () => setShow(true);
+  const handleShow = () => setShow(true);
 
-    function parseTime(timestamp) {
-      let first = timestamp.split('T');
-      let date = first[0];
-      let second = first[1].split('.');
-      let hour = second[0];
-      return [date, hour];
-    }
+  function parseTime(timestamp) {
+    let first = timestamp.split('T');
+    let date = first[0];
+    let second = first[1].split('.');
+    let hour = second[0];
+    return [date, hour];
+  }
 
-    return (
-      <div className="stream">
-        <div className="stream-info">
-          <div className="stream-title">{props.name}</div>
-          <div className="stream-started">
-            <div className="stream-date">{parseTime(props.startTime)[0]}</div>
-            <div className="stream-date">{parseTime(props.startTime)[1]}</div>
-          </div>
-        </div>
-        <div className="stream-info-2">
-          <div className="stream-alerts-total"> {props.alerts} total alerts</div>
-        </div>
-        <div className="stream-buttons">
-          <Link
-            className="webcam-link-item"
-            to={`/watch/${props.peerId}`}
-            target="_blank"
-          >
-            <Button> Watch</Button>
-          </Link>
-
-          <Button onClick={handleShow}> Stop</Button>
-          <PasswordModal show={show} handleClose={handleClose} error={passwordError} />
+  return (
+    <div className="stream">
+      <div className="stream-info">
+        <div className="stream-title">{props.name}</div>
+        <div className="stream-started">
+          <div className="stream-date">{parseTime(props.startTime)[0]}</div>
+          <div className="stream-date">{parseTime(props.startTime)[1]}</div>
         </div>
       </div>
-    );
-  }
+      <div className="stream-info-2">
+        <div className="stream-alerts-total"> {props.alerts} total alerts</div>
+      </div>
+      <div className="stream-buttons">
+        <Link
+          className="webcam-link-item"
+          to={`/watch/${props.peerId}`}
+          target="_blank"
+        >
+          <Button> Watch</Button>
+        </Link>
+
+        <Button onClick={handleShow}> Stop</Button>
+        <PasswordModal show={show} handleClose={handleClose} error={passwordError} />
+      </div>
+    </div>
+  );
 }
 
 class Streams extends Component {
@@ -192,4 +170,3 @@ class Streams extends Component {
   }
 }
 export default Streams;
-
