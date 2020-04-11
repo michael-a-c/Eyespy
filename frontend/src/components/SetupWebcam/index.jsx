@@ -248,7 +248,7 @@ class SetupWebcam extends Component {
   componentDidMount() {
     window.addEventListener("beforeunload", (ev) => {
       ev.preventDefault();
-      return ev.returnValue = 'Are you sure you want to close?';
+      return ev.returnValue = 'Are you sure you want to close the stream? The Stream will end and no longer send notifications';
     });
   }
 
