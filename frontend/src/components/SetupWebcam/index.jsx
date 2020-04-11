@@ -241,7 +241,7 @@ class SetupWebcam extends Component {
       devices: [],
       motion: false,
       lastNotificationTime: new Date(),
-      notificationTimeOut: 10,
+      notificationTimeOut: 30,
     };
   }
 
