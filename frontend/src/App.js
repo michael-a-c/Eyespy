@@ -6,7 +6,6 @@ import Welcome from "./components/Welcome";
 import ScreenshotGallery from "./components/ScreenshotGallery";
 import Devices from "./components/Devices";
 import MainNavbar from "./components/MainNavBar";
-import PushNotifications from "./components/PushNotifications";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import AccountInfo from "./components/AccountInfo";
@@ -66,9 +65,6 @@ class App extends React.Component {
           <Route exact path="/signup">
             <Signup />
           </Route>
-          <PrivateRoute loggedIn={this.props.loggedIn} exact path="/pushnotifications">
-            <PushNotifications />
-          </PrivateRoute>
           <PrivateRoute loggedIn={this.props.loggedIn} exact path="/account">
             <AccountInfo />
           </PrivateRoute>

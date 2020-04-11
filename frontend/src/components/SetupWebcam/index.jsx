@@ -210,6 +210,7 @@ class SetupWebcam extends Component {
     this.getDevices = this.getDevices.bind(this);
     this.selectDevice = this.selectDevice.bind(this);
     this.atttemptNotification = this.atttemptNotification.bind(this);
+    this.hasPhone = this.hasPhone.bind(this);
 
     this.state = {
       username: props.username,
@@ -239,6 +240,7 @@ class SetupWebcam extends Component {
       sendEmail: true,
       streamDevices: {},
       devices: [],
+      hasPhone: this.hasPhone(),
       motion: false,
       lastNotificationTime: new Date(),
       notificationTimeOut: 10,
@@ -270,6 +272,18 @@ class SetupWebcam extends Component {
       this.setState({ faceSens: val });
     }
   }
+
+  hasPhone() {
+    Requests.getUserInfo().then((result) => {
+      let phone = result.phone;
+      if (phone === "") {
+        this.setState({ hasSMS : false })
+      } else {
+        this.setState({ hasSMS : true })
+      }
+    })
+  }
+
 
   handleMotionSensUpdate(sens) {
     this.setState({ movementSens: 3000 - sens.target.value * 30 });
@@ -368,7 +382,7 @@ class SetupWebcam extends Component {
   atttemptNotification() {
     let datePlusTimeout = new Date(
       this.state.lastNotificationTime.getTime() +
-        this.state.notificationTimeOut * 1000
+      this.state.notificationTimeOut * 1000
     );
     let currentTime = new Date();
     if (
@@ -407,7 +421,7 @@ class SetupWebcam extends Component {
                   rightText: "Live Watch",
                   url: `/watch/${this.state.peerId}`,
                   image:
-                    `${window.location.href}/api/screenshot/view/` + data.id,
+                    `${window.location.protocol}//${window.location.host}/api/screenshot/view/` + data.id,
                 },
                 smsoptions: {
                   title:
@@ -415,17 +429,17 @@ class SetupWebcam extends Component {
                     this.state.streamTitle +
                     ": ",
                   body:
-                    `\nIntruder: ${window.location.href}/api/screenshot/view/` +
+                    `\nIntruder: ${window.location.protocol}//${window.location.host}/api/screenshot/view/` +
                     data.id +
                     "\nWatch from here: ",
-                  url: `${window.location.href}/watch/${this.state.peerId}`,
+                  url: `${window.location.protocol}//${window.location.host}/watch/${this.state.peerId}`,
                 },
                 emailoptions: {
                   subject:
                     "Potential Intruder detected on stream: " +
                     this.state.streamTitle,
                   content:
-                    `To watch the stream, click <a href=\"${window.location.href}/watch/` +
+                    `To watch the stream, click <a href=\"${window.location.protocol}//${window.location.host}/watch/` +
                     this.state.peerId +
                     '">here</a>',
                   imagePath: data.path, //"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
@@ -544,7 +558,7 @@ class SetupWebcam extends Component {
     await faceapi.nets.ssdMobilenetv1.load("/models");
   }
 
-   
+
   async doFacialDetection() {
     let minConfidence = this.state.faceSens;
     //console.log(ref);
@@ -885,20 +899,20 @@ class SetupWebcam extends Component {
                     ref={motionRef}
                   ></canvas>
                   {!this.state.userDenied &&
-                  !this.state.waitingForUserAccept &
+                    !this.state.waitingForUserAccept &
                     !this.state.loadingFaceDetection ? (
-                    <div className="motion-output-wrapper">
-                      <canvas
-                        id="motionOutput"
-                        className="motion-output"
-                        ref={outputRef}
-                        width="256"
-                        height="177"
-                      ></canvas>
-                    </div>
-                  ) : (
-                    ""
-                  )}
+                      <div className="motion-output-wrapper">
+                        <canvas
+                          id="motionOutput"
+                          className="motion-output"
+                          ref={outputRef}
+                          width="256"
+                          height="177"
+                        ></canvas>
+                      </div>
+                    ) : (
+                      ""
+                    )}
                   {this.state.countdownActive ? (
                     <div className="countdownOverlay">
                       <div className="countdownText">
@@ -981,8 +995,10 @@ class SetupWebcam extends Component {
                                       id="sms"
                                       name="sms"
                                       label="Notify with SMS"
-                                      checked={this.state.sendSMS}
-                                      disabled={this.state.isRecording}
+                                      checked={!this.state.hasSMS
+                                        ? false
+                                        : this.state.sendSMS}
+                                      disabled={this.state.isRecording || !this.state.hasSMS}
                                       isInvalid={touched.sms && !!errors.sms}
                                     />
                                   </Form.Group>
@@ -998,7 +1014,7 @@ class SetupWebcam extends Component {
                                       name="push"
                                       label={
                                         this.state.devices.length == 0
-                                          ? "You no devices set up"
+                                          ? "You have no devices set up"
                                           : "Notify with Push Notification"
                                       }
                                       disabled={

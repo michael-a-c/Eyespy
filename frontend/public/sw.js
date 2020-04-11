@@ -4,6 +4,8 @@ self.addEventListener('push', event => {
   const data = event.data.json()
   let image = data.image
 
+  console.log(image)
+
   let options;
 
   if (data.data) {
