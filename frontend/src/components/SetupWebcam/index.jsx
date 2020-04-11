@@ -511,7 +511,7 @@ class SetupWebcam extends Component {
                 },
                 smsoptions: {
                   title: "Potential Intruder detected on stream - " + this.state.streamTitle + ": ",
-                  body: `\nIntruder: ${window.location.host}/api/screenshot/view/` + data.id + "\nWatch from here: ",
+                  body: `\nIntruder: ${window.location.protocol}//${window.location.host}/api/screenshot/view/` + data.id + "\nWatch from here: ",
                   url: `${window.location.protocol}//${window.location.host}/watch/${this.state.peerId}`,
                 },
                 emailoptions: {

@@ -11,8 +11,8 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
-const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
+const publicVapidKey = process.env.publicVapidKey
+const privateVapidKey = process.env.privateVapidKey
 
 const webpush = require('web-push')
 webpush.setVapidDetails('mailto: eyespy978@gmail.com', publicVapidKey, privateVapidKey)
@@ -78,11 +78,6 @@ export default class ServiceWorkerController {
         res.status(200).json({ 'success': true });
     }
 
-
-    @Get('test')
-    private test(req: Request, res: Response) {
-        res.send('Hello world!');
-    }
 
 }
 
