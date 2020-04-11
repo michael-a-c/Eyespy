@@ -3,8 +3,7 @@ import { OK, BAD_REQUEST, INTERNAL_SERVER_ERROR, CONFLICT, NOT_FOUND, UNAUTHORIZ
 import { NativeError, Schema } from 'mongoose';
 import { Stream, StreamSchema, IStream, User, IUser } from "./repository";
 
-const twilio = require('twilio')('AC9e52c9c34772601e7260597eabb183cc', '2f63ecb944038ba4413a507babc34b27');
-// eyespysnowdenc09
+const twilio = require('twilio')(process.env.twilioAccountID, process.env.twilioAuthToken);
 
 var nodemailer = require('nodemailer');
 var fs = require('fs');
@@ -14,7 +13,7 @@ var transport = {
     host: 'smtp.gmail.com',
     auth: {
         user: 'eyespy978@gmail.com',
-        pass: 'snowden123'
+        pass: process.env.emailPassword
     }
 };
 
@@ -28,8 +27,9 @@ transporter.verify((error: any, success: any) => {
     }
 });
 
-const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
-const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
+
+const publicVapidKey = process.env.publicVapidKey
+const privateVapidKey = process.env.privateVapidKey
 
 const webpush = require('web-push')
 webpush.setVapidDetails('mailto: eyespy978@gmail.com', publicVapidKey, privateVapidKey)
