@@ -1,15 +1,12 @@
 import React, { Component } from 'react'
 import Jumbotron from 'react-bootstrap/Jumbotron'
-import Container from 'react-bootstrap/Container'
 import Modal from 'react-bootstrap/Modal'
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import ListGroup from 'react-bootstrap/ListGroup'
-import Badge from 'react-bootstrap/Badge'
 import Spinner from 'react-bootstrap/Spinner';
-import { Link } from 'react-router-dom';
 import Requests from '../../utils/requests.js';
 import FadeIn from 'react-fade-in';
 import { store } from 'react-notifications-component';

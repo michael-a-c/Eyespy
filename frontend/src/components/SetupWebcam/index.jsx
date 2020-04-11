@@ -1,7 +1,7 @@
 import React, { Component, useState } from "react";
 import Jumbotron from "react-bootstrap/Jumbotron";
 import Container from "react-bootstrap/Container";
-import ReactTextTransition, { presets } from "react-text-transition";
+import ReactTextTransition from "react-text-transition";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Form from "react-bootstrap/Form";
@@ -17,7 +17,6 @@ import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
 import ToastNotif from "../ToastNotif";
-import { store } from 'react-notifications-component';
 const { Formik } = require("formik");
 const yup = require("yup");
 const ref = React.createRef();
@@ -263,7 +262,7 @@ class SetupWebcam extends Component {
 
   handleFaceSensUpdate(sens) {
     let val = (1 - sens.target.value * 0.01) * 0.99;
-    if (val == 0) {
+    if (val === 0) {
       this.setState({ faceSens: 0.01 });
     } else {
       this.setState({ faceSens: val });
@@ -424,7 +423,7 @@ class SetupWebcam extends Component {
                     "Potential Intruder detected on stream: " +
                     this.state.streamTitle,
                   content:
-                    `To watch the stream, click <a href=\"${window.location.href}/watch/` +
+                    `To watch the stream, click <a href= "${window.location.href}/watch/` +
                     this.state.peerId +
                     '">here</a>',
                   imagePath: data.path, //"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
@@ -458,7 +457,7 @@ class SetupWebcam extends Component {
         ctx.drawImage(ref.current.video, 0, 0, thisRef.state.videoConstraints.width, thisRef.state.videoConstraints.height, 0, 0, 256, 177);
 
         imgDataPrev[version] = ctx.getImageData(0, 0, 256, 177);
-        version = version == 0 ? 1 : 0;
+        version = version === 0 ? 1 : 0;
 
         x = 0;
         imgData = ctx.getImageData(0, 0, 256, 177);
@@ -996,16 +995,16 @@ class SetupWebcam extends Component {
                                       type="switch"
                                       name="push"
                                       label={
-                                        this.state.devices.length == 0
+                                        this.state.devices.length === 0
                                           ? "You no devices set up"
                                           : "Notify with Push Notification"
                                       }
                                       disabled={
                                         this.state.isRecording ||
-                                        this.state.devices.length == 0
+                                        this.state.devices.length === 0
                                       }
                                       checked={
-                                        this.state.devices.length == 0
+                                        this.state.devices.length === 0
                                           ? false
                                           : this.state.sendPush
                                       }

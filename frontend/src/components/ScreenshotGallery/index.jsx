@@ -8,7 +8,6 @@ import Carousel from "react-bootstrap/Carousel";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Requests from "../../utils/requests.js";
-import { serializeWithBufferAndIndex } from "bson";
 
 
 function CarouselController(props) {
@@ -16,12 +15,6 @@ function CarouselController(props) {
   
   const handleSelect = (selectedIndex, e) => {
     setIndex(selectedIndex);
-  }
-
-  const temp = (e) =>{
-    console.log(index);
-    
-    console.log(index);
   }
 
   return (
