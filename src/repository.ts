@@ -65,7 +65,7 @@ interface IStream extends mongoose.Document {
   streamingOptions: {
     sms: boolean,
     push: boolean,
-    publicView: boolean
+    email: boolean
   }
 }
 

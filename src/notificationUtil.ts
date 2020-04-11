@@ -34,134 +34,108 @@ const privateVapidKey = process.env.privateVapidKey
 const webpush = require('web-push')
 webpush.setVapidDetails('mailto: eyespy978@gmail.com', publicVapidKey, privateVapidKey)
 
-export function sendStreamNotification(req: Request, res: Response) {
+export function sendStreamNotification(streamInterface: IStream, notificationOptions: any) {
 
 
-    if (req.session?.user !== req.body.username) {
-        return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
-    }
+    User.find({ username: streamInterface.username }).exec((err: NativeError, user: IUser[]) => {
 
 
-    Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: any) => {
-        if (err) {
-            return res.status(INTERNAL_SERVER_ERROR).json(err);
-        }
-
-        if (dbRes.length > 1 || dbRes.length < 1) {
-            return res.status(CONFLICT).json({ "message": "invalid stream" });
-        }
-
-        User.find({ username: dbRes[0].username }).exec((err: NativeError, result: IUser[]) => {
-            if (err) {
-                return res.status(INTERNAL_SERVER_ERROR).json(err);
-            }
-            else if (result.length === 0) {
-                return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
+        /// If set up, send email notification
+        if (streamInterface.streamingOptions.email) {
+            let mail;
+            if (notificationOptions.emailoptions.imagePath) {
+                mail = {
+                    from: "EyeSpy Security",
+                    to: user[0].email,
+                    subject: notificationOptions.emailoptions.subject,
+                    html: notificationOptions.emailoptions.content,
+                    attachments: [
+                        {
+                            filename: 'screen-shot.jpg',
+                            content: fs.createReadStream(notificationOptions.emailoptions.imagePath)
+                        }]
+                };
             } else {
+                mail = {
+                    from: "EyeSpy Security",
+                    to: user[0].email,
+                    subject: notificationOptions.emailoptions.subject,
+                    html: notificationOptions.emailoptions.content,
 
-                /// If set up, send email notification
-                if (dbRes[0].streamingOptions.email) {
-                    let mail;
-                    if (req.body.emailoptions.imagePath) {
-                        mail = {
-                            from: "EyeSpy Security",
-                            to: result[0].email,
-                            subject: req.body.emailoptions.subject,
-                            html: req.body.emailoptions.content,
-                            attachments: [
-                                {
-                                    filename: 'screen-shot.jpg',
-                                    content: fs.createReadStream(req.body.emailoptions.imagePath)
-                                }]
+                };
+            }
+            transporter.sendMail(mail, (err: any, data: any) => {
+                if (err) {
+                    console.log(err);
+                }
+            })
+
+        }
+
+        /// If setup, send SMS notifications
+        if (streamInterface.streamingOptions.sms) {
+            let userP = '+1' + user[0].phone;
+            let fullSMS = notificationOptions.smsoptions.title + notificationOptions.smsoptions.body + notificationOptions.smsoptions.url;
+            if (userP !== "+1") {
+                twilio.messages.create({
+                    body: fullSMS,
+                    from: '+12057298375',
+                    to: userP
+                });
+            }
+
+        }
+
+
+        /// If set up, send push notifications
+        if (streamInterface.streamingOptions.push) {
+
+            // For every device in user
+            // If device is selected in stream, notify it
+
+
+
+            for (let i = 0; i < user[0].devices.length; i++) {
+                if (streamInterface.devices.includes(user[0].devices[i].deviceName)) {
+
+                    let payload;
+
+                    let image = "";
+                    if (notificationOptions.pushoptions.image) {
+                        image = notificationOptions.pushoptions.image
+                    }
+
+
+                    if (!notificationOptions.pushoptions.leftText || !notificationOptions.pushoptions.rightText || !notificationOptions.pushoptions.url) {
+                        payload =
+                        {
+                            title: notificationOptions.pushoptions.title,
+                            body: notificationOptions.pushoptions.body,
+                            image: image
                         };
                     } else {
-                        mail = {
-                            from: "EyeSpy Security",
-                            to: result[0].email,
-                            subject: req.body.emailoptions.subject,
-                            html: req.body.emailoptions.content,
-
+                        payload =
+                        {
+                            title: notificationOptions.pushoptions.title,
+                            body: notificationOptions.pushoptions.body,
+                            image: image,
+                            data: {
+                                leftText: notificationOptions.pushoptions.leftText,
+                                rightText: notificationOptions.pushoptions.rightText,
+                                url: notificationOptions.pushoptions.url
+                            }
                         };
                     }
-                    transporter.sendMail(mail, (err: any, data: any) => {
-                        if (err) {
-                            res.status(BAD_REQUEST).json({
-                                message: 'Failure in sedning E-mail'
-                            })
-                        } else {
-                            res.status(OK).json({
-                                message: 'E-mail sent successfully'
-                            })
-                        }
-                    })
+
+                    webpush.sendNotification(user[0].devices[i].subscription, JSON.stringify(payload))
+                        .then((result: any) => console.log(result))
+                        .catch((e: any) => console.log(e.stack))
 
                 }
+            }
 
-                /// If setup, send SMS notifications
-                if (dbRes[0].streamingOptions.sms) {
-                    let userP = '+1' + result[0].phone;
-                    let fullSMS = req.body.smsoptions.title + req.body.smsoptions.body + req.body.smsoptions.url;
-                    if (userP == "+1") {
-                        return res.status(OK).json({ "message": "no phone number for account" });
-                    }
-                    twilio.messages.create({
-                        body: fullSMS,
-                        from: '+12057298375',
-                        to: userP
-                    });
-                }
-
-
-                /// If set up, send push notifications
-                if (dbRes[0].streamingOptions.push) {
-
-                    // For every device in user
-                    // If device is selected in stream, notify it
-
-
-
-                    for (let i = 0; i < result[0].devices.length; i++) {
-                        if (dbRes[0].devices.includes(result[0].devices[i].deviceName)) {
-
-                            let payload;
-
-                            let image = "";
-                            if (req.body.pushoptions.image) {
-                                image = req.body.pushoptions.image
-                            }
-
-
-                            if (!req.body.pushoptions.leftText || !req.body.pushoptions.rightText || !req.body.pushoptions.url) {
-                                payload =
-                                {
-                                    title: req.body.pushoptions.title,
-                                    body: req.body.pushoptions.body,
-                                    image: image
-                                };
-                            } else {
-                                payload =
-                                {
-                                    title: req.body.pushoptions.title,
-                                    body: req.body.pushoptions.body,
-                                    image: image,
-                                    data: {
-                                        leftText: req.body.pushoptions.leftText,
-                                        rightText: req.body.pushoptions.rightText,
-                                        url: req.body.pushoptions.url
-                                    }
-                                };
-                            }
-
-                            webpush.sendNotification(result[0].devices[i].subscription, JSON.stringify(payload))
-                                .then((result: any) => console.log(result))
-                                .catch((e: any) => console.log(e.stack))
-
-                        }
-                        }
-
-                    }
-                }
-            });
+        }
     });
 }
+
 

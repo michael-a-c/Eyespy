@@ -72,15 +72,15 @@ export class StreamingController {
 
     @Get('refresh/:id')
     @Middleware(isAuthenticated)
-    private refresh(req:Request, res:Response){
+    private refresh(req: Request, res: Response) {
         console.log(req.path);
         // step 1. find the stream
-        Stream.findById(req.params.id, (err, ress) =>{
-            if(err) return res.status(INTERNAL_SERVER_ERROR).end();
-            if(!ress) return res.status(NOT_FOUND).end();
+        Stream.findById(req.params.id, (err, ress) => {
+            if (err) return res.status(INTERNAL_SERVER_ERROR).end();
+            if (!ress) return res.status(NOT_FOUND).end();
             ress.lastRefresh = new Date();
-            ress.save((err, saved) =>{
-                if(err) return res.status(INTERNAL_SERVER_ERROR).end();
+            ress.save((err, saved) => {
+                if (err) return res.status(INTERNAL_SERVER_ERROR).end();
                 res.json(saved);
             })
         })
@@ -146,6 +146,26 @@ export class StreamingController {
     @Post('sendnotifications')
     @Middleware(isAuthenticated)
     private sendnotifications(req: Request, res: Response) {
-        notifs.sendStreamNotification(req, res);
+
+        if (req.session?.user !== req.body.username) {
+            return res.status(UNAUTHORIZED).json({ "message": "cannot send notifications for another user" });
+        }
+
+        Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: any) => {
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+
+            if (dbRes.length > 1 || dbRes.length < 1) {
+                return res.status(CONFLICT).json({ "message": "invalid stream" });
+            }
+
+            let streamInterface = dbRes[0];
+
+            let notificationOptions = req.body;
+
+            notifs.sendStreamNotification(streamInterface, notificationOptions);
+            return res.status(OK).json({ "message": "notifications sent" });
+        });
     }
 }
