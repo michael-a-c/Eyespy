@@ -745,7 +745,7 @@ class SetupWebcam extends Component {
   }
 
   selectDevice(deviceName) {
-    let cpy = this.state.streamDevices[deviceName];
+    let cpy = this.state.streamDevices;
     cpy[deviceName] = !cpy[deviceName];
     this.setState({ streamDevices: cpy });
   }
