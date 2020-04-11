@@ -96,7 +96,7 @@ function ControlPanel(props) {
             disabled={props.isStreaming}
             onChange={props.faceSensUpdate}
             type="range"
-            custom
+            
           />
         </Form.Group>
         <Form.Group controlId="formBasicRangeCustom">
@@ -105,7 +105,7 @@ function ControlPanel(props) {
             disabled={props.isStreaming}
             onChange={props.motionSensUpdate}
             type="range"
-            custom
+            
           />
         </Form.Group>
       </div>
@@ -210,6 +210,7 @@ class SetupWebcam extends Component {
     this.getDevices = this.getDevices.bind(this);
     this.selectDevice = this.selectDevice.bind(this);
     this.atttemptNotification = this.atttemptNotification.bind(this);
+    this.activateKeepAlivePulse = this.activateKeepAlivePulse.bind(this);
 
     this.state = {
       username: props.username,
@@ -233,6 +234,7 @@ class SetupWebcam extends Component {
       webcams: [],
       sendPush: true,
       faceSens: 0.5,
+      streamId: null,
       movementSens: 1500,
       sendSMS: true,
       streamTitle: null,
@@ -248,18 +250,21 @@ class SetupWebcam extends Component {
 
 
   componentDidMount() {
-    this.getDevices();
-    this.loadFacialDetection()
+    let thisRef = this;
+    setTimeout( () => {
+    thisRef.getDevices();
+    thisRef.loadFacialDetection()
       .then(() => {
-        this.createWebcamList().then(() => {
-          this.setState({ loadingFaceDetection: false });
-          let timer = setInterval(this.doFacialDetection, 500);
-          this.setState({ timer: timer });
+        thisRef.createWebcamList().then(() => {
+          thisRef.setState({ loadingFaceDetection: false });
+          let timer = setInterval(thisRef.doFacialDetection, 500);
+          thisRef.setState({ timer: timer });
         });
       })
       .catch((e) => {
         console.log(e);
       });
+    }, 3000)
   }
 
   handleFaceSensUpdate(sens) {
@@ -599,6 +604,13 @@ class SetupWebcam extends Component {
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
+  activateKeepAlivePulse(){
+    let thisRef = this;
+    setInterval(() => {
+      fetch("/api/stream/refresh/"+thisRef.state.streamId)
+    }, 30000)
+  }
+
   doArmWait(subReq) {
     this.setState({ armCounter: 10, countdownActive: true, lastNotificationTime: new Date() });
 
@@ -655,7 +667,6 @@ class SetupWebcam extends Component {
           });
         } else if (res && !res.status) {
           //console.log("success");
-
           parent.setState({
             isRecording: true,
             peerId: id,
@@ -663,7 +674,9 @@ class SetupWebcam extends Component {
             isLoading: false,
             serverError: false,
             countdownActive: false,
+            streamId: res._id
           });
+          parent.activateKeepAlivePulse();
 
           let notificationoptions = {
             username: res.username,
@@ -848,7 +861,7 @@ class SetupWebcam extends Component {
                 ) : (
                     ""
                   )}
-                {this.state.userDenied ? (
+                {this.state.userDenied && !this.state.loadingFaceDetection ? (
                   <div>
                     <h3>Failed to access webcam</h3>
                     <p>

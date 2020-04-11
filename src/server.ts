@@ -76,12 +76,15 @@ var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
         else{
             ress.forEach((stream:IStream) => {
                 let refreshTimePlusTimeout = new Date(
-                    cTime.getTime() +
+                    stream.lastRefresh.getTime() +
                     timeout * 60000
                 );
 
-                if(stream.lastRefresh.getTime() < refreshTimePlusTimeout.getTime()){
+                if((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0){
                     console.log("Found dead stream: "+ stream.title);
+                    // 1. notify that the stream will be closed
+
+                    
                 }
             })
         }
