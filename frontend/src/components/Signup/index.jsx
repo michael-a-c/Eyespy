@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import ItemContainer from "../ItemContainer";
+import TermsAndConditions from "../TermsAndConditions";
 import Spinner from 'react-bootstrap/Spinner';
 import { store } from 'react-notifications-component';
 import 'react-notifications-component/dist/theme.css';
@@ -21,7 +23,10 @@ const schema = yup.object({
   confirmPassword: yup.string().required("Confirm password is required").test('passwords-match', 'Passwords must match!', function (value) {
     return this.parent.password === value;
   }),
-  phone: yup.string().matches(/^[1-9]{1}[0-9]{9}$/, "10 digit phone number with area code, no spaces", {excludeEmptyString: true})
+  phone: yup.string().matches(/^[1-9]{1}[0-9]{9}$/, "10 digit phone number with area code, no spaces", {excludeEmptyString: true}),
+  terms: yup.string().required("Please read and accept the terms and conditions above")
+  //mixed().notOneOf([`[]`]).required()
+  //string().matches(/(["\"on\""])/, "please read and accept the terms and conditions")
 });
 
 class Signup extends Component {
@@ -33,8 +38,21 @@ class Signup extends Component {
       userNameExistsError: false,
       serverError: false,
       badRequestError:false,
+      acceptTerms: false,
+      showTerms:false
     }
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.toggleTerms = this.toggleTerms.bind(this);
+    this.acceptTerms = this.acceptTerms.bind(this);
+  }
+
+  toggleTerms(){
+    this.setState({ showTerms: !this.state.showTerms });
+  }
+
+  acceptTerms() {
+    this.setState({ acceptTerms: true });
+    this.toggleTerms();
   }
 
   handleSubmit(submitRequest) {
@@ -179,7 +197,18 @@ class Signup extends Component {
                 </Form.Group>
                 {this.state.serverError ? <div className="error-text"> A server error has occured</div>: ""}
                 {this.state.badRequestError ? <div className="error-text"> Bad Request!</div>: ""}
-
+                <Button variant="link" onClick={this.toggleTerms}>Terms and Conditions</Button>
+                <Form.Group>
+                  <Form.Check
+                  required
+                  disabled={!this.state.acceptTerms}
+                  name="terms"
+                  label="Agree to Terms and Conditions"
+                  onChange={handleChange}
+                  isInvalid={!!errors.terms}
+                  feedback={errors.terms}
+                  />
+                </Form.Group>
                 <Button variant="primary" type="submit" disabled={this.state.loading}>
                   Sign up
                    {this.state.loading ?
@@ -195,7 +224,16 @@ class Signup extends Component {
               </Form>
             )}
         </Formik>
-
+        <Modal size="lg" show={this.state.showTerms} onHide={this.toggleTerms}>
+                    <Modal.Header closeButton>Terms and Conditions</Modal.Header>
+                    <Modal.Body>
+                        <TermsAndConditions/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={this.toggleTerms}>Do Not Accept</Button>
+                        <Button variant="primary" onClick={this.acceptTerms}>Accept</Button>
+                    </Modal.Footer>
+                </Modal>
       </ItemContainer>
     );
   }
