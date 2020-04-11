@@ -22,7 +22,7 @@ transporter.verify((error: any, success: any) => {
     if (error) {
         console.log(error);
     } else {
-        console.log('Server is ready to take messages');
+        console.log('Email Server set up for individual emails');
     }
 });
 
@@ -62,7 +62,7 @@ export class EmailController {
                 html: content,
             }
         }
-        console.log(mail);
+
         transporter.sendMail(mail, (err: any, data: any) => {
             if (err) {
                 res.status(BAD_REQUEST).json({

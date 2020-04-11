@@ -29,7 +29,7 @@ transporter.verify((error: any, success: any) => {
     if (error) {
         console.log(error);
     } else {
-        console.log('Server is ready to take messages');
+        console.log('Email Server set up for streams');
     }
 });
 
@@ -51,7 +51,6 @@ export class StreamingController {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             } else {
-                console.log(dbRes);
                 return res.json(dbRes);
             }
         });
@@ -144,7 +143,6 @@ export class StreamingController {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
-            console.log(dbRes);
             let increm = dbRes[0].alerts + 1;
             let query = { peerId: req.body.peerId };
             let newvalues = { $set: { alerts: increm } };
@@ -187,7 +185,6 @@ export class StreamingController {
                 if (dbRes[0].streamingOptions.email) {
                     let mail;
                     if (req.body.emailoptions.imagePath) {
-                        console.log(req.body.emailoptions.imagePath)
                         mail = {
                             from: "EyeSpy Security",
                             to: result[0].email,
@@ -277,8 +274,6 @@ export class StreamingController {
                                 };
                             }
 
-
-                            console.log("send notifications to: ", result[0].devices[i].deviceName)
                             webpush.sendNotification(result[0].devices[i].subscription, JSON.stringify(payload))
                                 .then((result: any) => console.log(result))
                                 .catch((e: any) => console.log(e.stack))

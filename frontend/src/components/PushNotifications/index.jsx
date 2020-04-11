@@ -8,8 +8,6 @@ import FadeIn from 'react-fade-in';
 
 require('dotenv').config();
 
-console.log("key: ",process.env.publicVapidKey)
-
 const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
 const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
 

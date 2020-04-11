@@ -47,13 +47,13 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', function (event) {
   if (!event.action) {
     // Was a normal notification click
-    console.log('Notification Click.');
+    // console.log('Notification Click.');
     return;
   }
 
   switch (event.action) {
     case 'dismiss-notification':
-      console.log("dismissed notification");
+      // console.log("dismissed notification");
       break;
     case 'live-view':
       const url = event.notification.data
@@ -63,7 +63,7 @@ self.addEventListener('notificationclick', function (event) {
       }
       break;
     default:
-      console.log(`Unknown action clicked: '${event.action}'`);
+      // console.log(`Unknown action clicked: '${event.action}'`);
       break;
   }
 });

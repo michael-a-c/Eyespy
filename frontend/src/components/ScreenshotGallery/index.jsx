@@ -21,7 +21,6 @@ export default class ScreenshotGallery extends Component {
     fetch("/api/screenshot/list/").then((res) => {
       if (res && res.status === 200) {
         res.json().then((data) => {
-          console.log(data);
           this.setState({ images: data, loaded: true });
         });
       } else {

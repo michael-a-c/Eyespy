@@ -41,7 +41,7 @@ class Watch extends Component {
       conn.on("open", function () {
         // here you have conn.id
         conn.send("hi!");
-        console.log("CONNECTED");
+        //console.log("CONNECTED");
       });
       conn.on("data", function (data) {
         // here you have conn.id
@@ -67,7 +67,7 @@ class Watch extends Component {
               (faceData._box._width / dims.width) * canvasRef.current.width;
             let height =
               (faceData._box._height / dims.height) * canvasRef.current.height;
-            console.log(x, y, width, height);
+            //console.log(x, y, width, height);
             ctx.rect(x, y, width, height);
             ctx.stroke();
           }
@@ -76,11 +76,11 @@ class Watch extends Component {
     });
 
     peer.on("call", function (call) {
-      console.log("GETTING CALLED");
+      //console.log("GETTING CALLED");
       call.answer();
       call.on("stream", function (remoteStream) {
         // Show stream in some video/canvas element.
-        console.log("RECEIVING STREAM");
+        //console.log("RECEIVING STREAM");
         thisRef.setState({
           loading: false,
           playing: true,
