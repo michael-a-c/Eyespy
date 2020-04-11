@@ -366,30 +366,32 @@ class SetupWebcam extends Component {
     let data = [];
     let thisRef = this;
     (function loop() {
-      ctx.drawImage(ref.current.video, 0, 0, 640, 480, 0, 0, 128, 77);
-      if (firstPass) {
-        oldData = ctx.getImageData(0, 0, 128, 77).data;
-        firstPass = false;
-      } else {
-        data = ctx.getImageData(0, 0, 128, 77).data;
-        for (var x = 0; x < 128; x++) {
-          for (var y = 0; y < 77; y++) {
-            for (var p = 0; p < 4; p++) {
-              var i = x + y * 128 * 4 + p;
-              let cdiff = Math.abs(oldData[i] - data[i]);
-              diff += cdiff;
+      if (ref && ref.current.video) {
+        ctx.drawImage(ref.current.video, 0, 0, 640, 480, 0, 0, 128, 77);
+        if (firstPass) {
+          oldData = ctx.getImageData(0, 0, 128, 77).data;
+          firstPass = false;
+        } else {
+          data = ctx.getImageData(0, 0, 128, 77).data;
+          for (var x = 0; x < 128; x++) {
+            for (var y = 0; y < 77; y++) {
+              for (var p = 0; p < 4; p++) {
+                var i = x + y * 128 * 4 + p;
+                let cdiff = Math.abs(oldData[i] - data[i]);
+                diff += cdiff;
+              }
             }
           }
+          oldData = data;
+          if (diff > thisRef.state.movementSens) {
+            thisRef.setState({ motion: true });
+          } else {
+            thisRef.setState({ motion: false });
+          }
+          diff = 0;
         }
-        oldData = data;
-        if (diff > thisRef.state.movementSens) {
-          thisRef.setState({ motion: true });
-        } else {
-          thisRef.setState({ motion: false });
-        }
-        diff = 0;
+        setTimeout(loop, 222);
       }
-      setTimeout(loop, 222);
     })();
   }
 
@@ -456,14 +458,13 @@ class SetupWebcam extends Component {
         if (this.state.isRecording) {
           this.addAlert();
 
-
           console.log("capturing face");
           if (this.state.streamTitle) {
             fetch("/api/screenshot/create", {
               method: "POST",
               body: JSON.stringify({
                 title: this.state.streamTitle,
-                data: ref.current.getScreenshot()
+                data: ref.current.getScreenshot(),
               }),
               headers: {
                 "Content-Type": "application/json",
@@ -472,37 +473,45 @@ class SetupWebcam extends Component {
               console.log(res);
               if (res && res.status === 200) {
                 res.json().then((data) => {
-                  console.log("captured intruder")
+                  console.log("captured intruder");
                   let notificationoptions = {
                     username: this.state.username,
                     peerId: this.state.peerId,
                     pushoptions: {
-                      title: "Face detected on stream: " + this.state.streamTitle,
+                      title:
+                        "Face detected on stream: " + this.state.streamTitle,
                       body: "Click Live Watch to view",
                       leftText: "Dismiss Notification",
                       rightText: "Live Watch",
                       url: `/watch/${this.state.peerId}`,
-                      image: "http://localhost:3000/api/screenshot/view/"+data.id
+                      image:
+                        "http://localhost:3000/api/screenshot/view/" + data.id,
                     },
                     smsoptions: {
-                      title: "Face detected on stream - " + this.state.streamTitle + ": ",
+                      title:
+                        "Face detected on stream - " +
+                        this.state.streamTitle +
+                        ": ",
                       body: "\nWatch from here: ",
                       url: `http://localhost:3000/watch/${this.state.peerId}`,
                     },
                     emailoptions: {
-                      subject: "Face detected on stream: " + this.state.streamTitle,
-                      content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + this.state.peerId + "\">here</a>"
-                      //imagePath: 
-                    }
-                  }
+                      subject:
+                        "Face detected on stream: " + this.state.streamTitle,
+                      content:
+                        'To watch the stream, click <a href="http://localhost:3000/watch/' +
+                        this.state.peerId +
+                        '">here</a>',
+                      //imagePath:
+                    },
+                  };
                   this.sendNotifications(notificationoptions);
                 });
               } else {
-                console.log("failed to capture intruder")
+                console.log("failed to capture intruder");
               }
             });
           }
-
         }
       }
 
@@ -747,7 +756,7 @@ class SetupWebcam extends Component {
           <Container fluid="true" className="main-container">
             <Row>
               <Col xl={2}>
-              {!this.state.userDenied &&
+                {!this.state.userDenied &&
                 !this.state.waitingForUserAccept &
                   !this.state.loadingFaceDetection ? (
                   <ControlPanel
