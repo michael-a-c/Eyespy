@@ -146,6 +146,7 @@ export class StreamingController {
     @Post('sendnotifications')
     @Middleware(isAuthenticated)
     private sendnotifications(req: Request, res: Response) {
+        
         notifs.sendStreamNotification(req, res);
     }
 }
