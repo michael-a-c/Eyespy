@@ -246,31 +246,8 @@ class SetupWebcam extends Component {
   }
 
 
-  componentWillUnmount() {
-    window.onbeforeunload = null;
-  }
-
 
   componentDidMount() {
-    window.onbeforeunload = function (event) {
-      let message = "Please make sure the system is not armed before leaving the page";
-      
-      store.addNotification({
-        title: "WARNING!!! Closing this screen will stop a stream that is armed on this page",
-        message: message,
-        type: "danger",
-        insert: "bottom",
-        container: "bottom-center",
-        animationIn: ["animated", "fadeIn"],
-        animationOut: ["animated", "fadeOut"],
-        dismiss: {
-          duration: 5000,
-          onScreen: true
-        }
-      });
-      return message;
-    };
-
     this.getDevices();
     this.loadFacialDetection()
       .then(() => {
