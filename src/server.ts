@@ -7,6 +7,8 @@ import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import * as Express from 'express';
 import * as ExpressSession from 'express-session';
+const schedule = require('node-schedule');
+
 require('dotenv').config()
 
 const path = require('path');
@@ -59,3 +61,10 @@ const exampleServer = new EyeSpyServer();
 let envPort = process.env.PORT;
 let port = parseInt((envPort) || "3001");
 exampleServer.start(port);
+
+
+// setup cleanup jobs
+
+var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
+    
+  });
