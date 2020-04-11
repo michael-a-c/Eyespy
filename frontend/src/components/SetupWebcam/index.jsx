@@ -17,12 +17,11 @@ import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
 import ToastNotif from "../ToastNotif";
-
 const { Formik } = require("formik");
 const yup = require("yup");
 const ref = React.createRef();
 const canvasRef = React.createRef();
-
+const motionRef = React.createRef();
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   sms: yup.bool("Type Error"),
@@ -88,8 +87,7 @@ function ControlPanel(props) {
           disabled={!props.isStreaming}
           onClick={props.screenShotCallback}
         >
-          {" "}
-          Screen Shot{" "}
+          Screen Shot
         </Button>
       </div>
       <div className="status-readout-heading control-panel-block">
@@ -193,16 +191,16 @@ class SetupWebcam extends Component {
     this.doArmWait = this.doArmWait.bind(this);
     this.activateRecording = this.activateRecording.bind(this);
     this.takeScreenshot = this.takeScreenshot.bind(this);
+    this.runMotionDetection = this.runMotionDetection.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.getDevices = this.getDevices.bind(this);
     this.selectDevice = this.selectDevice.bind(this);
-
 
     this.state = {
       username: props.username,
       videoConstraints: {
         width: 1280,
-        height: 720,
+        height: 1280,
         facingMode: "user",
       },
       waitingForUserAccept: true,
@@ -232,7 +230,7 @@ class SetupWebcam extends Component {
       .then(() => {
         this.createWebcamList().then(() => {
           this.setState({ loadingFaceDetection: false });
-          let timer = setInterval(this.doFacialDetection, 5000);
+          let timer = setInterval(this.doFacialDetection, 2000);
           this.setState({ timer: timer });
         });
       })
@@ -328,6 +326,22 @@ class SetupWebcam extends Component {
   componentWillUnmount() {
     // use intervalId from the state to clear the interval
     clearInterval(this.state.timer);
+  }
+  runMotionDetection() {
+    let options = {
+      gridSize: {
+        x: 16 * 2,
+        y: 12 * 2,
+      },
+      debug: true,
+      pixelDiffThreshold: 0.3,
+      movementThreshold: 0.0012,
+      fps: 30,
+      canvasOutputElem: motionRef.current,
+    };
+    console.log(ref.current);
+
+
   }
   selectWebcam(newCamId) {
     if (
@@ -470,9 +484,11 @@ class SetupWebcam extends Component {
 
   handleStartCam() {
     this.setState({ waitingForUserAccept: false, userDenied: false });
+    this.runMotionDetection();
   }
 
   handleUserDenied() {
+
     this.setState({ userDenied: true, waitingForUserAccept: false });
   }
 
@@ -645,7 +661,7 @@ class SetupWebcam extends Component {
         method: "POST",
         body: JSON.stringify({
           title: this.state.streamTitle,
-          data: ref.current.getScreenshot()
+          data: ref.current.getScreenshot(),
         }),
         headers: {
           "Content-Type": "application/json",
@@ -653,10 +669,10 @@ class SetupWebcam extends Component {
       }).then((res) => {
         console.log(res);
         if (res && res.status === 200) {
+
           ToastNotif({ "title": "Took a Screenshot", "type": "success", "message": "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly" });
         } else {
           ToastNotif({ "title": "Failed to take a Screenshot", "type": "failure", "message": "Perhaps you have lost connect to the network" });
-
         }
       });
     }
@@ -737,6 +753,12 @@ class SetupWebcam extends Component {
                     screenshotQuality={0.5}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
+
+                  <canvas
+                    id="motionCanvas"
+                    className="motion-canvas"
+                    ref={motionRef}
+                  ></canvas>
                   {this.state.countdownActive ? (
                     <div className="countdownOverlay">
                       <div className="countdownText">
