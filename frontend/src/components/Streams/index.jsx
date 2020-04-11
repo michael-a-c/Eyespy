@@ -123,71 +123,73 @@ function Stream(props) {
       </div>
     );
   }
+}
 
-  class Streams extends Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        streams: [],
-        fetchError: false
-      };
-      this.getStreams = this.getStreams.bind(this);
-      this.sendNotifications = this.sendNotifications.bind(this);
+class Streams extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      streams: [],
+      fetchError: false
+    };
+    this.getStreams = this.getStreams.bind(this);
+    this.sendNotifications = this.sendNotifications.bind(this);
 
-    }
-    componentDidMount() {
-      this.getStreams();
-    }
-
-    getStreams() {
-      Requests.getUserStreams().then(res => {
-        if (res && !res.status) {
-          this.setState({
-            streams: res,
-            fetchError: false
-          });
-        } else {
-          this.setState({ fetchError: true });
-        }
-      });
-    }
-
-
-    sendNotifications(options) {
-      return fetch(`api/stream/sendnotifications`, {
-        method: "POST",
-        body: JSON.stringify(options),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    }
-
-    render() {
-      return (
-        <div className="streams-wrapper">
-          <h2>Active Streams</h2>
-          {this.state.streams.map((stream, i) => {
-            console.log(stream);
-            return (
-              <Stream
-                key={i}
-                name={stream.title}
-                device={stream.device}
-                startTime={stream.created_at}
-                peerId={stream.peerId}
-                username={stream.username}
-                alerts={stream.alerts}
-                callback={this.getStreams}
-                notify={this.sendNotifications}
-              />
-            );
-          })}
-          {(this.state.streams.length === 0) && (!this.state.fetchError) ? <div> No active streams  </div> : ""}
-
-          {this.state.fetchError ? <div> Failure to load streams </div> : ""}
-        </div>
-      );
-    }
   }
-  export default Streams;
+  componentDidMount() {
+    this.getStreams();
+  }
+
+  getStreams() {
+    Requests.getUserStreams().then(res => {
+      if (res && !res.status) {
+        this.setState({
+          streams: res,
+          fetchError: false
+        });
+      } else {
+        this.setState({ fetchError: true });
+      }
+    });
+  }
+
+
+  sendNotifications(options) {
+    return fetch(`api/stream/sendnotifications`, {
+      method: "POST",
+      body: JSON.stringify(options),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  render() {
+    return (
+      <div className="streams-wrapper">
+        <h2>Active Streams</h2>
+        {this.state.streams.map((stream, i) => {
+          console.log(stream);
+          return (
+            <Stream
+              key={i}
+              name={stream.title}
+              device={stream.device}
+              startTime={stream.created_at}
+              peerId={stream.peerId}
+              username={stream.username}
+              alerts={stream.alerts}
+              callback={this.getStreams}
+              notify={this.sendNotifications}
+            />
+          );
+        })}
+        {(this.state.streams.length === 0) && (!this.state.fetchError) ? <div> No active streams  </div> : ""}
+
+        {this.state.fetchError ? <div> Failure to load streams </div> : ""}
+      </div>
+    );
+  }
+}
+export default Streams;
+

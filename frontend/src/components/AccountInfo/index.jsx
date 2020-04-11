@@ -169,6 +169,7 @@ export default class AccountInfo extends Component {
     this.setState({ newInfo: submitRequest.password });
     this.setState({ shouldRenderPasswordModal: true });
     submitRequest.password = "";
+    submitRequest.confirmPassword = "";
   }
 
   render() {
