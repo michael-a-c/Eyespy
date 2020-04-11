@@ -125,7 +125,6 @@ class Streams extends Component {
   }
 
   getStreams() {
-    let thisRef = this;
     Requests.getUserStreams().then((res) => {
       if (res && !res.status) {
         this.setState({

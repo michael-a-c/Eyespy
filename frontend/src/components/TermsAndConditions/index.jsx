@@ -4,10 +4,6 @@ import './styles.scss';
 
 class TermsAndCondtions extends Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <ItemContainer>

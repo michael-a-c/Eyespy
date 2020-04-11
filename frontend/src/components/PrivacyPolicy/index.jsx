@@ -3,9 +3,6 @@ import ItemContainer from "../ItemContainer";
 import './styles.scss';
 
 class PrivacyPolicy extends Component {
-    constructor(props) {
-        super(props);
-    }
 
     render() {
         return (
