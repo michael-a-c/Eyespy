@@ -239,6 +239,8 @@ class SetupWebcam extends Component {
       streamDevices: {},
       devices: [],
       motion: false,
+      lastNotificationTime: new Date(),
+      notificationTimeOut: 30
     };
   }
   componentDidMount() {
@@ -456,7 +458,13 @@ class SetupWebcam extends Component {
       );
       if (!this.state.movementDetected) {
         this.setState({ movementDetected: true });
-        if (this.state.isRecording) {
+        // get old time and add timeout to it
+
+        let datePlusTimeout = new Date(this.state.lastNotificationTime.getTime() + this.state.notificationTimeOut * 1000);
+        let currentTime = new Date();
+        if (this.state.isRecording && ((datePlusTimeout.getTime() - currentTime.getTime()) < 0)) {
+          this.setState({lastNotificationTime: currentTime});
+
           this.addAlert();
 
           console.log("capturing face");
@@ -564,7 +572,8 @@ class SetupWebcam extends Component {
     // start peer stuff
     let peer = new Peer();
     let parent = this;
-
+    // set the last notification time to now
+    this.setState({lastNotificationTime: new Date()});
     let streamDevices = [];
     for (let streamDevice in parent.state.streamDevices) {
       if (parent.state.streamDevices.hasOwnProperty(streamDevice)) {
