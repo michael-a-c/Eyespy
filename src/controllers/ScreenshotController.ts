@@ -6,6 +6,7 @@ import { CreateScreenshotRequest, CreateScreenshotRequestMaker} from '../Request
 import { Screenshot, UserSchema, IUser } from "../repository";
 import { NativeError, Types} from 'mongoose';
 import { isAuthenticated } from '../middleware'
+import { request } from 'https';
 const crypto = require('crypto');
 var path = require('path');
 const fs = require("fs");
@@ -74,5 +75,16 @@ export class ScreenshotController {
             let filteredArray = result.map((screenshot) =>{ return ({"id": screenshot.id, "title": screenshot.title, date:screenshot.date})});
             return res.json(filteredArray).end();
         })
+    }
+
+    @Delete('removeSS')
+    @Middleware(isAuthenticated)
+    private removeSS(req: Request, res: Response){
+        Logger.Info(req.url);
+        let ObjectId = Types.ObjectId(req.body.imageId);
+        Screenshot.findByIdAndRemove(ObjectId, (err, res2) => {
+            return res.status(OK).json({"message": "deleted image"});
+        })
+        
     }
 }

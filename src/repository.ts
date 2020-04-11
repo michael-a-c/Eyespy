@@ -1,5 +1,6 @@
 import * as mongoose from "mongoose";
 import { StreamingOptions } from './Requests';
+import { ObjectID } from 'bson';
 require('dotenv').config()
 
 const uri: string = `mongodb://${process.env.mongoUsername}:${process.env.mongoPassword}@${process.env.mongoIp}:${process.env.mongoPort}/${process.env.mongoDatabase}`;
@@ -74,6 +75,7 @@ interface IUser extends mongoose.Document {
   email: string;
 }
 interface IScreenshot extends mongoose.Document{
+  _id: mongoose.Types.ObjectId,
   username: string,
   path: string,
   mimetype:string,
@@ -111,6 +113,7 @@ const StreamSchema = new mongoose.Schema({
 const Stream = mongoose.model<IStream>("Stream", StreamSchema);
 
 const ScreenshotSchema = new mongoose.Schema({
+  _id: { type: mongoose.Types.ObjectId, auto: true },
   username:
   {
     type: String,
