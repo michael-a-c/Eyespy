@@ -10,39 +10,44 @@ function Stream(props) {
   const [show, setShow] = useState(false);
   const [passwordError, setPasswordError] = useState(null);
 
-  const handleClose = (password) => {
-    let req = {
-      username:props.username,
-      password:password,
-      peerId: props.peerId
+  const handleClose = (password, close) => {
+    if (!close) {
+      setShow(false);
     }
-    Requests.stopStream(req).then((res) => {
-      if(res && res.status == "401"){
-        setPasswordError("Invalid Password");
-        setShow(true);
-      } else if(res && res.status) {
-        setPasswordError("Server Password");
-        setShow(true);
-      } else if (res && !res.status) {
-        setPasswordError(null);
-        setShow(false);
-        props.callback();
-        // tell the peer to shut down
-        let peer = new Peer();
-        peer.on("open", function(id) {
-          let conn = peer.connect(props.peerId);
-          conn.on("open", function() {
-            // here you have conn.id
-            conn.send({action:"STOP"});
-          });
-        });
+    if (close) {
+      let req = {
+        username: props.username,
+        password: password,
+        peerId: props.peerId
       }
-    })
+      Requests.stopStream(req).then((res) => {
+        if (res && res.status == "401") {
+          setPasswordError("Invalid Password");
+          setShow(true);
+        } else if (res && res.status) {
+          setPasswordError("Server Password");
+          setShow(true);
+        } else if (res && !res.status) {
+          setPasswordError(null);
+          setShow(false);
+          props.callback();
+          // tell the peer to shut down
+          let peer = new Peer();
+          peer.on("open", function (id) {
+            let conn = peer.connect(props.peerId);
+            conn.on("open", function () {
+              // here you have conn.id
+              conn.send({ action: "STOP" });
+            });
+          });
+        }
+      })
+    }
   };
 
   const handleShow = () => setShow(true);
 
-  function parseTime(timestamp){
+  function parseTime(timestamp) {
     let first = timestamp.split('T');
     let date = first[0];
     let second = first[1].split('.');
@@ -72,7 +77,7 @@ function Stream(props) {
         </Link>
 
         <Button onClick={handleShow}> Stop</Button>
-        <PasswordModal show={show} handleClose={handleClose} error={passwordError}/>
+        <PasswordModal show={show} handleClose={handleClose} error={passwordError} />
       </div>
     </div>
   );
@@ -89,10 +94,10 @@ class Streams extends Component {
 
   }
   componentDidMount() {
-   this.getStreams(); 
+    this.getStreams();
   }
 
-  getStreams(){
+  getStreams() {
     Requests.getUserStreams().then(res => {
       if (res && !res.status) {
         this.setState({
@@ -123,7 +128,7 @@ class Streams extends Component {
             />
           );
         })}
-        {(this.state.streams.length === 0 ) && (!this.state.fetchError)? <div> No active streams  </div> : ""}
+        {(this.state.streams.length === 0) && (!this.state.fetchError) ? <div> No active streams  </div> : ""}
 
         {this.state.fetchError ? <div> Failure to load streams </div> : ""}
       </div>
