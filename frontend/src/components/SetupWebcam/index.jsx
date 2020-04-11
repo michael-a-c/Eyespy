@@ -17,6 +17,7 @@ import PasswordModal from "../PasswordModal";
 import "./styles.scss";
 import Requests from "../../utils/requests.js";
 import ToastNotif from "../ToastNotif";
+import { store } from 'react-notifications-component';
 const { Formik } = require("formik");
 const yup = require("yup");
 const ref = React.createRef();
@@ -245,19 +246,31 @@ class SetupWebcam extends Component {
   }
 
 
-  componentDidMount() {
-    window.addEventListener("beforeunload", (ev) => {
-      ev.preventDefault();
-      return ev.returnValue = 'Are you sure you want to close the stream? The Stream will end and no longer send notifications';
-    });
-  }
-
   componentWillUnmount() {
-    window.removeEventListener('beforeunload');
+    window.onbeforeunload = null;
   }
 
 
   componentDidMount() {
+    window.onbeforeunload = function (event) {
+      let message = "Please make sure the system is not armed before leaving the page";
+      
+      store.addNotification({
+        title: "WARNING!!! Closing this screen will stop a stream that is armed on this page",
+        message: message,
+        type: "danger",
+        insert: "bottom",
+        container: "bottom-center",
+        animationIn: ["animated", "fadeIn"],
+        animationOut: ["animated", "fadeOut"],
+        dismiss: {
+          duration: 5000,
+          onScreen: true
+        }
+      });
+      return message;
+    };
+
     this.getDevices();
     this.loadFacialDetection()
       .then(() => {
