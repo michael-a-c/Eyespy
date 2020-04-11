@@ -23,6 +23,7 @@ const yup = require("yup");
 const ref = React.createRef();
 const canvasRef = React.createRef();
 const motionRef = React.createRef();
+const outputRef = React.createRef();
 const schema = yup.object({
   title: yup.string().required("Title is required"),
   sms: yup.bool("Type Error"),
@@ -51,9 +52,8 @@ function WebcamSelect(props) {
 }
 
 function DevicesList(props) {
-
   if (props.devices.length === 0) {
-    return ("You currently have no devices set up to recieve push notifications")
+    return "You currently have no devices set up to recieve push notifications";
   }
   let devicesList = props.devices.map((device) => (
     <ListGroup.Item className="devices-list-actual" key={device.deviceName}>
@@ -233,7 +233,7 @@ class SetupWebcam extends Component {
       webcams: [],
       sendPush: true,
       faceSens: 0.5,
-      movementSens: 290000,
+      movementSens: 1500,
       sendSMS: true,
       streamTitle: null,
       sendEmail: true,
@@ -241,7 +241,7 @@ class SetupWebcam extends Component {
       devices: [],
       motion: false,
       lastNotificationTime: new Date(),
-      notificationTimeOut: 5
+      notificationTimeOut: 30,
     };
   }
 
@@ -286,15 +286,16 @@ class SetupWebcam extends Component {
   }
 
   handleFaceSensUpdate(sens) {
-    if (sens.target.value * 0.01 < 1) {
-      this.setState({ faceSens: sens.target.value * 0.01 });
+    let val = (1 - sens.target.value * 0.01) * 0.99;
+    if (val == 0) {
+      this.setState({ faceSens: 0.01 });
     } else {
-      this.setState({ faceSens: 0.999 });
+      this.setState({ faceSens: val });
     }
   }
 
   handleMotionSensUpdate(sens) {
-    this.setState({ movementSens: sens.target.value * 3000 + 140000 });
+    this.setState({ movementSens: 3000 - sens.target.value * 30 });
   }
   getDevices() {
     Requests.getdevices().then((result) => {
@@ -389,40 +390,57 @@ class SetupWebcam extends Component {
   runMotionDetection() {
     let ctx = motionRef.current.getContext("2d");
 
-    let diff = 0;
-    let firstPass = true;
-    let oldData = [];
-    let data = [];
+    let imgDataPrev = [];
+    let x = 0;
+    let version = 0;
+    let imgData;
+    let alpha = 0.5;
+    let sumDiff = 0;
+    let ctxFinal = outputRef.current.getContext("2d");
     let thisRef = this;
-    (function loop() {
-      if (ref.current) {
-        if (ref && ref.current.video) {
-          ctx.drawImage(ref.current.video, 0, 0, 640, 480, 0, 0, 128, 77);
-          if (firstPass) {
-            oldData = ctx.getImageData(0, 0, 128, 77).data;
-            firstPass = false;
-          } else {
-            data = ctx.getImageData(0, 0, 128, 77).data;
-            for (var x = 0; x < 128; x++) {
-              for (var y = 0; y < 77; y++) {
-                for (var p = 0; p < 4; p++) {
-                  var i = x + y * 128 * 4 + p;
-                  let cdiff = Math.abs(oldData[i] - data[i]);
-                  diff += cdiff;
-                }
-              }
-            }
-            oldData = data;
-            if (diff > thisRef.state.movementSens && !thisRef.state.motion) {
+    imgDataPrev[1] = ctx.getImageData(0, 0, 256, 177);
 
-              thisRef.setState({ motion: true }, thisRef.atttemptNotification);
-            } else {
-              thisRef.setState({ motion: false });
-            }
-            diff = 0;
+    (function loop() {
+      if (ref && ref.current.video) {
+        ctx.drawImage(ref.current.video, 0, 0, 640, 480, 0, 0, 256, 177);
+
+        imgDataPrev[version] = ctx.getImageData(0, 0, 256, 177);
+        version = version == 0 ? 1 : 0;
+
+        x = 0;
+        imgData = ctx.getImageData(0, 0, 256, 177);
+
+        while (x < imgData.data.length) {
+          imgData.data[x] =
+            alpha * (255 - imgData.data[x]) +
+            (1 - alpha) * imgDataPrev[version].data[x];
+          imgData.data[x + 1] =
+            alpha * (255 - imgData.data[x + 1]) +
+            (1 - alpha) * imgDataPrev[version].data[x + 1];
+          imgData.data[x + 2] =
+            alpha * (255 - imgData.data[x + 2]) +
+            (1 - alpha) * imgDataPrev[version].data[x + 2];
+          imgData.data[x + 3] = 255;
+          let avg = 255 * alpha;
+          if (
+            (avg - 15 > imgData.data[x] || avg + 15 < imgData.data[x]) &&
+            (avg - 15 > imgData.data[x + 1] ||
+              avg + 15 < imgData.data[x + 1]) &&
+            (avg - 15 > imgData.data[x + 2] || avg + 15 < imgData.data[x + 2])
+          ) {
+            sumDiff += 1;
           }
-          setTimeout(loop, 222);
+          x += 4;
         }
+        if (sumDiff > thisRef.state.movementSens && !thisRef.state.motion) {
+          thisRef.setState({ motion: true }, thisRef.atttemptNotification);
+        } else {
+          thisRef.setState({ motion: false });
+        }
+        sumDiff = 0;
+        ctxFinal.putImageData(imgData, 0, 0);
+
+        setTimeout(loop, 128);
       }
     })();
   }
@@ -472,11 +490,12 @@ class SetupWebcam extends Component {
     await faceapi.nets.ssdMobilenetv1.load("/models");
   }
 
-  atttemptNotification() {
-
-    let datePlusTimeout = new Date(this.state.lastNotificationTime.getTime() + this.state.notificationTimeOut * 1000);
     let currentTime = new Date();
-    if (this.state.isRecording && (this.state.motion || this.state.movementDetected) && ((datePlusTimeout.getTime() - currentTime.getTime()) < 0)) {
+    if (
+      this.state.isRecording &&
+      (this.state.motion || this.state.movementDetected) &&
+      datePlusTimeout.getTime() - currentTime.getTime() < 0
+    ) {
       this.setState({ lastNotificationTime: currentTime });
 
       this.addAlert();
@@ -501,7 +520,8 @@ class SetupWebcam extends Component {
                 peerId: this.state.peerId,
                 pushoptions: {
                   title:
-                    "Potential Intruder detected on stream: " + this.state.streamTitle,
+                    "Potential Intruder detected on stream: " +
+                    this.state.streamTitle,
                   body: "Click Live Watch to view",
                   leftText: "Dismiss Notification",
                   rightText: "Live Watch",
@@ -529,7 +549,6 @@ class SetupWebcam extends Component {
         });
       }
     }
-
   }
   async doFacialDetection() {
     let minConfidence = this.state.faceSens;
@@ -865,13 +884,26 @@ class SetupWebcam extends Component {
                     screenshotQuality={0.5}
                   />
                   <canvas className="webcam-canvas" ref={canvasRef}></canvas>
-
                   <canvas
                     id="motionCanvas"
                     className="motion-canvas"
                     ref={motionRef}
                   ></canvas>
-
+                  {!this.state.userDenied &&
+                  !this.state.waitingForUserAccept &
+                    !this.state.loadingFaceDetection ? (
+                    <div className="motion-output-wrapper">
+                      <canvas
+                        id="motionOutput"
+                        className="motion-output"
+                        ref={outputRef}
+                        width="256"
+                        height="177"
+                      ></canvas>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                   {this.state.countdownActive ? (
                     <div className="countdownOverlay">
                       <div className="countdownText">
