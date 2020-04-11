@@ -61,6 +61,7 @@ interface IStream extends mongoose.Document {
   peerId: string,
   title: string,
   alerts: number,
+  lastRefresh: Date,
   streamingOptions: {
     sms: boolean,
     push: boolean,
@@ -81,6 +82,7 @@ interface IScreenshot extends mongoose.Document{
   mimetype:string,
   title:string,
   date:  Date 
+  
 }
 
 const StreamSchema = new mongoose.Schema({
@@ -93,7 +95,7 @@ const StreamSchema = new mongoose.Schema({
   peerId: { type: String, required: true },
   title: { type: String, required: true },
   alerts: {type: Number, default: 0},
-  //lastRefresh: {type: Date, default: new Date()},
+  lastRefresh: {type: Date, default: Date.now },
   streamingOptions: {
     sms: {
       type: Boolean,
