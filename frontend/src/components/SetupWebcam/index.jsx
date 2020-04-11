@@ -214,8 +214,8 @@ class SetupWebcam extends Component {
     this.state = {
       username: props.username,
       videoConstraints: {
-        width: 640,
-        height: 480,
+        width: 1280,
+        height: 720,
         facingMode: "user",
       },
       waitingForUserAccept: true,
@@ -241,11 +241,7 @@ class SetupWebcam extends Component {
       devices: [],
       motion: false,
       lastNotificationTime: new Date(),
-<<<<<<< HEAD
-      notificationTimeOut: 5
-=======
-      notificationTimeOut: 30,
->>>>>>> c337b807072ad2d202d548fafb7f5fd81f873d49
+      notificationTimeOut: 10,
     };
   }
 
@@ -483,7 +479,7 @@ class SetupWebcam extends Component {
 
     (function loop() {
       if (ref && ref.current && ref.current.video) {
-        ctx.drawImage(ref.current.video, 0, 0, 640, 480, 0, 0, 256, 177);
+        ctx.drawImage(ref.current.video, 0, 0, thisRef.state.videoConstraints.width, thisRef.state.videoConstraints.height, 0, 0, 256, 177);
 
         imgDataPrev[version] = ctx.getImageData(0, 0, 256, 177);
         version = version == 0 ? 1 : 0;
@@ -900,7 +896,7 @@ class SetupWebcam extends Component {
                     screenshotFormat="image/jpeg"
                     videoConstraints={this.state.videoConstraints}
                     width={640}
-                    height={480}
+                    height={360}
                     onUserMedia={this.handleStartCam}
                     onUserMediaError={this.handleUserDenied}
                     screenshotQuality={0.5}

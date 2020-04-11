@@ -93,7 +93,7 @@ const StreamSchema = new mongoose.Schema({
   peerId: { type: String, required: true },
   title: { type: String, required: true },
   alerts: {type: Number, default: 0},
-
+  //lastRefresh: {type: Date, default: new Date()},
   streamingOptions: {
     sms: {
       type: Boolean,
