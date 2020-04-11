@@ -75,7 +75,7 @@ class About extends Component {
                                     src={Applebaum}
                                 />
                                 <Figure.Caption>
-                                    Registered terrorist on several nations no fly list, this individual decided to leave a life of offensive terrorism for a more subtle approach.
+                                    On several nations no fly list, this individual decided to leave a life of heinous misdeads for a more subtle approach.
                                 </Figure.Caption>
                             </Figure>
                         </Accordion.Collapse>
@@ -92,7 +92,7 @@ class About extends Component {
                                     src={Cottow}
                                 />
                                 <Figure.Caption>
-                                    Ukrainian war criminal on the run for several years, he has emerged from hiding in his rural safehouse in Newfoundland to once again fight for the people.
+                                    On the run for several years, he has emerged from hiding in his rural safehouse in Newfoundland to once again fight for the people.
                                 </Figure.Caption>
                             </Figure>
                         </Accordion.Collapse>

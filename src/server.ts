@@ -68,7 +68,7 @@ exampleServer.start(port);
 // setup cleanup jobs
 
 var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
-    console.log("Performing stream clean up");
+    console.log("Performing dead stream clean up...");
     let cTime = new Date();
     let timeout = 1; // Every 1 minute should be refreshed
     Stream.find(({}), (err, ress :IStream[]) => {
@@ -81,10 +81,14 @@ var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
                 );
 
                 if((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0){
-                    console.log("Found dead stream: "+ stream.title);
-                    // 1. notify that the stream will be closed
-
-                    
+                    console.log("Found Dead Stream ==> "+ stream.title);
+                    Stream.findOneAndDelete({ username: stream.username, peerId: stream.peerId }, (err: any, dbRes: any) => {
+                        if (err) {   
+                            console.log("Failed to remove dead stream : "+ stream.title)
+                        } else{
+                            console.log("Pruned dead stream");
+                        }
+                    });           
                 }
             })
         }
