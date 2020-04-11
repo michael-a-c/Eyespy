@@ -242,29 +242,35 @@ export class StreamingController {
 
                             let payload;
 
+                            let image = "";
+                            if (req.body.pushoptions.image) {
+                                image = req.body.pushoptions.image
+                            }
+
+
                             if (!req.body.pushoptions.leftText || !req.body.pushoptions.rightText || !req.body.pushoptions.url) {
                                 payload =
                                 {
                                     title: req.body.pushoptions.title,
                                     body: req.body.pushoptions.body,
-                                    //image: req.body.pushoptions.image
+                                    image: image
                                 };
                             } else {
                                 payload =
                                 {
                                     title: req.body.pushoptions.title,
                                     body: req.body.pushoptions.body,
+                                    image: image,
                                     data: {
                                         leftText: req.body.pushoptions.leftText,
                                         rightText: req.body.pushoptions.rightText,
                                         url: req.body.pushoptions.url
                                     }
-                                    //image: req.body.pushoptions.image
                                 };
                             }
 
 
-
+                            console.log(image)
                             console.log("send notifications to: ", result[0].devices[i].deviceName)
                             webpush.sendNotification(result[0].devices[i].subscription, JSON.stringify(payload))
                                 .then((result: any) => console.log(result))

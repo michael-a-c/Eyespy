@@ -16,6 +16,25 @@ function Stream(props) {
       password:password,
       peerId: props.peerId
     }
+    let notificationoptions = {
+      username: props.username,
+      peerId: props.peerId,
+      pushoptions: {
+        title: "Ended the stream: " + props.name,
+        body: "If this was not you, consider changing your password immediately",
+      },
+      smsoptions: {
+        title: "Ended stream - " + props.name,
+        body: "\nIf this was not you, consider changing your password immediately",
+        url: "",
+      },
+      emailoptions: {
+        subject: "Ended the stream: " + props.name,
+        content: "If this was not you, consider changing your password immediately"
+      }
+    }
+    props.notify(notificationoptions)
+    
     Requests.stopStream(req).then((res) => {
       if(res && res.status == "401"){
         setPasswordError("Invalid Password");
@@ -28,6 +47,7 @@ function Stream(props) {
         setShow(false);
         props.callback();
         // tell the peer to shut down
+
         let peer = new Peer();
         peer.on("open", function(id) {
           let conn = peer.connect(props.peerId);
@@ -86,6 +106,7 @@ class Streams extends Component {
       fetchError: false
     };
     this.getStreams = this.getStreams.bind(this);
+    this.sendNotifications = this.sendNotifications.bind(this);
 
   }
   componentDidMount() {
@@ -104,6 +125,18 @@ class Streams extends Component {
       }
     });
   }
+
+  
+  sendNotifications(options) {
+    return fetch(`api/stream/sendnotifications`, {
+      method: "POST",
+      body: JSON.stringify(options),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
   render() {
     return (
       <div className="streams-wrapper">
@@ -120,6 +153,7 @@ class Streams extends Component {
               username={stream.username}
               alerts={stream.alerts}
               callback={this.getStreams}
+              notify={this.sendNotifications}
             />
           );
         })}

@@ -391,24 +391,54 @@ class SetupWebcam extends Component {
         this.setState({ movementDetected: true });
         if (this.state.isRecording) {
           this.addAlert();
-          /*
-          if (this.state.sendPush) {
-            this.sendNotifications({
-              title: "Face detected on stream",
-              body: "Click Live Watch to view",
-              leftText: "Dismiss Notification",
-              rightText: "Live Watch",
-              url: `/watch/${this.state.peerId}`,
+
+
+          console.log("capturing face");
+          if (this.state.streamTitle) {
+            fetch("/api/screenshot/create", {
+              method: "POST",
+              body: JSON.stringify({
+                title: this.state.streamTitle,
+                data: ref.current.getScreenshot()
+              }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }).then((res) => {
+              console.log(res);
+              if (res && res.status === 200) {
+                res.json().then((data) => {
+                  console.log("captured intruder")
+                  let notificationoptions = {
+                    username: this.state.username,
+                    peerId: this.state.peerId,
+                    pushoptions: {
+                      title: "Face detected on stream: " + this.state.streamTitle,
+                      body: "Click Live Watch to view",
+                      leftText: "Dismiss Notification",
+                      rightText: "Live Watch",
+                      url: `/watch/${this.state.peerId}`,
+                      image: "http://localhost:3000/api/screenshot/view/"+data.id
+                    },
+                    smsoptions: {
+                      title: "Face detected on stream - " + this.state.streamTitle + ": ",
+                      body: "\nWatch from here: ",
+                      url: `http://localhost:3000/watch/${this.state.peerId}`,
+                    },
+                    emailoptions: {
+                      subject: "Face detected on stream: " + this.state.streamTitle,
+                      content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + this.state.peerId + "\">here</a>"
+                      //imagePath: 
+                    }
+                  }
+                  this.sendNotifications(notificationoptions);
+                });
+              } else {
+                console.log("failed to capture intruder")
+              }
             });
           }
-          if (this.state.sendSMS) {
-            this.sendSMSnotification({
-              title: "Face detected on stream: ",
-              body: "watch from here ",
-              url: `/watch/${this.state.peerId}`,
-            });
-          }
-          */
+
         }
       }
 
