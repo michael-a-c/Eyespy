@@ -18,25 +18,28 @@ function Stream(props) {
       let req = {
         username: props.username,
         password: password,
-        peerId: props.peerId
-      }
+        peerId: props.peerId,
+      };
       let notificationoptions = {
         username: props.username,
         peerId: props.peerId,
         pushoptions: {
           title: "Ended the stream: " + props.name,
-          body: "If this was not you, consider changing your password immediately",
+          body:
+            "If this was not you, consider changing your password immediately",
         },
         smsoptions: {
           title: "Ended stream - " + props.name,
-          body: "\nIf this was not you, consider changing your password immediately",
+          body:
+            "\nIf this was not you, consider changing your password immediately",
           url: "",
         },
         emailoptions: {
           subject: "Ended the stream: " + props.name,
-          content: "If this was not you, consider changing your password immediately"
-        }
-      }
+          content:
+            "If this was not you, consider changing your password immediately",
+        },
+      };
       props.notify(notificationoptions);
 
       Requests.stopStream(req).then((res) => {
@@ -62,6 +65,7 @@ function Stream(props) {
           });
         }
       });
+<<<<<<< HEAD
     };
   }
 
@@ -71,6 +75,17 @@ function Stream(props) {
     let first = timestamp.split('T');
     let date = first[0];
     let second = first[1].split('.');
+=======
+    }
+  };
+
+  const handleShow = () => setShow(true);
+
+  function parseTime(timestamp) {
+    let first = timestamp.split("T");
+    let date = first[0];
+    let second = first[1].split(".");
+>>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
     let hour = second[0];
     return [date, hour];
   }
@@ -97,7 +112,15 @@ function Stream(props) {
         </Link>
 
         <Button onClick={handleShow}> Stop</Button>
+<<<<<<< HEAD
         <PasswordModal show={show} handleClose={handleClose} error={passwordError} />
+=======
+        <PasswordModal
+          show={show}
+          handleClose={handleClose}
+          error={passwordError}
+        />
+>>>>>>> 61418fd83d492c036dd71ff5848edead96bca028
       </div>
     </div>
   );
@@ -108,29 +131,28 @@ class Streams extends Component {
     super(props);
     this.state = {
       streams: [],
-      fetchError: false
+      fetchError: false,
     };
     this.getStreams = this.getStreams.bind(this);
     this.sendNotifications = this.sendNotifications.bind(this);
-
   }
   componentDidMount() {
     this.getStreams();
   }
 
   getStreams() {
-    Requests.getUserStreams().then(res => {
+    let thisRef = this;
+    Requests.getUserStreams().then((res) => {
       if (res && !res.status) {
         this.setState({
           streams: res,
-          fetchError: false
+          fetchError: false,
         });
       } else {
         this.setState({ fetchError: true });
       }
     });
   }
-
 
   sendNotifications(options) {
     return fetch(`api/stream/sendnotifications`, {
@@ -147,7 +169,6 @@ class Streams extends Component {
       <div className="streams-wrapper">
         <h2>Active Streams</h2>
         {this.state.streams.map((stream, i) => {
-          console.log(stream);
           return (
             <Stream
               key={i}
@@ -162,7 +183,11 @@ class Streams extends Component {
             />
           );
         })}
-        {(this.state.streams.length === 0) && (!this.state.fetchError) ? <div> No active streams  </div> : ""}
+        {this.state.streams.length === 0 && !this.state.fetchError ? (
+          <div> No active streams </div>
+        ) : (
+          ""
+        )}
 
         {this.state.fetchError ? <div> Failure to load streams </div> : ""}
       </div>
