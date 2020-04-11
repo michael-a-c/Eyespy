@@ -20,10 +20,7 @@ function CarouselController(props) {
 
   const temp = (e) =>{
     console.log(index);
-    props.handleDelete(index);
-    if(index === props.images.length - 1){
-      setIndex(index - 1);
-    }
+    
     console.log(index);
   }
 
@@ -46,7 +43,10 @@ function CarouselController(props) {
           );
         })}
       </Carousel>
-      <Button variant="danger" onClick={temp}>Delete</Button>
+      <Button variant="danger" onClick={() =>
+      {props.handleDelete(index); if(index === props.images.length - 1){setIndex(index - 1);}}}
+    >
+      Delete</Button>
     </Container>
   )
 }
