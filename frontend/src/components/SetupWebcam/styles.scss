@@ -92,17 +92,17 @@
 .webcam-actual{
     border-radius: 5px;
     
-    @include for-lg{
-      width: 640px;
-      height: 480px;
+    @include for-xs{
+      width: 256px;
+      height: 192px;
     }
     @include for-sm{
       width: 512px;
       height: 384px;
     }
-    @include for-xs{
-      width: 256px;
-      height: 192px;
+    @include for-md{
+      width: 640px;
+      height: 480px;
     }
   
 }
@@ -136,17 +136,19 @@
 
 .webcam-canvas{
   position: absolute;
-  @include for-lg{
-    width: 640px;
-    height: 480px;
+  
+  
+  @include for-xs{
+    width: 256px;
+    height: 192px;
   }
   @include for-sm{
     width: 512px;
     height: 384px;
   }
-  @include for-xs{
-    width: 256px;
-    height: 192px;
+  @include for-md{
+    width: 640px;
+    height: 480px;
   }
 }
 

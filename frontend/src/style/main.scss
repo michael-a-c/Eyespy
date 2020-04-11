@@ -15,6 +15,11 @@ $xl: 1200px;
 @mixin for-xs {
   @media (max-width: $xs) { @content; }
 }
+
+@mixin for-md {
+  @media (min-width: $md) { @content; }
+}
+
 @mixin for-sm {
   @media (min-width: $sm) { @content; }
 }

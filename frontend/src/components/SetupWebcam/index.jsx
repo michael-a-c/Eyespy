@@ -208,6 +208,7 @@ class SetupWebcam extends Component {
     this.closeModal = this.closeModal.bind(this);
     this.getDevices = this.getDevices.bind(this);
     this.selectDevice = this.selectDevice.bind(this);
+    this.atttemptNotification = this.atttemptNotification.bind(this);
 
     this.state = {
       username: props.username,
@@ -238,6 +239,8 @@ class SetupWebcam extends Component {
       streamDevices: {},
       devices: [],
       motion: false,
+      lastNotificationTime: new Date(),
+      notificationTimeOut: 30
     };
   }
   componentDidMount() {
@@ -382,8 +385,9 @@ class SetupWebcam extends Component {
             }
           }
           oldData = data;
-          if (diff > thisRef.state.movementSens) {
-            thisRef.setState({ motion: true });
+          if (diff > thisRef.state.movementSens && !thisRef.state.motion) {
+
+            thisRef.setState({ motion: true }, thisRef.atttemptNotification);
           } else {
             thisRef.setState({ motion: false });
           }
@@ -439,6 +443,64 @@ class SetupWebcam extends Component {
     await faceapi.nets.ssdMobilenetv1.load("/models");
   }
 
+  atttemptNotification(){
+
+    let datePlusTimeout = new Date(this.state.lastNotificationTime.getTime() + this.state.notificationTimeOut * 1000);
+    let currentTime = new Date();
+    if (this.state.isRecording && (this.state.motion || this.state.movementDetected) && ((datePlusTimeout.getTime() - currentTime.getTime()) < 0)) {
+      this.setState({lastNotificationTime: currentTime});
+
+      this.addAlert();
+
+      console.log("Creating Notification");
+      if (this.state.streamTitle) {
+        fetch("/api/screenshot/create", {
+          method: "POST",
+          body: JSON.stringify({
+            title: this.state.streamTitle,
+            data: ref.current.getScreenshot(),
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((res) => {
+          console.log(res);
+          if (res && res.status === 200) {
+            res.json().then((data) => {
+              let notificationoptions = {
+                username: this.state.username,
+                peerId: this.state.peerId,
+                pushoptions: {
+                  title:
+                    "Potential Intruder detected on stream: " + this.state.streamTitle,
+                  body: "Click Live Watch to view",
+                  leftText: "Dismiss Notification",
+                  rightText: "Live Watch",
+                  url: `/watch/${this.state.peerId}`,
+                  image:
+                    "${window.location.href}/api/screenshot/view/" + data.id,
+                },
+                smsoptions: {
+                  title: "Potential Intruder detected on stream - " + this.state.streamTitle + ": ",
+                  body: "\nIntruder: ${window.location.href}/api/screenshot/view/"+data.id+"\nWatch from here: ",
+                  url: `${window.location.href}/watch/${this.state.peerId}`,
+                },
+                emailoptions: {
+                  subject: "Potential Intruder detected on stream: " + this.state.streamTitle,
+                  content: "To watch the stream, click <a href=\"${window.location.href}/watch/" + this.state.peerId + "\">here</a>",
+                  imagePath: data.path
+                }
+              }
+              this.sendNotifications(notificationoptions);
+            });
+          } else {
+            console.log("failed to capture intruder");
+          }
+        });
+      }
+    }
+
+  }
   async doFacialDetection() {
     let minConfidence = this.state.faceSens;
     //console.log(ref);
@@ -453,54 +515,7 @@ class SetupWebcam extends Component {
         true
       );
       if (!this.state.movementDetected) {
-        this.setState({ movementDetected: true });
-        if (this.state.isRecording) {
-          this.addAlert();
-          if (this.state.streamTitle) {
-            fetch("/api/screenshot/create", {
-              method: "POST",
-              body: JSON.stringify({
-                title: this.state.streamTitle,
-                data: ref.current.getScreenshot(),
-              }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }).then((res) => {
-              if (res && res.status === 200) {
-                res.json().then((data) => {
-                  let notificationoptions = {
-                    username: this.state.username,
-                    peerId: this.state.peerId,
-                    pushoptions: {
-                      title:
-                        "Face detected on stream: " + this.state.streamTitle,
-                      body: "Click Live Watch to view",
-                      leftText: "Dismiss Notification",
-                      rightText: "Live Watch",
-                      url: `/watch/${this.state.peerId}`,
-                      image:
-                        "http://localhost:3000/api/screenshot/view/" + data.id,
-                    },
-                    smsoptions: {
-                      title: "Face detected on stream - " + this.state.streamTitle + ": ",
-                      body: "\nIntruder: http://localhost:3000/api/screenshot/view/"+data.id+"\nWatch from here: ",
-                      url: `http://localhost:3000/watch/${this.state.peerId}`,
-                    },
-                    emailoptions: {
-                      subject: "Face detected on stream: " + this.state.streamTitle,
-                      content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + this.state.peerId + "\">here</a>",
-                      imagePath: data.path//"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
-                    }
-                  }
-                  this.sendNotifications(notificationoptions);
-                });
-              } else {
-                console.log("failed to capture intruder");
-              }
-            });
-          }
-        }
+        this.setState({ movementDetected: true }, this.atttemptNotification);
       }
 
       faceapi.draw.drawDetections(
@@ -559,7 +574,8 @@ class SetupWebcam extends Component {
     // start peer stuff
     let peer = new Peer();
     let parent = this;
-
+    // set the last notification time to now
+    this.setState({lastNotificationTime: new Date()});
     let streamDevices = [];
     for (let streamDevice in parent.state.streamDevices) {
       if (parent.state.streamDevices.hasOwnProperty(streamDevice)) {
@@ -616,12 +632,12 @@ class SetupWebcam extends Component {
             smsoptions: {
               title: "Started stream - " + res.title + ": ",
               body: "\nWatch from here: ",
-              url: `http://localhost:3000/watch/${parent.state.peerId}`,
+              url: `${window.location.href}/watch/${parent.state.peerId}`,
             },
             emailoptions: {
               subject: "Started a stream: " + res.title,
               content:
-                'To watch the stream, click <a href="http://localhost:3000/watch/' +
+                'To watch the stream, click <a href="'+window.location.href+'/watch/' +
                 parent.state.peerId +
                 '">here</a>',
             },
