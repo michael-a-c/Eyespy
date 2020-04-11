@@ -478,17 +478,18 @@ class SetupWebcam extends Component {
                   rightText: "Live Watch",
                   url: `/watch/${this.state.peerId}`,
                   image:
-                    "${window.location.href}/api/screenshot/view/" + data.id,
+                    `${window.location.href}/api/screenshot/view/` + data.id,
                 },
                 smsoptions: {
                   title: "Potential Intruder detected on stream - " + this.state.streamTitle + ": ",
-                  body: "\nIntruder: ${window.location.href}/api/screenshot/view/"+data.id+"\nWatch from here: ",
+                  body: `\nIntruder: ${window.location.href}/api/screenshot/view/`+data.id+"\nWatch from here: ",
                   url: `${window.location.href}/watch/${this.state.peerId}`,
                 },
                 emailoptions: {
                   subject: "Potential Intruder detected on stream: " + this.state.streamTitle,
-                  content: "To watch the stream, click <a href=\"${window.location.href}/watch/" + this.state.peerId + "\">here</a>",
-                  imagePath: data.path
+                  content: `To watch the stream, click <a href=\"${window.location.href}/watch/` + this.state.peerId + "\">here</a>",
+                  imagePath: data.path//"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
+
                 }
               }
               this.sendNotifications(notificationoptions);
