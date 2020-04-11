@@ -64,18 +64,7 @@ export class Devices extends Component {
     this.removeDevice = this.removeDevice.bind(this);
   };
 
-  /*
-    componentDidMount() {
-      window.addEventListener("beforeunload", (ev) => {
-        ev.preventDefault();
-        return ev.returnValue = 'Are you sure you want to close?';
-      });
-    }
-  
-    componentWillUnmount() {
-      window.removeEventListener('beforeunload');
-    }
-  */
+
 
   isPushNotificationSupported() {
     return "serviceWorker" in navigator && "PushManager" in window;
