@@ -69,12 +69,50 @@ export class UserController {
         });
     }
 
-    @Put('update-user')
-    private update(req: Request, res: Response) {
+    @Post('updateInfo')
+    @Middleware(isAuthenticated)
+    private updateInfo(req: Request, res: Response) {
         Logger.Info(req.url);
-        //TODO
-        return res.status(OK).json({
-            message: 'update_called',
+        if (!req.session!.user) {
+            return res.status(BAD_REQUEST).json({ "message": "you're not signed in ya muppet" });
+        }
+        User.find({ username: req.session!.user }).exec((err: NativeError, result: IUser[]) => {
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+            else if (result.length === 0) {
+                return res.status(NOT_FOUND).json({ "message": "user not found" }).end();
+            } else {
+                bcrypt.compare(req.body.password, result[0].password, function (err: any, valid: boolean) {
+                    if (err) return res.status(INTERNAL_SERVER_ERROR).json(err).end();
+                    if (!valid) return res.status(UNAUTHORIZED).end();
+                    let query = { username: req.session!.user};
+                    if(req.body.infoType == "email"){
+                        let newValues = {$set: {email: req.body.newInfo}};
+                        User.updateOne(query, newValues, (err2, res2)=> {
+                            if (err2) return res.status(BAD_REQUEST).json(err2);
+                            return res.status(OK).json({ "message": "Email Updated" });
+                        });
+                    }
+                    else if(req.body.infoType == "phone"){
+                        let newValues = {$set: {phone: req.body.newInfo}};
+                        User.updateOne(query, newValues, (err2, res2)=> {
+                            if (err2) return res.status(BAD_REQUEST).json(err2);
+                            return res.status(OK).json({ "message": "Phone Updated" });
+                        });
+                    }else{
+                        bcrypt.genSalt(10, function (err: any, salt: any) {
+                            bcrypt.hash(req.body.newInfo, salt, function (err: any, hash: any) {
+                                let newValues = {$set: {password: hash}};
+                                User.updateOne(query, newValues, (err2, res2)=> {
+                                    if (err2) return res.status(BAD_REQUEST).json(err2);
+                                    return res.status(OK).json({ "message": "Phone Updated" });
+                                });
+                            });
+                        });
+                    }
+                });
+            }
         });
     }
 
@@ -200,6 +238,28 @@ export class UserController {
             } else {
                 //Return the users devices
                 return res.status(OK).json({ "message": "Successfully retrieved devices", "devices": result[0].devices });
+            }
+        });
+    }
+
+    @Get("info")
+    @Middleware(isAuthenticated)
+    private getUserInfo(req: Request, res: Response) {
+        Logger.Info(req.url);
+
+        if (!req.session!.user) {
+            return res.status(BAD_REQUEST).json({ "message": "you're not signed in ya muppet" });
+        }
+
+        User.find({ username: req.session?.user }).exec((err: NativeError, result: IUser[]) => {
+            if (err) {
+                return res.status(INTERNAL_SERVER_ERROR).json(err);
+            }
+            else if (result.length === 0) {
+                return res.status(NOT_FOUND).json({ "message": "Something went wrong with your information, please log out and log back in" }).end();
+            } else {
+                //Return the users devices
+                return res.status(OK).json({ "message": "Successfully retrieved devices", "email": result[0].email, "phone": result[0].phone, "username": req.session?.user });
             }
         });
     }

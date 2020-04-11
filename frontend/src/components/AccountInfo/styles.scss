@@ -1,0 +1,44 @@
+.accord-honda{
+    cursor: pointer;
+}
+
+.spades{
+    background-color: #545350 !important;
+    color: white !important;
+}
+
+.hearts{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.polka{
+    margin-bottom: 30px;
+}
+
+.mugshot{
+    display: flex !important;
+    flex-direction: column;
+    padding:5px;
+}
+.mugshot img{
+    align-self: center;
+    padding:5px
+
+}
+
+.figure-caption{
+    color: white !important;
+}
+
+.flex-plz-button{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.disclaim{
+    font-size: 8px;
+}
