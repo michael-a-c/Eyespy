@@ -42,7 +42,7 @@ export class ScreenshotController {
             newScreenshot.save((err, result) => {
                 if(err) { return res.status(INTERNAL_SERVER_ERROR).end("Server Error")}
                 else {
-                    res.json({id: result._id});
+                    res.json({id: result._id, path: "uploads/"+newFileName});
                 }
             });
         });

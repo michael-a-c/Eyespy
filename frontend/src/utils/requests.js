@@ -64,7 +64,17 @@ let Requests = {
     return await this.requestBody("POST", "/api/stream/sendnotifications", request)
   },
 
+  getpath: async function(){
+    try{
+      const response = await fetch("/api/screenshot/path")
+      if (!response.ok) { throw response; }
+      let data = response.json();
+      return data;
 
+    } catch(err){
+      return err;
+    }
+  },
 
   getUserStreams: async function(){
     try{

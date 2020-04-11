@@ -423,6 +423,7 @@ class SetupWebcam extends Component {
               if (res && res.status === 200) {
                 res.json().then((data) => {
                   console.log("captured intruder")
+                  console.log(data)
                   let notificationoptions = {
                     username: this.state.username,
                     peerId: this.state.peerId,
@@ -436,13 +437,13 @@ class SetupWebcam extends Component {
                     },
                     smsoptions: {
                       title: "Face detected on stream - " + this.state.streamTitle + ": ",
-                      body: "\nWatch from here: ",
+                      body: "\nIntruder: http://localhost:3000/api/screenshot/view/"+data.id+"\nWatch from here: ",
                       url: `http://localhost:3000/watch/${this.state.peerId}`,
                     },
                     emailoptions: {
                       subject: "Face detected on stream: " + this.state.streamTitle,
-                      content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + this.state.peerId + "\">here</a>"
-                      //imagePath: 
+                      content: "To watch the stream, click <a href=\"http://localhost:3000/watch/" + this.state.peerId + "\">here</a>",
+                      imagePath: data.path//"uploads/4c9a846e42.jpg"//"http://localhost:3000/api/screenshot/view/"+data.id
                     }
                   }
                   this.sendNotifications(notificationoptions);

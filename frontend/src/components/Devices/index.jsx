@@ -243,14 +243,7 @@ export class Devices extends Component {
     let options = {
       subscription: device.subscription,
       title: "Testing Notifications",
-      body: "Your device \"" + device.deviceName + "\" is receiving a test notification from EyeSpy Security",
-      image: "/face.jpg",
-      leftText: "yes",
-      rightText: "no",
-      url: "/devices"
-      /*
-
-      */
+      body: "Your device \"" + device.deviceName + "\" is receiving a test notification from EyeSpy Security"
     }
     return fetch(`api/serviceworker/sendnotification`, {
       method: 'POST',

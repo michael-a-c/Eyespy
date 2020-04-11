@@ -122,7 +122,6 @@ export class StreamingController {
             if (dbRes.length != 0) {
                 return res.status(CONFLICT).json({ "message": "peerId exists" });
             }
-            console.log(StartStreamingRequest);
             let newStream = new Stream(StartStreamingRequest);
             newStream.save((err: any, dbRes: any) => {
                 if (err) {
@@ -159,7 +158,6 @@ export class StreamingController {
     @Post('sendnotifications')
     @Middleware(isAuthenticated)
     private sendnotifications(req: Request, res: Response) {
-        console.log("sending notifications for stream hopefully")
 
         if (req.session?.user !== req.body.username) {
             return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
@@ -187,19 +185,29 @@ export class StreamingController {
                 */
                 /// If set up, send email notification
                 if (dbRes[0].streamingOptions.email) {
-                    let mail = {
-                        from: "EyeSpy Security",
-                        to: result[0].email,
-                        subject: req.body.emailoptions.subject,
-                        html: req.body.emailoptions.content,
-                        /*
-                        attachments: [
-                            {   
-                                filename: 'screen-shot.jpg',
-                                content: fs.readFileSync(imagePath)
-                            }]
-                        */
-                    };
+                    let mail;
+                    if (req.body.emailoptions.imagePath) {
+                        console.log(req.body.emailoptions.imagePath)
+                        mail = {
+                            from: "EyeSpy Security",
+                            to: result[0].email,
+                            subject: req.body.emailoptions.subject,
+                            html: req.body.emailoptions.content,
+                            attachments: [
+                                {   
+                                    filename: 'screen-shot.jpg',
+                                    content: fs.createReadStream(req.body.emailoptions.imagePath)
+                                }]
+                        };
+                    } else {
+                        mail = {
+                            from: "EyeSpy Security",
+                            to: result[0].email,
+                            subject: req.body.emailoptions.subject,
+                            html: req.body.emailoptions.content,
+
+                        };
+                    }
                     transporter.sendMail(mail, (err: any, data: any) => {
                         if (err) {
                             res.status(BAD_REQUEST).json({
@@ -270,7 +278,6 @@ export class StreamingController {
                             }
 
 
-                            console.log(image)
                             console.log("send notifications to: ", result[0].devices[i].deviceName)
                             webpush.sendNotification(result[0].devices[i].subscription, JSON.stringify(payload))
                                 .then((result: any) => console.log(result))
