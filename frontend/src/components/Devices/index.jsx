@@ -21,8 +21,7 @@ const yup = require("yup");
 
 require('dotenv').config();
 
-const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"//process.env.publicVapidKey
-const privateVapidKey = "3ki5FfwrzZZcFPD49UeGPXiWCEpvJUjUD1iVlw4HfKo"//process.env.privateVapidKey
+const publicVapidKey = "BN8eHyQuJvNk4XG61iVxdLlS78zHZCspP4TyG5EuOjj1royj3EmCl_R_2Q5-gMxQ2x0OfUByEAzmWTFf2fGyVTo"
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - base64String.length % 4) % 4)
@@ -64,18 +63,7 @@ export class Devices extends Component {
     this.removeDevice = this.removeDevice.bind(this);
   };
 
-  /*
-    componentDidMount() {
-      window.addEventListener("beforeunload", (ev) => {
-        ev.preventDefault();
-        return ev.returnValue = 'Are you sure you want to close?';
-      });
-    }
-  
-    componentWillUnmount() {
-      window.removeEventListener('beforeunload');
-    }
-  */
+
 
   isPushNotificationSupported() {
     return "serviceWorker" in navigator && "PushManager" in window;
