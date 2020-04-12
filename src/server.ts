@@ -2,6 +2,7 @@
 // https://levelup.gitconnected.com/setup-express-with-typescript-in-3-easy-steps-484772062e01
 
 import { Stream, IStream } from "./repository";
+import { Response, Request } from 'express';
 
 import * as bodyParser from 'body-parser';
 import * as controllers from './controllers';
@@ -34,7 +35,13 @@ class EyeSpyServer extends Server {
             resave: true,
             saveUninitialized: true,
         }));
-
+        this.app.get('*', function(req:Request, res:Response) {  
+            res.redirect('https://' + req.headers.host + req.url);
+        
+            // Or, if you don't want to automatically detect the domain name from the request header, you can hard code it:
+            // res.redirect('https://example.com' + req.url);
+        })
+        
         this.setupControllers();
     }
 
@@ -47,6 +54,7 @@ class EyeSpyServer extends Server {
             }
         }
         super.addControllers(ctlrInstances);
+
     }
 
     public start(port: number): void {
@@ -61,6 +69,7 @@ class EyeSpyServer extends Server {
 
 
 const exampleServer = new EyeSpyServer();
+
 let envPort = process.env.PORT;
 let port = parseInt((envPort) || "3001");
 exampleServer.start(port);
@@ -78,7 +87,7 @@ var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function () {
             ress.forEach((stream: IStream) => {
                 let refreshTimePlusTimeout = new Date(
                     stream.lastRefresh.getTime() +
-                    timeout * 60000
+                    timeout * 180000
                 );
 
                 if ((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0) {
