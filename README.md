@@ -2,6 +2,9 @@
 
 ### Sean Applebaum (appleb16), Michael Cottow (cottowmi), Max Sun (sunhao17)
 
+### Link to Demo
+https://www.youtube.com/watch?v=mfgkQrQvV5c
+
 ### A Description of the Web Application
 
 The goal of this application is to provide a small security system to watch over an area while a user is away. The application will have two main components: A "Monitor" application and a "Notifier" application. The "Monitor" application will run in a web browser and allow the user to configure a webcam which the app will use to detect movement / faces in a room. Upon detecting a potential "security risk" it will call the "Notifier" app. This will be a mobile app that will notify the user with a warning via a push  notification. (May also be a status bar that the user always sees) There will be an account management system and a device pairing system to allow the user to sync their monitoring and receiving devices.  
