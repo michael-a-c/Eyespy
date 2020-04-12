@@ -50,10 +50,10 @@ class PrivacyPolicy extends Component {
                 <p>We use both session and persistent Cookies for the purposes set out below:</p>
                 <ul>
                     <li className="list-spacing">
-                        <p><strong>Necessary / Essential Cookies</strong>
+                        <div><strong>Necessary / Essential Cookies</strong>
                             <p>Type: Session Cookies</p>
                             <p>Administered by: Us</p>
-                            <p>Purpose: These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features. They help to authenticate users and prevent fraudulent use of user accounts. Without these Cookies, the services that You have asked for cannot be provided, and We only use these Cookies to provide You with those services.</p></p>
+                            <p>Purpose: These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features. They help to authenticate users and prevent fraudulent use of user accounts. Without these Cookies, the services that You have asked for cannot be provided, and We only use these Cookies to provide You with those services.</p></div>
                     </li>
                     <li className="list-spacing">
                         <p><strong>Cookies Policy / Notice Acceptance Cookies</strong></p>
