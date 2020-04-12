@@ -7,6 +7,7 @@ import Modal from "react-bootstrap/Modal";
 import ItemContainer from "../ItemContainer";
 import TermsAndConditions from "../TermsAndConditions";
 import PrivacyPolicy from '../PrivacyPolicy';
+import Credits from '../Credits';
 import Applebaum from "../../Applebaum.png";
 import Cottow from "../../Cottow.png";
 import Sun from "../../Sun.png";
@@ -20,11 +21,13 @@ class About extends Component {
         super(props);
         this.state = {
             TaC: false,
-            PP: false
+            PP: false,
+            cred: false
         }
         this.handleSMS = this.handleSMS.bind(this);
         this.toggleTerms = this.toggleTerms.bind(this);
         this.togglePPolicy = this.togglePPolicy.bind(this);
+        this.toggleCredits = this.toggleCredits.bind(this);
       }
 
     toggleTerms() {
@@ -33,6 +36,10 @@ class About extends Component {
 
     togglePPolicy() {
         this.setState({ PP: !this.state.PP })
+    }
+
+    toggleCredits() {
+        this.setState({ cred: !this.state.cred })
     }
 
     handleSMS(SMSreq) {
@@ -68,7 +75,7 @@ class About extends Component {
                                     src={Applebaum}
                                 />
                                 <Figure.Caption>
-                                    Registered terrorist on several nations no fly list, this individual decided to leave a life of offensive terrorism for a more subtle approach.
+                                    On several nations no fly list, this individual decided to leave a life of heinous misdeads for a more subtle approach.
                                 </Figure.Caption>
                             </Figure>
                         </Accordion.Collapse>
@@ -85,7 +92,7 @@ class About extends Component {
                                     src={Cottow}
                                 />
                                 <Figure.Caption>
-                                    Ukrainian war criminal on the run for several years, he has emerged from hiding in his rural safehouse in Newfoundland to once again fight for the people.
+                                    On the run for several years, he has emerged from hiding in his rural safehouse in Newfoundland to once again fight for the people.
                                 </Figure.Caption>
                             </Figure>
                         </Accordion.Collapse>
@@ -117,7 +124,7 @@ class About extends Component {
                     <Button variant="link" onClick={this.togglePPolicy}>Privacy Policy</Button>
                 </div>
                 <div>
-                    <Button variant="link">Credits</Button>
+                    <Button variant="link" onClick={this.toggleCredits}>Credits</Button>
                 </div>
                 <div className="flex-plz-button">
                     <Button variant="danger" onClick={this.handleSMS}>DO NOT PRESS</Button>
@@ -138,6 +145,15 @@ class About extends Component {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={this.togglePPolicy}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
+                <Modal size="lg" show={this.state.cred} onHide={this.toggleCredits}>
+                    <Modal.Header closeButton>Credits</Modal.Header>
+                    <Modal.Body>
+                        <Credits/>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={this.toggleCredits}>Close</Button>
                     </Modal.Footer>
                 </Modal>
             </ItemContainer>
