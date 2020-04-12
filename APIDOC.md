@@ -47,6 +47,7 @@ Responses:
   http://localhost:3000/api/serviceworker/sendnotification
 ``` 
 
+## Users
 
 ### Sign in
   Signs user in
@@ -74,7 +75,7 @@ Responses:
  ```
 
  - Example 
- 
+
  ``` 
  curl --header "Content-Type: application/json" \
   --request POST \
@@ -82,7 +83,6 @@ Responses:
   http://localhost:3000/api/users/signup
 ``` 
 
-## Users
 
 ### Signup
 Creates a new user
