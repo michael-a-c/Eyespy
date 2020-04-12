@@ -113,7 +113,7 @@ Responses:
 
 ### Refresh
   Utility endpoint for monitoring stream activity
-- GET /api/stream/refresh/id (where id is unique stream peerId)
+- GET /api/stream/refresh/:id
 
 Responses: 
  - 401 Unauthorized
@@ -142,7 +142,7 @@ Responses:
  - Example 
 
  ``` 
- curl http://localhost:3000/api/refresh/id (where id is unique stream peerId)
+ curl http://localhost:3000/api/refresh/0395u0
 ``` 
 
 ### Stop
