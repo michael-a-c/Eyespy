@@ -35,12 +35,7 @@ class EyeSpyServer extends Server {
             resave: true,
             saveUninitialized: true,
         }));
-        this.app.get('*', function(req:Request, res:Response) {  
-            res.redirect('https://' + req.headers.host + req.url);
-        
-            // Or, if you don't want to automatically detect the domain name from the request header, you can hard code it:
-            // res.redirect('https://example.com' + req.url);
-        })
+       
         
         this.setupControllers();
     }
@@ -80,14 +75,14 @@ exampleServer.start(port);
 var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function () {
     console.log("Performing dead stream clean up...");
     let cTime = new Date();
-    let timeout = 1; // Every 1 minute should be refreshed
+    let timeout = 5; // Every 5 minute should be refreshed
     Stream.find(({}), (err, ress: IStream[]) => {
         if (err) { console.log("Failed to find streams"); }
         else {
             ress.forEach((stream: IStream) => {
                 let refreshTimePlusTimeout = new Date(
                     stream.lastRefresh.getTime() +
-                    timeout * 180000
+                    timeout * 60000
                 );
 
                 if ((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0) {
