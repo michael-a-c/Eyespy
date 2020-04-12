@@ -32,9 +32,7 @@ Responses:
  - Example 
 
  ``` 
- curl --header "Content-Type: application/json" \
-  --data '{"username":"xyz","password":"xyz", "email":"some@email.com", "phone": 55552900}' \
-  http://localhost:3000/api/users/signup
+ curl http://localhost:3000/api/stream/list
 ``` 
 
 
@@ -322,7 +320,6 @@ Responses:
 ### Signout
   Signs active user out of session
 - GET /api/users/signout
-- content-type :application/json
 
 Responses: 
  - 400 Bad Request - Not Logged In
