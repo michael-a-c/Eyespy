@@ -40,10 +40,12 @@ Responses:
  ```
 
  - Example 
- ``` curl --header "Content-Type: application/json" \
+ ``` 
+ curl --header "Content-Type: application/json" \
   --request POST \
   --data '{"subscription":{"endpoint":"ABCDEFG", "expirationTime":"2020-04-02", "keys": {"p256dh":"publicKey123", "auth":"authKey123"}, },"title":"Notification Title", "body":"Notification Body", "image":"imageName.jpg", "leftText":"Left option", "rightText":"Right option", "url":"https://eyespy.me/watch/id}' \
-  http://localhost:3000/api/serviceworker/sendnotification``` 
+  http://localhost:3000/api/serviceworker/sendnotification
+``` 
 
 
 ### Sign in
@@ -72,13 +74,13 @@ Responses:
  ```
 
  - Example 
- ``` curl --header "Content-Type: application/json" \
+ 
+ ``` 
+ curl --header "Content-Type: application/json" \
   --request POST \
   --data '{"username":"xyz","password":"xyz", "email":"some@email.com", "phone": 55552900}' \
-  http://localhost:3000/api/users/signup``` 
-
-
-
+  http://localhost:3000/api/users/signup
+``` 
 
 ## Users
 
