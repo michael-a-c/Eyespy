@@ -9,6 +9,7 @@ import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import * as Express from 'express';
 import * as ExpressSession from 'express-session';
+import notifs = require('./notificationUtil');
 const schedule = require('node-schedule');
 
 require('dotenv').config()
@@ -23,10 +24,10 @@ class EyeSpyServer extends Server {
         super(true);
 
         this.app.use(bodyParser.json());
-        this.app.use(bodyParser.urlencoded({extended: true}));
+        this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(Express.static('static'));
         this.app.use(Express.static(path.join(__dirname, '../frontend/build')));
-        let sessionSecret : any = process.env.sessionSecret;
+        let sessionSecret: any = process.env.sessionSecret;
 
         this.app.use(ExpressSession({
             secret: sessionSecret,
@@ -50,7 +51,7 @@ class EyeSpyServer extends Server {
 
     public start(port: number): void {
         this.app.get('*', (req, res) => {
-            res.sendFile('index.html', {root});
+            res.sendFile('index.html', { root });
         });
         this.app.listen(port, () => {
             Logger.Imp(this.SERVER_STARTED + port);
@@ -67,30 +68,53 @@ exampleServer.start(port);
 
 // setup cleanup jobs
 
-var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function(){
+var streamCleanupJob = schedule.scheduleJob(' */1 * * * *', function () {
     console.log("Performing dead stream clean up...");
     let cTime = new Date();
     let timeout = 1; // Every 1 minute should be refreshed
-    Stream.find(({}), (err, ress :IStream[]) => {
-        if(err) {console.log("Failed to find streams");}
-        else{
-            ress.forEach((stream:IStream) => {
+    Stream.find(({}), (err, ress: IStream[]) => {
+        if (err) { console.log("Failed to find streams"); }
+        else {
+            ress.forEach((stream: IStream) => {
                 let refreshTimePlusTimeout = new Date(
                     stream.lastRefresh.getTime() +
                     timeout * 60000
                 );
 
-                if((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0){
-                    console.log("Found Dead Stream ==> "+ stream.title);
-                    Stream.findOneAndDelete({ username: stream.username, peerId: stream.peerId }, (err: any, dbRes: any) => {
-                        if (err) {   
-                            console.log("Failed to remove dead stream : "+ stream.title)
-                        } else{
-                            console.log("Pruned dead stream");
+                if ((cTime.getTime() - refreshTimePlusTimeout.getTime()) > 0) {
+                    let notificationOptions = {
+                        username: stream.username,
+                        peerId: stream.peerId,
+                        pushoptions: {
+                            title:
+                                "Ended Stream: " +
+                                stream.title,
+                            body: "Stream was been purged due to inactivity, if this was not you, you may be at risk",
+                        },
+                        smsoptions: {
+                            title:
+                                "Ended Stream - \"" +
+                                stream.title + "\"",
+                            body: "\nStream was been purged due to inactivity, if this was not you, you may be at risk"
+                        },
+                        emailoptions: {
+                            subject:
+                                "Stream Ended: " +
+                                stream.title,
+                            content: "Stream was been purged due to inactivity, if this was not you, you may be at risk"
                         }
-                    });           
-                }
-            })
+                    }
+                    notifs.sendStreamNotification(stream, notificationOptions);
+                    console.log("Found Dead Stream ==> " + stream.title);
+                        Stream.findOneAndDelete({ username: stream.username, peerId: stream.peerId }, (err: any, dbRes: any) => {
+                            if (err) {
+                                console.log("Failed to remove dead stream : " + stream.title)
+                            } else {
+                                console.log("Pruned dead stream");
+                            }
+                        });
+                    }
+                })
         }
     })
 });

@@ -7,7 +7,6 @@ import { Stream, StreamSchema, IStream, User, IUser } from "../repository";
 import { NativeError, Schema } from 'mongoose';
 import { isAuthenticated } from '../middleware'
 import notifs = require('../notificationUtil');
-//import { test } from '../notificationUtil';
 
 const bcrypt = require('bcryptjs');
 
