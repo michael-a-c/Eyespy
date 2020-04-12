@@ -404,42 +404,6 @@ Responses:
   http://localhost:3000/api/users/signup
 ``` 
 
-
-### Sign in
-  Signs user in
-- POST /api/users/signin
-- content-type :application/json
-- body:
-```
-{
-    username: string;
-    password: string;
-
-}
-```
-Responses: 
- - 404 Not Found - No Such User Exists
- - 500 Internal Server Error
- - 401 Unauthorized - Bad Password
- - 400 Bad Request - Invalid Body
- - 200
-   - Content-Type: JSON
-   - Body: 
- ```
-    {
-        username: string
-    }
-
- ```
-
- - Example 
- ``` 
- curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{"username":"xyz","password":"xyz"}' \
-  http://localhost:3000/api/users/signin
-``` 
-
 ### Update User Info
   Updates user's info
 - PUT /api/users/updateInfo
@@ -475,11 +439,10 @@ Responses:
   http://localhost:3000/api/users/updateInfo
 ``` 
 
-
 ### Add New Device
   Adds a new push-notification device for a user
 - PUT /api/users/add-new-device
-- content-type :application/json
+- content-type: application/json
 - body:
 ```
 {
@@ -628,3 +591,117 @@ Responses:
   --data '{"title":"xyz","body":"xyz", "url" :"adfg"}' \
   http://localhost:3000/api/users/SMSalert
 ``` 
+
+
+##Screenshots
+
+### Create
+
+  Creates a new screenshot
+  - POST /api/screenshot/create
+  - content-type: application/json
+  - body:
+```
+{
+    title: string;
+    data: base64 string;
+}
+```
+Responses:
+  - 500 Internal Server Error
+  - 401 Unauthorized - not logged in
+  - 400 Bad Request - Invalid Body
+  - 200
+    - Content-Type: JSON
+    - Body:
+  ```
+  {
+    id: string;
+    path: string;
+  }
+  ```
+
+  - Example
+  ```
+  curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{title: "streamName", data: "base64string"}' \
+  http://localhost:3000/api/screenshot/create
+  ```
+
+### View
+
+  View a certain image based on imageId
+  - GET /api/screenshot/view/:id
+
+Responses:
+  - 500 Internal Server
+  - 404 Not Found - image not found
+  - 200
+    - Content-Type: Binary Data
+    - Body:
+  ```
+  Image File
+  ```
+
+  - Example
+  ```
+  curl http://localhost:3000/api/screenshot/view/0395u0
+  ```
+
+### List
+
+  Get all images for a given user
+  - GET /api/screenshot/list/
+
+Responses:
+  - 500 Internal Server
+  - 401 Unauthorized - not signed in
+  - 200
+    - Content-Type: JSON
+    - Body:
+    ```
+    [
+      {
+        id: string;
+        title: string;
+        date: Date;
+      }
+    ]
+    ```
+
+  - Example
+  ```
+  curl http://localhost:3000/api/screenshot/list/
+  ```
+
+### Delete Screenshot
+
+  Delete an image from database based on imageId
+  - DELETE /api/screenshot/removeSS
+  - content-type: application/json
+  - body:
+```
+{
+  imageId: string
+}
+```
+
+Responses:
+  - 401 Unauthorized - not logged in
+  - 200
+    - Content-Type: JSON
+    - Body:
+    ```
+    {
+      message: string
+    }
+    ```
+  
+  - Example
+  ```
+  curl --header "Content-Type: application/json" \
+  --request DELETE \
+  --data '{imageId: "jafiafi64387yt87gyaoygt9qa8g"}' \
+  http://localhost:3000/api/screenshot/removeSS
+  ```
