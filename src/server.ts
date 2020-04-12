@@ -18,7 +18,7 @@ const path = require('path');
 const root = path.join(__dirname, '../frontend', 'build')
 
 class EyeSpyServer extends Server {
-    private readonly SERVER_STARTED = 'Example server started on port: ';
+    private readonly SERVER_STARTED = 'Eyespy server started on port: ';
 
     constructor() {
         super(true);
