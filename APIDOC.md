@@ -4,7 +4,7 @@
 
 ### Send Email Notification
 
-Sends an Email notification to an email from eyespy978@gmail.com
+Sends an Email notification to an email from eyespy978@gmail.com with optional image attachment
 - POST /api/email/sendemail
 - content-type :application/json
 - body:
