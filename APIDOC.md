@@ -15,10 +15,10 @@
     pushoptions: {
         title: string,
         body: string,
-        leftText: string,
-        rightText: string,
-        url: string,
-        image: string
+        leftText: string, (optional)
+        rightText: string, (optional)
+        url: string, (optional)
+        image: string (optional)
         },
     smsoptions: {
         title: string,
@@ -28,7 +28,7 @@
     emailoptions: {
         subject: string,
         content: string,
-        imagePath: string
+        imagePath: string (optional)
     }
 }
 ```
