@@ -1,5 +1,58 @@
 # API DOCUMENTATION
 
+## Email Controllers
+
+### Send Email Notification
+
+Sends an Email notification to an email from eyespy978@gmail.com
+- POST /api/email/sendemail
+- content-type :application/json
+- body:
+```
+{
+    email: string;
+    subject: string;
+    content: string;
+    imagePath: string; (optional)
+}
+```
+Responses: 
+ - 500 Internal Server Error
+    - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+ - 400 Bad Request
+    - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+
+ - Example 
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"email":"myrealemail@mail.com", "subject":"Email Subject", "content":"<div>Email content</div>", "imagePath":"image.jpg"}' \
+  http://localhost:3000/api/email/sendemail
+``` 
+
 ## Service Workers
 
 ### Send Notification
@@ -21,10 +74,10 @@ Sends a push notification to a device
     }
     title: string;
     body: string;
-    image: string;
-    leftText: string;
-    rightText: string;
-    url: string;
+    image: string; (optional)
+    leftText: string; (optional)
+    rightText: string; (optional)
+    url: string; (optional)
 }
 ```
 Responses: 
