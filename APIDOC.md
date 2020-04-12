@@ -2,6 +2,202 @@
 
 ## Streams
 
+### Send Stream Notifications
+
+  Send out notifications for a stream
+- POST /api/stream/sendnotifications
+- content-type :application/json
+- body:
+```
+{
+    username: string,
+    peerId: string,
+    pushoptions: {
+        title: string,
+        body: string,
+        leftText: string,
+        rightText: string,
+        url: string,
+        image: string
+        },
+    smsoptions: {
+        title: string,
+        body: string,
+        url: string,
+    },
+    emailoptions: {
+        subject: string,
+        content: string,
+        imagePath: string
+    }
+}
+```
+Responses: 
+ - 500 Internal Server Error
+  - 401 Unauthorized
+    - Content-Type: JSON
+    - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+   - 409 Conflict
+    - Content-Type: JSON
+    - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        message: string
+    }
+ ```
+
+ - Example 
+
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"username":"xyz","peerId":"uniquePeerId","pushoptions":{"title":"Notification Title","body":"Notification Body","leftText":"Left Option","rightText":"Right Option","url":"www.eyespy.me","image":"image.jpg"},"smsoptions":{"title":"Notification Title","body":"Notification Body","url":"www.eyespy.me",},"emailoptions":{"subject":"Email Subject","content":"Email Content","imagePath":"image.jpg"}}' \
+  http://localhost:3000/api/stream/sendnotifications
+``` 
+
+### Add Alert
+  Increment alert counter for a stream
+- POST /api/stream/addAlert
+- content-type :application/json
+- body:
+```
+{
+    username: string,
+    peerId: string
+
+}
+```
+Responses: 
+ - 500 Internal Server Error
+  - 401 Unauthorized
+    - Content-Type: JSON
+    - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        message: string
+    }
+ ```
+
+ - Example 
+
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"username":"xyz","peerId":"uniquePeerId"}' \
+  http://localhost:3000/api/stream/addAlert
+``` 
+
+### Refresh
+  Utility endpoint for monitoring stream activity
+- GET /api/stream/refresh/id (where id is unique stream peerId)
+
+Responses: 
+ - 401 Unauthorized
+ - 404 Not Found
+ - 500 Internal Server Error
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        username: string,
+        devices: any,
+        peerId: string,
+        title: string,
+        alerts: number,
+        lastRefresh: Date,
+        streamingOptions: {
+            sms: boolean,
+            push: boolean,
+            email: boolean
+        }
+    }
+
+ ```
+
+ - Example 
+
+ ``` 
+ curl http://localhost:3000/api/refresh/id (where id is unique stream peerId)
+``` 
+
+### Stop
+  Stops a stream
+- POST /api/stream/stop
+- content-type :application/json
+- body:
+```
+{
+    username: string;
+    password: string;
+    peerId: string,
+
+}
+```
+Responses: 
+ - 400 Bad Request
+ - 500 Internal Server Error
+ - 404 Not Found - No Such Stream Exists
+    - Content-Type: JSON
+    - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+ - 401 Unauthorized
+    - Content-Type: JSON
+    - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        message: string
+    }
+
+ ```
+
+ - Example 
+
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"username":"xyz","password":"xyz", "peerId":"uniqueStreamPeerId"}' \
+  http://localhost:3000/api/stream/stop
+``` 
+
 ### List
   List a users streams
 - GET /api/stream/list
