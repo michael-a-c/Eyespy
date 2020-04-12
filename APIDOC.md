@@ -163,7 +163,7 @@ Responses:
 ```
 {
     password: string;
-    infoType: "email" | "phone";
+    infoType: "email" | "phone" | "password";
     newInfo: string;
 }
 ```
@@ -177,7 +177,7 @@ Responses:
    - Body: 
  ```
     {
-        "message": "Phone Updated" | "Email Updated"
+        "message": "Phone Updated" | "Email Updated" | "Password Updated"
     }
 
  ```
@@ -226,4 +226,121 @@ Responses:
   --request PUT \
   --data '{"username":"eeee", deviceName:"myIphone","subscription":{....ServiceWorkerDetails}, "isRecording": "false", "isReceivingNotifications": "true" }' \
   http://localhost:3000/api/users/add-new-device
+``` 
+
+### Signout
+  Signs active user out of session
+- GET /api/users/signout
+- content-type :application/json
+
+Responses: 
+ - 400 Bad Request - Not Logged In
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    { 
+        "message": "signed out" 
+    }
+
+ ```
+
+ - Example 
+
+ ``` 
+ curl   http://localhost:3000/api/users/signout
+``` 
+
+
+### Remove Device
+  Removes a push notification device for a user
+- PUT /api/users/remove-device
+- content-type :application/json
+- body:
+```
+{
+    username: string;
+    deviceName: string;
+}
+```
+Responses: 
+ - 500 Internal Server Error
+ - 404 Not Found - No such device
+ - 400 Bad Request - Invalid Body | Not Logged In
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    { 
+        "message": "Successfully removed the device"
+    }
+
+ ```
+
+ - Example 
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --request PUT \
+  --data '{"deviceName":"myIphone"}' \
+  http://localhost:3000/api/users/add-new-device
+``` 
+
+
+### Get Info
+Get User information
+- Get /api/users/info
+
+Responses: 
+ - 400  Not Logged In 
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    { 
+        email | string
+        phone | string
+        username  | string
+    }
+
+ ```
+
+ - Example 
+ ``` 
+ curl  http://localhost:3000/api/users/info
+``` 
+
+
+### SMS Alert
+  Sends SMS Alert for user's phonenumber
+- POST /api/users/SMSalert
+- content-type :application/json
+- body:
+```
+{
+    title: string;
+    body: string;
+    url: string;
+
+}
+```
+Responses: 
+ - 500 Internal Server Error
+ - 401 Unauthorized - Not Logged In
+ - 400 Bad Request - Invalid Body
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    {
+        "message": "sent SMS: " + fullSMS, "number": userPhonenumber
+    }
+
+ ```
+
+ - Example 
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"title":"xyz","body":"xyz", "url" :"adfg"}' \
+  http://localhost:3000/api/users/SMSalert
 ``` 
