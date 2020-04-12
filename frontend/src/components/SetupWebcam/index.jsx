@@ -807,7 +807,7 @@ class SetupWebcam extends Component {
             title: "Took a Screenshot",
             type: "success",
             message:
-              "Screenshot can be viewed in the screenshot gallery and will be sent to your email shortly",
+              "Screenshot can be viewed in the screenshot gallery.",
           });
         } else {
           ToastNotif({
