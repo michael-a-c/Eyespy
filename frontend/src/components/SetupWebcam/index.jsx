@@ -235,6 +235,7 @@ class SetupWebcam extends Component {
       sendPush: true,
       faceSens: 0.5,
       streamId: null,
+      refreshTimer: null,
       movementSens: 1500,
       sendSMS: true,
       streamTitle: null,
@@ -617,9 +618,14 @@ class SetupWebcam extends Component {
 
   activateKeepAlivePulse(){
     let thisRef = this;
-    setInterval(() => {
-      fetch("/api/stream/refresh/"+thisRef.state.streamId)
-    }, 30000)
+    let refreshTimer = setInterval(() => {
+      if(this.state.isRecording){
+        fetch("/api/stream/refresh/"+thisRef.state.streamId)
+      } else{
+        clearInterval(thisRef.state.refreshTimer);
+      }
+    }, 30000);
+    this.setState({refreshTimer: refreshTimer});
   }
 
   doArmWait(subReq) {

@@ -205,10 +205,11 @@ class Signup extends Component {
                   name="terms"
                   label="Agree to Terms and Conditions"
                   onChange={handleChange}
-                  isInvalid={!!errors.terms}
+                  isInvalid={touched.phone && !!errors.terms}
                   feedback={errors.terms}
                   />
                 </Form.Group>
+                <div>You must open the terms and conditions before you can accept them</div>
                 <Button variant="primary" type="submit" disabled={this.state.loading}>
                   Sign up
                    {this.state.loading ?
