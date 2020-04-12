@@ -5,7 +5,7 @@ require('dotenv').config()
 
 const uri: string = `mongodb://${process.env.mongoUsername}:${process.env.mongoPassword}@${process.env.mongoIp}:${process.env.mongoPort}/${process.env.mongoDatabase}`;
 
-console.log(process.env.mongoDatabase);
+//console.log(process.env.mongoDatabase);
 mongoose.connect(uri, { useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true })
   .then(() => console.log('DB Connected!'))
   .catch(err => {

@@ -397,7 +397,7 @@ class SetupWebcam extends Component {
 
       this.addAlert();
 
-      console.log("Creating Notification");
+      //console.log("Creating Notification");
       if (this.state.streamTitle) {
         fetch("/api/screenshot/create", {
           method: "POST",
@@ -409,7 +409,6 @@ class SetupWebcam extends Component {
             "Content-Type": "application/json",
           },
         }).then((res) => {
-          console.log(res);
           if (res && res.status === 200) {
             res.json().then((data) => {
               let notificationoptions = {
@@ -629,7 +628,7 @@ class SetupWebcam extends Component {
     let armTimer = setInterval(() => {
       let counter = this.state.armCounter;
       counter -= 1;
-      console.log(counter);
+      //console.log(counter);
       if (counter === 0) {
         clearInterval(this.state.armTimer);
         this.setState({ armCounter: 0, isLoading: true });

@@ -72,7 +72,6 @@ export class StreamingController {
     @Get('refresh/:id')
     @Middleware(isAuthenticated)
     private refresh(req: Request, res: Response) {
-        console.log(req.path);
         // step 1. find the stream
         Stream.findById(req.params.id, (err, ress) => {
             if (err) return res.status(INTERNAL_SERVER_ERROR).end();

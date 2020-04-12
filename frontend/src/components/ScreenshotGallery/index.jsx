@@ -74,7 +74,7 @@ export default class ScreenshotGallery extends Component {
   }
 
   handleDelete(idx){
-    console.log(this.state.images[idx]);
+    //console.log(this.state.images[idx]);
     let req = {imageId: this.state.images[idx].id}
     Requests.removeSS(req).then((res => {
       this.state.images.splice(idx, 1);
