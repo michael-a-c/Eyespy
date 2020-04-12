@@ -33,6 +33,7 @@ class Credits extends Component{
                 <ul>
                 <li>Google push notifications documentation: <a href="https://developers.google.com/web/fundamentals/push-notifications">here</a></li>
                 <li>Google Service Worker documentation: <a href="https://developers.google.com/web/fundamentals/primers/service-workers">here</a></li>
+                <li>Push notifications examples: <a href="https://web-push-book.gauntface.com/demos/notification-examples/">here</a></li>
                 </ul>
                 <h3>SMS Notifications</h3>
                 <ul>
@@ -40,8 +41,7 @@ class Credits extends Component{
                 </ul>
                 <h3>Email Notifications</h3>
                 <ul>
-                <li>place holder</li>
-                <li>place holder</li>
+                <li>Nodemailer embedded software for Nodejs: <a href="https://nodemailer.com/about/">here</a></li>
                 </ul>
                 <h3>Miscellaneous</h3>
                 <ul>
