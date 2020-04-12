@@ -42,6 +42,7 @@ class MainNavBar extends Component {
             <img
               src={process.env.PUBLIC_URL + '/logo512.png'}
               width="65"
+              height="45"
               className="d-inline-block align-top"
               alt="React Bootstrap logo"
             />
