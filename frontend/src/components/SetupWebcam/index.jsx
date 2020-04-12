@@ -244,7 +244,7 @@ class SetupWebcam extends Component {
       hasPhone: this.hasPhone(),
       motion: false,
       lastNotificationTime: new Date(),
-      notificationTimeOut: 5,
+      notificationTimeOut: 15,
     };
   }
   
