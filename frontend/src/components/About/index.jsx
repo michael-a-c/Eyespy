@@ -13,8 +13,6 @@ import Cottow from "../../Cottow.png";
 import Sun from "../../Sun.png";
 import './styles.scss';
 
-
-
 class About extends Component {
 
     constructor(props) {
@@ -24,7 +22,6 @@ class About extends Component {
             PP: false,
             cred: false
         }
-        this.handleSMS = this.handleSMS.bind(this);
         this.toggleTerms = this.toggleTerms.bind(this);
         this.togglePPolicy = this.togglePPolicy.bind(this);
         this.toggleCredits = this.toggleCredits.bind(this);
@@ -41,21 +38,6 @@ class About extends Component {
     toggleCredits() {
         this.setState({ cred: !this.state.cred })
     }
-
-    handleSMS(SMSreq) {
-        let newBody = {
-            title: "WHY YOU PRESS: ",
-            body: " it says DO NOT PRESS ",
-            url: "/about"
-        }
-        return fetch(`api/user/SMSalert`, {
-            method: 'POST',
-            body: JSON.stringify(newBody),
-            headers: {
-              'Content-Type': 'application/json'
-            }
-        })
-    } 
 
     render() {
         return (
@@ -116,7 +98,8 @@ class About extends Component {
                     </Card>
                 </Accordion>
                 <p className="disclaim">*DISCLAIMER: none of the above information is true, this is all in good fun</p>
-                <h1>Dcouments to Read</h1>
+                <p>Contact us at eyespy978@gmail.com</p>
+                <h1>Documents to Read</h1>
                 <div>
                     <Button variant="link" onClick={this.toggleTerms}>Terms and Conditions</Button>
                 </div>
@@ -125,9 +108,6 @@ class About extends Component {
                 </div>
                 <div>
                     <Button variant="link" onClick={this.toggleCredits}>Credits</Button>
-                </div>
-                <div className="flex-plz-button">
-                    <Button variant="danger" onClick={this.handleSMS}>DO NOT PRESS</Button>
                 </div>
                 <Modal size="lg" show={this.state.TaC} onHide={this.toggleTerms}>
                     <Modal.Header closeButton>Terms and Conditions</Modal.Header>

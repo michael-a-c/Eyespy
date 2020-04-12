@@ -17,13 +17,13 @@ class Credits extends Component{
                 <li> Nodejs Working with Binary Data: <a href="https://stackoverflow.com/questions/43487543/writing-binary-data-using-node-js-fs-writefile-to-create-an-image-file/43488020"> here</a></li>
                 <li> Express Backend Setup: <a href="https://www.freecodecamp.org/news/how-to-write-a-production-ready-node-and-express-app-f214f0b17d8c/"> here </a></li>
                 </ul>
-                <h3>Face Detection</h3>
-                <ul>
-                <li>Faceapi Libray (Example code from repo also used): <a href="https://github.com/justadudewhohacks/face-api.js" >here </a></li>
-                </ul>
                 <h3>WebRTC</h3>
                 <ul>
                 <li>PeerJS: <a href="https://peerjs.com/" > here </a></li>
+                </ul>
+                <h3>Face Detection</h3>
+                <ul>
+                <li>Faceapi Libray (Example code from repo also used): <a href="https://github.com/justadudewhohacks/face-api.js" >here </a></li>
                 </ul>
                 <h3>Movement Detection</h3>
                 <ul>
@@ -32,13 +32,11 @@ class Credits extends Component{
                 <h3>Service Workers</h3>
                 <ul>
                 <li>Google push notifications documentation: <a href="https://developers.google.com/web/fundamentals/push-notifications">here</a></li>
-                <li>Google Service Worker  documentation: <a href="https://developers.google.com/web/fundamentals/primers/service-workers">here</a></li>
-
+                <li>Google Service Worker documentation: <a href="https://developers.google.com/web/fundamentals/primers/service-workers">here</a></li>
                 </ul>
                 <h3>SMS Notifications</h3>
                 <ul>
-                <li>place holder</li>
-                <li>place holder</li>
+                <li>Twilio SMS embedded software for Nodejs: <a href="https://www.twilio.com/docs/sms/quickstart/node#install-nodejs-and-the-twilio-module">here</a></li>
                 </ul>
                 <h3>Email Notifications</h3>
                 <ul>
@@ -48,6 +46,8 @@ class Credits extends Component{
                 <h3>Miscellaneous</h3>
                 <ul>
                 <li>Logo Credits to <a href="flaticon.com"> flaticon</a> and <a href="https://www.kissclipart.com/security-camera-clipart-closed-circuit-television-gek0n3/"> Kiss Clip Art</a></li>
+                <li>Terms and Conditions Outline: <a href="https://gist.github.com/luisbajana/51549d9f0faecaab1df1493fb0ec8a15#file-termsandconditions-js">here</a></li>
+                <li>Privacy Policy Outline: <a href="https://www.privacypolicies.com/privacy-policy-generator/">here</a></li>
                 </ul>
                 <h1>AND THE GLORIOUS PROFESSOR THIERRY SANS</h1>
             </ItemContainer>
