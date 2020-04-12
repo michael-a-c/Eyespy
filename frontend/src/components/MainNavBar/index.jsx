@@ -31,7 +31,7 @@ class MainNavBar extends Component {
   handleSignout(e) {
     Requests.signout().then((response) => {
       this.props.removeUser();
-      console.log(response);
+      //console.log(response);
     })
   }
   render() {

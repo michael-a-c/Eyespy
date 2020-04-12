@@ -75,7 +75,6 @@ export class Devices extends Component {
   }
 
   verifyAddingDevice() {
-    console.log("checking")
     if (this.isPushNotificationSupported()) {
       this.askUserPermission().then((allowed) => {
         if (allowed === 'granted') {
