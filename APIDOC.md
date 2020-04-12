@@ -2,7 +2,7 @@
 
 ## Service Workers
 
-## Send Notification
+### Send Notification
 
 
 Sends a push notification to a device
