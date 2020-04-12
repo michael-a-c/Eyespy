@@ -19,7 +19,7 @@ export class StreamingController {
     @Middleware(isAuthenticated)
     private list(req: Request, res: Response) {
         Logger.Info(req.url);
-        let username = req.session?.user;
+        let username = req.session ?.user;
         Stream.find({ username: username }).exec((err: any, dbRes: any) => {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
@@ -40,7 +40,7 @@ export class StreamingController {
             return res.status(BAD_REQUEST).json(e.message)
         }
         // 1. Make sure session user id === request user id
-        if (req.session?.user !== stopStreamingRequest.username) {
+        if (req.session ?.user !== stopStreamingRequest.username) {
             return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
         }
         // 2. Make sure password is correct
@@ -97,7 +97,7 @@ export class StreamingController {
         }
 
         // make sure session user id === request user id
-        if (req.session?.user !== StartStreamingRequest.username) {
+        if (req.session ?.user !== StartStreamingRequest.username) {
             return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
         }
 
@@ -124,20 +124,22 @@ export class StreamingController {
     @Middleware(isAuthenticated)
     private addAlert(req: Request, res: Response) {
         Logger.Info(req.url);
-        if (req.session?.user !== req.body.username) {
+        if (req.session ?.user !== req.body.username) {
             return res.status(UNAUTHORIZED).json({ "message": "cannot start stream of another user" });
         }
         Stream.find({ peerId: req.body.peerId }).exec((err: any, dbRes: IStream[]) => {
             if (err) {
                 return res.status(INTERNAL_SERVER_ERROR).json(err);
             }
-            let increm = dbRes[0].alerts + 1;
-            let query = { peerId: req.body.peerId };
-            let newvalues = { $set: { alerts: increm } };
-            Stream.updateOne(query, newvalues, (err2, dbRes2) => {
-                if (err2) return res.status(BAD_REQUEST).json(err2);
-                return res.status(OK).json({ "message": "Alerts incremented" });
-            });
+            if (dbRes.length && dbRes.length > 0) {
+                let increm = dbRes[0].alerts + 1;
+                let query = { peerId: req.body.peerId };
+                let newvalues = { $set: { alerts: increm } };
+                Stream.updateOne(query, newvalues, (err2, dbRes2) => {
+                    if (err2) return res.status(BAD_REQUEST).json(err2);
+                    return res.status(OK).json({ "message": "Alerts incremented" });
+                });
+            }
         })
     }
 
@@ -145,7 +147,7 @@ export class StreamingController {
     @Middleware(isAuthenticated)
     private sendnotifications(req: Request, res: Response) {
 
-        if (req.session?.user !== req.body.username) {
+        if (req.session ?.user !== req.body.username) {
             return res.status(UNAUTHORIZED).json({ "message": "cannot send notifications for another user" });
         }
 
