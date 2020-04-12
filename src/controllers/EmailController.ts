@@ -12,7 +12,7 @@ var transport = {
     host: 'smtp.gmail.com',
     auth: {
         user: 'eyespy978@gmail.com',
-        pass: 'snowden123'
+        pass: process.env.emailPassword
     }
 };
 
