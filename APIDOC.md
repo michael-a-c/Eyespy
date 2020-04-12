@@ -1,6 +1,44 @@
 # API DOCUMENTATION
 
-## Email Controllers
+## Streams
+
+### List
+  List a users streams
+- GET /api/stream/list
+
+Responses: 
+ - 401 Unauthorized
+ - 500 Internal Server Error
+ - 200
+   - Content-Type: JSON
+   - Body: 
+ ```
+    [{
+        username: string,
+        devices: any,
+        peerId: string,
+        title: string,
+        alerts: number,
+        lastRefresh: Date,
+        streamingOptions: {
+            sms: boolean,
+            push: boolean,
+            email: boolean
+        }
+    }]
+
+ ```
+
+ - Example 
+
+ ``` 
+ curl --header "Content-Type: application/json" \
+  --data '{"username":"xyz","password":"xyz", "email":"some@email.com", "phone": 55552900}' \
+  http://localhost:3000/api/users/signup
+``` 
+
+
+## Email
 
 ### Send Email Notification
 
