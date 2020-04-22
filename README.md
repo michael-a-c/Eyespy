@@ -1,5 +1,11 @@
 ## EyeSpy
 
+This project was created in the winter semester of 2020 for CSCC09. It is intended to be a security system which uses the user's webcam to detect faces or movement. If it detects either of these it alerts the user via the notification methods they've setup. (SMS, Email, Push notification on service worker compatible devices)
+
+known issues: does not work if there are more than 1 cameras attached to the system.
+
+Below is the original readme as submitted for the project. 
+
 ### Sean Applebaum (appleb16), Michael Cottow (cottowmi), Max Sun (sunhao17)
 
 ### Link to Demo
